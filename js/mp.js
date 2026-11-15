@@ -19,7 +19,7 @@
   const nameOf = (pid) => (RM.get(pid) ? RM.get(pid).name : 'Mitspieler');
   const V1 = new T.Vector3(), V2 = new T.Vector3(), V3 = new T.Vector3(), DOWN = new T.Vector3(0, -1, 0);
   // Nachrichten, die der Host von einem Mitspieler an alle anderen weiterreicht
-  const FWD = new Set(['ps', 'chat', 'venter', 'vleave', 'done', 'ready', 'shot', 'boom', 'fw', 'glass', 'portal', 'von', 'voff', 'msg']);
+  const FWD = new Set(['ps', 'chat', 'venter', 'vleave', 'done', 'ready', 'shot', 'boom', 'fw', 'glass', 'portal', 'von', 'voff', 'msg', 'vd']);
 
   // ---------- Senden ----------
   function rawSend(c, o) { if (c && c.open) { try { c.send(o); } catch (e) { /* Verbindung weg */ } } }
@@ -378,7 +378,7 @@
       case 'fw': if (L.fwRemote) L.fwRemote(m); break;
       case 'portal': if (L.portalRemote) L.portalRemote(m); break;
       case 'gnt': if (L.gauntletRemote) L.gauntletRemote(m); break;
-      case 'von': case 'voff': if (L.voiceMsg) L.voiceMsg(m, from); break;
+      case 'von': case 'voff': case 'vd': if (L.voiceMsg) L.voiceMsg(m, from); break;
       case 'glass': if (L.glassRemote) L.glassRemote(m.i | 0); break;
       case 'done':
         if (R) { freeRemoteVehicle(R); R.inRound = false; R.rig.root.visible = false; }
