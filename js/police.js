@@ -1,6 +1,6 @@
 'use strict';
 // Polizei: unzerstörbare KI-Streifen (Autos, Motorräder, Quads …) fahren auf der Heimatinsel herum.
-// Sie jagen nur, wer mit dem Fahrzeug über 100 km/h fährt (bis 500 km/h), teilen sich auf und versuchen dich zu umzingeln.
+// Sehen sie dich, jagen sie dich – egal wie schnell (bis 500 km/h), teilen sich auf und versuchen dich zu umzingeln.
 // Berühren sie dich, bist du festgenommen (Kurzfilm) – mit Medkit/Bandage wachst du woanders auf, aber ohne deine Sachen.
 (function () {
   const L = window.L, T = THREE, P = L.player, E = L.ents;
@@ -79,7 +79,7 @@
   function spot(v) {
     let best = null, bd = 1e9;
     for (const p of L._players()) {
-      if (!valid(p) || !speeding(p)) continue;
+      if (!valid(p)) continue;
       const d = Math.hypot(p.x - v.x, p.z - v.z);
       let range = inVeh(p) ? 230 : sneaking(p) ? 28 : 120;
       if (isP(p) && L.indoor) range = 6;
@@ -121,9 +121,7 @@
     }
     a.seen += dt;
     if (a.state === 'chase') {
-      a.slowT = a.target && speeding(a.target) ? 0 : (a.slowT || 0) + dt;
-      if (a.target && a.slowT > 3) { const p = a.target; if (!p._calmMsgT || performance.now() > p._calmMsgT) { p._calmMsgT = performance.now() + 15000; tell(p, '🚓 Unter 100 km/h – die Polizei lässt dich in Ruhe.'); } a.state = 'patrol'; a.goal = null; a.target = null; a.slowT = 0; }
-      else if (!valid(a.target)) { a.state = 'patrol'; a.goal = null; a.target = null; }
+      if (!valid(a.target)) { a.state = 'patrol'; a.goal = null; a.target = null; }
       else if (a.seen > 9) { a.state = 'search'; a.searchT = 14; a.goal = { x: a.lx, z: a.lz }; }
     } else if (a.state === 'search') {
       a.searchT -= dt;
@@ -171,7 +169,7 @@
     }
     // Festnahme: Berührung – nur wenn man wirklich unten am Boden ist
     for (const p of L._players()) {
-      if (!valid(p) || a.state !== 'chase' || a.target !== p) continue; // nur wen sie gerade jagen
+      if (!valid(p)) continue;
       if (heightOf(p) > 2.5) continue;
       const pr = isP(p) ? (P.vehicle ? P.vehicle.t.len * 0.5 : 0.5) : (p.inVeh ? 2.2 : 0.5);
       if (Math.hypot(p.x - v.x, p.z - v.z) < v.t.len * 0.5 + pr + 0.3) arrest(p, v);
