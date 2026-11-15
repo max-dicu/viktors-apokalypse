@@ -140,9 +140,9 @@
     for (const w of D.wings) { w.pv.rotation.z = w.sd * (fold !== undefined ? fold : Math.sin(t) * amp); w.pv.rotation.y = fold !== undefined ? w.sd * 0.9 : 0; }
     D.tail.forEach((q, k) => { q.rotation.y = Math.sin(t * 0.5 - k * 0.6) * 0.12; });
   }
-  function buildUnicorn() {
+  function buildUnicorn(body, wingsOn) {
     const r = new T.Group(), b = new T.Group(); r.add(b);
-    const wh = L.mat('#fbf8ff'), gold = L.mat('#f2c84a', { emissive: '#a07010', ei: 0.4 }), RAIN = ['#ff5a8a', '#ffa04a', '#ffe04a', '#6ae06a', '#5ab8ff', '#a070ff'];
+    const wh = L.mat(body || '#fbf8ff'), gold = L.mat('#f2c84a', { emissive: '#a07010', ei: 0.4 }), RAIN = ['#ff5a8a', '#ffa04a', '#ffe04a', '#6ae06a', '#5ab8ff', '#a070ff'];
     add(G().box, wh, 0.9, 0.9, 2.0, 0, 1.55, 0, b);
     const neck = add(G().box, wh, 0.55, 1.3, 0.6, 0, 2.3, 0.95, b); neck.rotation.x = 0.5;
     const head = new T.Group(); head.position.set(0, 2.95, 1.35); b.add(head);
@@ -153,8 +153,18 @@
     for (let k = 0; k < 6; k++) { const t = add(G().box, RAIN[k], 0.18, 0.9, 0.14, (k - 2.5) * 0.06, 1.2, -1.15 - k * 0.02, b); t.rotation.x = -0.35; }
     const legs = [];
     for (const [sx, sz] of [[-1, 1], [1, 1], [-1, -1], [1, -1]]) { const lg = new T.Group(); lg.position.set(sx * 0.3, 1.2, sz * 0.75); b.add(lg); add(G().box, wh, 0.22, 1.1, 0.22, 0, -0.55, 0, lg); add(G().box, gold, 0.26, 0.15, 0.26, 0, -1.12, 0, lg); legs.push(lg); }
+    let wings = null;
+    if (wingsOn) {
+      const fm = new T.MeshLambertMaterial({ color: 0xffffff, side: T.DoubleSide }), fm2 = new T.MeshLambertMaterial({ color: 0xffe8f4, side: T.DoubleSide });
+      wings = [];
+      for (const sd of [-1, 1]) {
+        const pv = new T.Group(); pv.position.set(sd * 0.45, 1.95, 0.35); b.add(pv);
+        for (let k = 0; k < 6; k++) { const fe = new T.Mesh(G().box, k % 2 ? fm2 : fm); fe.scale.set(1.9 - k * 0.22, 0.04, 0.36); fe.position.set(sd * (0.95 - k * 0.11), 0, -k * 0.24); pv.add(fe); }
+        wings.push({ pv, sd });
+      }
+    }
     r.scale.setScalar(1.15);
-    return { root: r, legs, head };
+    return { root: r, legs, head, wings };
   }
   function npc(app, x, z, ry, sc) {
     const rig = L.buildHuman(Object.assign({}, L.DEFAULT_CHAR, app), true);
@@ -395,6 +405,39 @@
       for (let k = 0; k < 46; k++) add(G().sph, k % 2 ? '#f6d060' : '#e8b840', 0.42, 0.62, 0.42, bx + Math.sin(k * 0.9) * 0.12, Tw.h + 0.5 - k * 1.0, bz);
       add(G().sph, '#ff70a0', 0.5, 0.5, 0.5, bx, 0.6, bz);
       W0.braid = { x: bx, z: bz };
+      // Turmzimmer unter dem Dach: Wände mit Fenster zum Zopf, Einrichtung
+      const RT = Tw.h, wallM = L.mat('#e8dccc');
+      for (let k = 0; k < 16; k++) {
+        const a = k / 16 * 6.283, da = Math.atan2(Math.sin(a - face), Math.cos(a - face)); if (Math.abs(da) < 0.3) continue;
+        const wx = Tw.x + Math.sin(a) * 8.7, wz = Tw.z + Math.cos(a) * 8.7, sg = add(G().boxB, wallM, 3.5, 6, 0.5, wx, RT, wz); sg.rotation.y = a;
+        const b2 = L.addBox(wx - 1.3, wz - 1.3, wx + 1.3, wz + 1.3, RT + 6, 'building'); b2.y0 = RT;
+      }
+      add(G().cylB, '#9a5ac8', 8.6, 0.2, 8.6, Tw.x, RT + 5.9, Tw.z);
+      add(G().cylB, '#c890e8', 4.5, 0.06, 4.5, Tw.x, RT + 0.01, Tw.z);
+      const loc = (u, v) => ({ x: Tw.x + Math.sin(face) * u + Math.cos(face) * v, z: Tw.z + Math.cos(face) * u - Math.sin(face) * v });
+      const room = new T.Group(); room.position.set(Tw.x, RT, Tw.z); room.rotation.y = face; g.add(room);
+      // Bett (gegenüber dem Fenster)
+      add(G().boxB, '#8a5a3a', 2.4, 0.5, 3.4, -2.5, 0, -5.6, room); add(G().boxB, '#fff4e8', 2.3, 0.3, 3.3, -2.5, 0.5, -5.6, room); add(G().boxB, '#b880e0', 2.35, 0.12, 2.0, -2.5, 0.8, -5.0, room); add(G().box, '#ffffff', 1.2, 0.28, 0.6, -2.5, 0.95, -6.8, room);
+      // Schminktisch mit Spiegel und Bürste
+      add(G().boxB, '#f4e8f8', 2, 1, 0.9, 3.5, 0, -6.2, room); add(G().box, new T.MeshStandardMaterial({ color: 0xe8f4ff, metalness: 1, roughness: 0.05 }), 1.2, 1.5, 0.06, 3.5, 2.0, -6.6, room); add(new T.TorusGeometry(0.8, 0.06, 6, 24), L.mat('#f0c840'), 0.85, 1.05, 1, 3.5, 2.0, -6.58, room); add(G().box, '#c08040', 0.5, 0.06, 0.15, 3.2, 1.05, -6.0, room);
+      // Staffelei mit Bild, Bücherregal, Blumen, Sessel
+      const ez = new T.Group(); ez.position.set(5.3, 0, -1.5); ez.rotation.y = -1.2; room.add(ez); for (const sd of [-1, 1]) add(G().box, '#8a5a3a', 0.08, 2.6, 0.08, sd * 0.5, 1.3, 0, ez).rotation.z = -sd * 0.12; add(G().box, '#fff8e8', 1.3, 1, 0.05, 0, 1.8, 0.08, ez); add(G().sph, '#ffd040', 0.18, 0.18, 0.02, 0.3, 2.05, 0.12, ez); add(G().box, '#5ab0ff', 1.1, 0.25, 0.02, 0, 1.45, 0.12, ez); add(G().box, '#4aa040', 1.1, 0.12, 0.02, 0, 1.38, 0.12, ez);
+      const sh = new T.Group(); sh.position.set(-5.8, 0, -1.8); sh.rotation.y = 1.25; room.add(sh); add(G().boxB, '#8a5a3a', 2.4, 3.2, 0.6, 0, 0, 0, sh); for (let r2 = 0; r2 < 3; r2++) for (let k = 0; k < 8; k++) add(G().boxB, ['#c02a2a', '#2a6ac0', '#3a8a3a', '#e8c020', '#6a3a8a'][(k + r2) % 5], 0.22, 0.65, 0.45, -0.8 + k * 0.23, 0.15 + r2 * 1.05, 0.05, sh);
+      for (let k = 0; k < 5; k++) { const a = -2.2 + k * 0.55, px = Math.sin(a) * 7.6, pz = Math.cos(a) * 7.6; add(G().cylB, '#c06a3a', 0.35, 0.5, 0.35, px, 0, pz, room); for (let q = 0; q < 4; q++) add(G().sph, ['#ff70a0', '#ffd040', '#ffffff', '#a070ff'][q], 0.15, 0.15, 0.15, px + Math.sin(q * 1.6) * 0.2, 0.75 + (q % 2) * 0.15, pz + Math.cos(q * 1.6) * 0.2, room); }
+      add(G().boxB, '#c890e8', 1.3, 0.55, 1.2, -4.5, 0, 2.5, room); add(G().boxB, '#c890e8', 1.3, 1.2, 0.3, -4.5, 0.55, 2.0, room);
+      // schwebende Laternen
+      W0.lanterns = []; for (let k = 0; k < 7; k++) { const ln = new T.Group(); ln.position.set(Math.sin(k * 0.9) * 4.5, 3.6 + (k % 3) * 0.5, Math.cos(k * 0.9) * 4.5); room.add(ln); add(G().box, L.mat('#ffd890', { emissive: '#ffb040', ei: 0.9 }), 0.35, 0.45, 0.35, 0, 0, 0, ln, { noShadow: true }); add(G().box, '#8a5a3a', 0.4, 0.05, 0.4, 0, 0.25, 0, ln, { noShadow: true }); W0.lanterns.push({ g: ln, y: ln.position.y, ph: k }); }
+      const rl2 = new T.PointLight(0xffc880, 1.2, 30, 2); rl2.position.set(0, 4, 0); room.add(rl2);
+      // Rapunzel: sehr langer goldener Zopf, lila Kleid
+      const rp = L.buildHuman(Object.assign({}, L.DEFAULT_CHAR, { name: 'Rapunzel', koerper: 'frau', lippen: 'rosa', skin: '#f6dcc6', hair: 'lang', hairColor: '#f2c84a', eyes: '#3a8a3a', brows: 'gebogen', mouth: 'laecheln', nose: 'stups', top: 'kleid', topColor: '#9a5ac8', shoeType: 'barfuss', height: 'klein', schmuck: 'kein' }), true);
+      const gH = L.mat('#f2c84a'), gH2 = L.mat('#e0b038');
+      let bp = rp.head, by = 0.05, bz2 = -0.15;
+      for (let k = 0; k < 10; k++) { const sg2 = add(G().sph, k % 2 ? gH : gH2, 0.09, 0.11, 0.09, 0, by - k * 0.16, bz2 - 0.02 * k, rp.head); if (k % 3 === 0) add(G().sph, '#ff90c0', 0.025, 0.025, 0.025, 0.06, by - k * 0.16, bz2 - 0.02 * k + 0.05, rp.head); void sg2; }
+      rp.root.position.set(0, 0, 3.0); rp.root.rotation.y = Math.PI; room.add(rp.root);
+      // Zopf liegt in Schlingen auf dem Boden
+      for (let k = 0; k < 90; k++) { const a = k * 0.32, rr = 0.6 + k * 0.035; add(G().sph, k % 2 ? '#f2c84a' : '#e0b038', 0.14, 0.09, 0.14, Math.sin(a) * rr, 0.09, 1.0 - Math.cos(a) * rr * 0.8, room); }
+      W0.rap = rp; W0.rapPos = loc(3.0, 0);
+      const rl3 = label('👸 RAPUNZEL', '#ffe8a0', 0.9); rl3.position.set(0, 2.1, 0); rp.root.add(rl3);
       const rl = label('🗼 RAPUNZELTURM', '#e8d0ff', 1.6); rl.position.set(Tw.x, 8, Tw.z); g.add(rl);
     }
     // ---- Riesenbohnenranke + Wolkenpalast ----
@@ -463,7 +506,11 @@
     // ---- Drachen am Himmel ----
     W0.dragons = [['#3a9a5a', '#d8f0a0', '#2a7a6a'], ['#3a6ad8', '#c0e0ff', '#5a3ab8'], ['#e8b030', '#fff0b0', '#d0601a']].map((c, k) => { const D = buildDragon(3 + k * 0.6, c[0], c[1], c[2]); g.add(D.root); return { D, cx: FX + [-600, 700, 100][k], cz: FZ + [-300, -600, 400][k], r: [380, 300, 520][k], h: [120, 160, 95][k], sp: [0.05, -0.065, 0.04][k], a: k * 2, fire: 3 + k * 4 }; });
     // ---- Einhörner ----
-    W0.unis = []; for (let k = 0; k < 8; k++) { const U = buildUnicorn(); const a = R() * 6.283, d = 300 + R() * 900; U.x = FX + Math.sin(a) * d; U.z = FZ + Math.cos(a) * d; U.tx = U.x; U.tz = U.z; U.ph = R() * 6; U.wait = R() * 4; U.id = k; g.add(U.root); W0.unis.push(U); }
+    W0.unis = [];
+    { const BODY = ['#fbf8ff', '#fbf8ff', '#ffe0ee', '#e0eaff', '#efe0ff', '#fff4d8'];
+      for (let h = 0; h < 7; h++) { const ha = R() * 6.283, hd = 300 + R() * 1000, hx = FX + Math.sin(ha) * hd, hz = FZ + Math.cos(ha) * hd;
+        for (let q = 0; q < 4; q++) { const foal = q === 3, U = buildUnicorn(BODY[(h + q) % BODY.length]); if (foal) U.root.scale.setScalar(0.7);
+          U.x = hx + (R() - 0.5) * 30; U.z = hz + (R() - 0.5) * 30; U.tx = U.x; U.tz = U.z; U.ph = R() * 6; U.wait = R() * 4; U.id = W0.unis.length; U.foal = foal; g.add(U.root); W0.unis.push(U); } } }
     // ---- BEYZA ----
     W0.bey = buildBeyza(); g.add(W0.bey.root);
     W0.prince = buildPrince(); g.add(W0.prince.root);
@@ -531,7 +578,8 @@
     for (const U of W0.unis) {
       U.wait -= dt;
       const dx = U.tx - U.x, dz = U.tz - U.z, dd = Math.hypot(dx, dz);
-      if (dd < 2) { if (U.wait <= 0) { const a = Math.random() * 6.283, d = 300 + Math.random() * 1100; const nx = FX + Math.sin(a) * d, nz = FZ + Math.cos(a) * d; if (built.free(nx, nz)) { U.tx = nx; U.tz = nz; } U.wait = 4 + Math.random() * 8; } U.head.rotation.x = 0.5 + Math.sin(t * 2 + U.id) * 0.1; U.legs.forEach((l) => { l.rotation.x = 0; }); }
+      if (U.foal && W0.unis[U.id - 1]) { const M = W0.unis[U.id - 1]; if (Math.hypot(M.x - U.x, M.z - U.z) > 4) { U.tx = M.x - 2; U.tz = M.z - 2; } }
+      if (dd < 2) { if (U.wait <= 0 && !U.foal) { const a = Math.random() * 6.283, d = 300 + Math.random() * 1100; const nx = FX + Math.sin(a) * d, nz = FZ + Math.cos(a) * d; if (built.free(nx, nz)) { U.tx = nx; U.tz = nz; } U.wait = 4 + Math.random() * 8; } U.head.rotation.x = 0.5 + Math.sin(t * 2 + U.id) * 0.1; U.legs.forEach((l) => { l.rotation.x = 0; }); }
       else { const sp = 3.2 * dt; U.x += dx / dd * sp; U.z += dz / dd * sp; U.root.rotation.y = Math.atan2(dx, dz); U.ph += dt * 7; U.legs.forEach((l, k) => { l.rotation.x = Math.sin(U.ph + (k === 0 || k === 3 ? 0 : Math.PI)) * 0.5; }); U.head.rotation.x = 0; }
       U.root.position.set(U.x, 0, U.z);
     }
@@ -544,6 +592,15 @@
     if (W0.fairy) { W0.fairy.root.position.y = 1.2 + Math.sin(t * 1.6) * 0.4; L.animHuman(W0.fairy, { mode: 'idle', phase: t }); W0.fairyWings.forEach((w, k) => { w.rotation.y = (k ? 1 : -1) * (0.6 + Math.sin(t * 20) * 0.5); }); }
     for (const r of W0.folk) L.animHuman(r, { mode: 'idle', phase: t + r.root.position.x });
     for (const r of W0.dwarfs) L.animHuman(r, { mode: 'idle', phase: t * 1.4 + r.root.position.x });
+    if (W0.rap) {
+      L.animHuman(W0.rap, { mode: 'idle', phase: t });
+      const a = W0.rap.arms[0]; if (a) { a.arm.rotation.x = -2.4 + Math.sin(t * 2.2) * 0.25; a.arm.rotation.z = -0.3; a.elbow.rotation.x = -1.2; } // bürstet ihr Haar
+      W0.rap.head.rotation.z = Math.sin(t * 0.8) * 0.08;
+      for (const l of W0.lanterns) { l.g.position.y = l.y + Math.sin(t * 0.7 + l.ph) * 0.25; l.g.rotation.y += dt * 0.3; }
+      const dR = Math.hypot(P.x - W0.rapPos.x, P.z - W0.rapPos.z);
+      W0.rapT = (W0.rapT || 0) - dt;
+      if (dR < 10 && (P.y || 0) > 40 && W0.rapT <= 0) { W0.rapT = 40; L.msg('👸 Rapunzel: „Oh, Besuch! Endlich jemand, der den Zopf hochgeklettert ist!“ ♪', 5000); for (const [k, fr] of [523, 659, 784, 1047, 784, 659].entries()) L.tn && L.tn({ f: fr, fTo: fr, dur: 0.45, type: 'sine', vol: 0.12, delay: k * 0.35 }); }
+    }
     // Glühwürmchen
     const F = W0.flies; for (let i = 0; i < F.base.length; i++) { const b = F.base[i]; F.pos[i * 3] = b[0] + Math.sin(t * 0.5 + b[3]) * 3; F.pos[i * 3 + 1] = b[1] + Math.sin(t * 0.9 + b[3] * 2) * 1.2; F.pos[i * 3 + 2] = b[2] + Math.cos(t * 0.4 + b[3]) * 3; } F.geo.attributes.position.needsUpdate = true;
     for (const fl of W0.g.children) if (fl.userData && fl.userData.flag) fl.rotation.y = Math.sin(t * 2 + fl.position.x) * 0.3;
@@ -556,6 +613,7 @@
     mf_einhorn: { name: 'Einhorn', vmax: 150, acc: 11, hp: 160, kind: 'bike', len: 2.6, wid: 0.9, off: 1, fairy: true },
     mf_teppich: { name: 'Fliegender Teppich', vmax: 180, acc: 10, hp: 120, kind: 'car', open: true, fly: true, len: 3.4, wid: 2.2, off: 1, h: 0.6, fairy: true },
     mf_besen: { name: 'Hexenbesen', vmax: 220, acc: 16, hp: 70, kind: 'bike', fly: true, len: 2.4, wid: 0.5, off: 1, fairy: true },
+    mf_pegasus: { name: 'Flügel-Einhorn', vmax: 260, acc: 15, hp: 200, kind: 'bike', fly: true, len: 2.6, wid: 1, off: 1, fairy: true },
     mf_drache: { name: 'Reitdrache', vmax: 320, acc: 18, hp: 400, kind: 'bike', fly: true, len: 6, wid: 3, off: 1, fairy: true }
   });
   const wheelGeo = new T.CylinderGeometry(1, 1, 1, 16).rotateZ(Math.PI / 2);
@@ -594,6 +652,10 @@
       const U = buildUnicorn(); root.add(U.root); fa.legs = U.legs;
       add(G().box, '#c02a5a', 0.7, 0.12, 0.8, 0, 2.18 / 1.15, -0.05, U.root); add(G().box, '#f0c840', 0.72, 0.04, 0.82, 0, 2.25 / 1.15, -0.05, U.root);
       seat = { x: 0, y: 1.5, z: -0.15 }; seats = [seat, { x: 0, y: 1.5, z: -0.75 }];
+    } else if (type === 'mf_pegasus') {
+      const U = buildUnicorn(L.pick(['#fbf8ff', '#ffe0ee', '#e0eaff']), true); root.add(U.root); fa.legs = U.legs; fa.peg = U.wings;
+      add(G().box, '#2a6ac0', 0.7, 0.12, 0.8, 0, 2.18 / 1.15, -0.05, U.root); add(G().box, '#f0c840', 0.72, 0.04, 0.82, 0, 2.25 / 1.15, -0.05, U.root);
+      seat = { x: 0, y: 1.5, z: -0.15 }; seats = [seat, { x: 0, y: 1.5, z: -0.75 }];
     } else if (type === 'mf_teppich') {
       const ct = cvTex(64, 96, (c, w, h) => { c.fillStyle = '#9a1a3a'; c.fillRect(0, 0, w, h); c.strokeStyle = '#f0c840'; c.lineWidth = 4; c.strokeRect(4, 4, w - 8, h - 8); c.fillStyle = '#1a3a8a'; c.fillRect(12, 12, w - 24, h - 24); c.fillStyle = '#f0c840'; for (let k = 0; k < 5; k++) { c.beginPath(); c.moveTo(w / 2, 18 + k * 14); c.lineTo(w / 2 + 10, 25 + k * 14); c.lineTo(w / 2, 32 + k * 14); c.lineTo(w / 2 - 10, 25 + k * 14); c.fill(); } c.fillStyle = '#e04a6a'; c.fillRect(8, 0, 2, h); c.fillRect(w - 10, 0, 2, h); });
       const geo = new T.PlaneGeometry(2.2, 3.4, 8, 12); geo.rotateX(-Math.PI / 2);
@@ -623,6 +685,7 @@
       const fa = v.rig && v.rig.root.userData.fairy; if (!fa || Math.hypot(v.x - P.x, v.z - P.z) > 300) continue;
       const sp = Math.abs(v.speed || 0), air = (v.alt || 0) > 0.6;
       v.fPh = (v.fPh || 0) + dt * Math.min(14, 2 + sp * 0.45);
+      if (fa.peg) fa.peg.forEach((w) => { w.pv.rotation.z = w.sd * (air ? Math.sin(t * 5) * 0.6 : 0.25); w.pv.rotation.y = air ? 0 : w.sd * -0.5; });
       if (fa.legs.length && !fa.dragon) fa.legs.forEach((l, k) => { l.rotation.x = sp > 0.4 ? Math.sin(v.fPh + (k % 4 === 0 || k % 4 === 3 ? 0 : Math.PI)) * Math.min(0.7, 0.2 + sp * 0.03) : 0; });
       if (fa.dragon) {
         const D = fa.dragon; flap(D, air ? t * (sp > 20 ? 6 : 4) : t * 0.8, air ? 0.75 : 0.08, air ? undefined : -0.5);
@@ -636,7 +699,9 @@
   }
   // Wo die Fahrzeuge stehen
   const VSPOTS = [['mf_kutsche', 'dorf', 30, -45, 0], ['mf_kutsche', 'schloss', -30, 40, 0], ['mf_einhorn', 'dorf', -50, -40, 0.5], ['mf_einhorn', 'dorf', -56, -36, 0.4], ['mf_einhorn', 'see', -170, 0, 1.2], ['mf_einhorn', 'fee', 15, 10, 2],
-    ['mf_teppich', 'dorf', 55, 20, -1], ['mf_teppich', 'platz', 20, 25, 0], ['mf_besen', 'lebkuchen', 12, 14, 0.3], ['mf_besen', 'dorf', -30, 50, 2.2], ['mf_drache', 'dorf', 90, 40, -0.6], ['mf_drache', 'hoehle', 120, 140, 0.8], ['mf_drache', 'eis', -90, 120, 2.5]];
+    ['mf_teppich', 'dorf', 55, 20, -1], ['mf_teppich', 'platz', 20, 25, 0], ['mf_besen', 'lebkuchen', 12, 14, 0.3], ['mf_besen', 'dorf', -30, 50, 2.2], ['mf_drache', 'dorf', 90, 40, -0.6], ['mf_drache', 'hoehle', 120, 140, 0.8], ['mf_drache', 'eis', -90, 120, 2.5],
+    ['mf_einhorn', 'schloss', 40, 45, 0.3], ['mf_einhorn', 'rapunzel', 25, -15, 1], ['mf_einhorn', 'platz', -25, 30, 2.5], ['mf_einhorn', 'oma', 25, 15, 0.8],
+    ['mf_pegasus', 'dorf', -70, 10, 1.5], ['mf_pegasus', 'see', -175, 30, 0.2], ['mf_pegasus', 'eis', -110, 60, 3]];
   function spawnFairyVehicles(g2) {
     for (const [type, at, dx, dz, yaw] of VSPOTS) {
       const p = LOC[at]; g2.spawnVehicle({ type, x: p.x + dx, z: p.z + dz, yaw });
@@ -873,13 +938,15 @@
     if (Math.hypot(P.x - LOC.brett.x, P.z - LOC.brett.z) < 5) return { k: 'board', t: 'E: 📜 Quest-Tafel ansehen' };
     if (Math.hypot(P.x - LOC.ring.x, P.z - LOC.ring.z) < 7) return { k: 'ring', t: 'E: 🍄 Feenkreis – zurück nach Asgard beamen' };
     if (y < 3 && Math.hypot(P.x - built.braid.x, P.z - built.braid.z) < 5) return { k: 'up', t: 'E: 🗼 Am goldenen Zopf hochklettern' };
-    if (y > 40 && Math.hypot(P.x - TOWER.x, P.z - TOWER.z) < 10) return { k: 'down', t: 'E: 🗼 Am Zopf wieder runterklettern' };
+    if (built.rap && y > 40 && Math.hypot(P.x - built.rapPos.x, P.z - built.rapPos.z) < 2.5) return { k: 'rap', t: 'E: 👸 Mit Rapunzel reden' };
+    if (y > 40 && Math.hypot(P.x - (built.braid.x * 0.85 + TOWER.x * 0.15), P.z - (built.braid.z * 0.85 + TOWER.z * 0.15)) < 3.2) return { k: 'down', t: 'E: 🗼 Am Zopf wieder runterklettern' };
     if (y < 3 && Math.hypot(P.x - STALK.x, P.z - STALK.z) < 7) return { k: 'stalkUp', t: 'E: 🌱 Die Riesenbohnenranke hochklettern' };
     if (y > 150 && Math.hypot(P.x - STALK.x, P.z - STALK.z) < 8) return { k: 'stalkDown', t: 'E: 🌱 Die Ranke wieder runterklettern' };
     if (Math.hypot(P.x - LOC.baby.x, P.z - LOC.baby.z) < 5) return { k: 'baby', t: 'E: 🐲 Funki streicheln / füttern' };
     if (nearBeyza() && !(nearPrince() && Math.hypot(P.x - built.prince.root.position.x, P.z - built.prince.root.position.z) < Math.hypot(P.x - built.bey.root.position.x, P.z - built.bey.root.position.z))) return { k: 'bey', t: 'E: 💖 Mit BEYZA reden' };
     if (nearPrince()) return { k: 'prinz', t: 'E: 🤴 Mit dem Prinzen reden' };
     if (built.fairy && Math.hypot(P.x - LOC.fee.x, P.z - LOC.fee.z) < 5) return { k: 'fee', t: 'E: 🧚 Mit Fee Lumina reden' };
+    if (built.rap && y > 40 && Math.hypot(P.x - built.rapPos.x, P.z - built.rapPos.z) < 3.5) return { k: 'rap', t: 'E: 👸 Mit Rapunzel reden' };
     for (const U of built.unis) if (Math.hypot(P.x - U.x, P.z - U.z) < 3.5) return { k: 'uni', u: U, t: 'E: 🦄 Einhorn streicheln' };
     return null;
   }
@@ -904,6 +971,7 @@
       for (const [q, st] of act('beyza')) progress(q, st, 1);
       const gd = today(); if (L.save.beyGift !== gd) { L.save.beyGift = gd; persistQ(); setTimeout(() => { if (L.gotBossCoins) L.gotBossCoins(150, 'BEYZAS Geschenk des Tages'); }, 1200); }
     } else if (n.k === 'prinz') { L.msg('🤴 Prinz: ' + PR_LINES[(Math.random() * PR_LINES.length) | 0], 6000); for (const [q, st] of act('beyza')) progress(q, st, 1); }
+    else if (n.k === 'rap') { const RL = ['„Mein Haar ist 21 Meter lang – das Bürsten dauert jeden Morgen eine Stunde!“', '„Siehst du die schwebenden Laternen? Ich habe sie alle selbst gebastelt.“', '„Von hier oben sehe ich BEYZA und ihren Prinzen jeden Tag spazieren gehen.“', '„Ich male am liebsten den Sonnenaufgang über dem Spiegelsee.“']; L.msg('👸 Rapunzel: ' + RL[(Math.random() * RL.length) | 0], 6000); }
     else if (n.k === 'fee') L.msg('🧚 Fee Lumina: „Im Zauberwald wachsen Zauberpilze, am Spiegelsee die Mondblumen. Und wer die Ranke hochklettert, findet Sternenstaub!“', 7000);
     else if (n.k === 'uni') {
       L.msg('🦄 Das Einhorn schnaubt glücklich und funkelt in allen Regenbogenfarben!', 2500);

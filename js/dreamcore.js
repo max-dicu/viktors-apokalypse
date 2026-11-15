@@ -31,7 +31,7 @@
     g.traverse((o) => {
       if (!o.isMesh || o.isInstancedMesh) return;
       const gt = o.geometry.type;
-      if (gt === 'CylinderGeometry' && o.geometry.parameters.height === 30) { const r = o.geometry.parameters.radiusTop; const tx = checker('#ffffff', r > 300 ? '#ffa8d0' : '#a8ccff'); tx.repeat.set(r / 9, r / 9); o.material = new T.MeshLambertMaterial({ map: tx }); }
+      if (gt === 'CylinderGeometry' && o.geometry.parameters.height === 30) { const r = o.geometry.parameters.radiusTop; const tx = checker('#e6e0ec', r > 300 ? '#eeaacb' : '#a9c3ee'); tx.repeat.set(r / 9, r / 9); o.material = new T.MeshLambertMaterial({ map: tx }); }
       else if (gt === 'ConeGeometry' && o.rotation.x === Math.PI) o.material = new T.MeshLambertMaterial({ color: '#fff6fb' });
       else if (o.material.color && o.material.color.getHexString() === '2a1a3a') o.material = new T.MeshLambertMaterial({ color: '#d8b8ff' });
       else if (o.material.color && o.material.color.getHexString() === 'a080ff') o.material = new T.MeshLambertMaterial({ color: '#ffd8ee', emissive: new T.Color('#ff9ad0'), emissiveIntensity: 0.35 });
@@ -93,8 +93,8 @@
     sky.position.copy(cam.position);
     L.scene.background.set('#f8d8ec'); L.scene.fog.color.set('#ffd8ec'); L.scene.fog.near = 120; L.scene.fog.far = 1600;
     if (E.stars) E.stars.material.opacity = 0;
-    E.hemi.intensity = 0.85; E.hemi.color.set('#ffe8f8'); E.hemi.groundColor.set('#c8d8ff');
-    E.sun.intensity = 0.7; E.sun.color.set('#fff0f6');
+    E.hemi.intensity = 0.6; E.hemi.color.set('#ffe8f8'); E.hemi.groundColor.set('#b8c4e8');
+    E.sun.intensity = 0.5; E.sun.color.set('#fff0f6');
     const t = performance.now() / 1000;
     for (const c of clouds) { c.s.position.x += c.sp * dt; if (c.s.position.x > I.x + 1700) c.s.position.x = I.x - 1700; }
     for (const q of eyes) {

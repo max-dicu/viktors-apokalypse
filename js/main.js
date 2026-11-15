@@ -140,6 +140,8 @@ body.cinema #hud,body.cinema #touch,body.cinema #banner{visibility:hidden}`;
     if (C.t > 1 && (L.hit('Space') || L.hit('Escape') || L.mouse.click)) C.t = C.dur;
     const s = C.t < C.dur && P.alive && L.state === 'game' ? C.shot(C.t) : null;
     if (!s) { endCine(); return false; }
+    // erste echte Kamera-Position: spielt die Szene in einer anderen Welt als du? Dann nicht zeigen
+    if (!C.checked && L.worldOf && typeof s.lx === 'number' && Math.abs(s.lx) + Math.abs(s.lz || 0) > 1) { C.checked = true; if (C.t < 0.8 && L.worldOf(s.lx, s.lz) !== L.worldOf(P.x, P.z)) { endCine(); return false; } }
     camera.position.set(s.x, s.y, s.z);
     if (L.shake > 0) {
       const k = L.shake * 0.6;
@@ -147,7 +149,7 @@ body.cinema #hud,body.cinema #touch,body.cinema #banner{visibility:hidden}`;
       L.shake = Math.max(0, L.shake - dt * 1.8);
     }
     camera.lookAt(s.lx, s.ly, s.lz);
-    camera.far = L.inDim(camera.position.x) ? 60000 : L.S().view + 1200; camera.near = L.inDim(camera.position.x) ? 0.3 : 0.1;
+    camera.far = L.inDim(camera.position.x) ? (L.inFairy && L.inFairy(camera.position.x, camera.position.z) ? 9000 : 60000) : L.S().view + 1200; camera.near = L.inDim(camera.position.x) ? 0.3 : 0.1;
     { const zf = L.weaponZoom ? L.weaponZoom() : 1, fov = 70 / zf; camera.fov += (fov - camera.fov) * Math.min(1, dt * 10); }
     camera.updateProjectionMatrix();
     if (P.rig) P.rig.root.visible = true;
@@ -213,7 +215,7 @@ body.cinema #hud,body.cinema #touch,body.cinema #banner{visibility:hidden}`;
     }
     camera.lookAt(look);
     // hoch oben: weiter sehen und genauere Tiefe (sonst flimmert der Boden)
-    { const alt = Math.max(0, camera.position.y - 25), far = L.inDim(camera.position.x); camera.far = far ? 60000 : L.S().view + 1200 + alt * 3; camera.near = fp ? 0.1 : L.clamp(Math.min((far ? 0.3 : 0.1) + alt * 0.004, (P.camDist || 4) * 0.25), 0.1, 1.5); }
+    { const alt = Math.max(0, camera.position.y - 25), far = L.inDim(camera.position.x); camera.far = far ? (L.inFairy && L.inFairy(camera.position.x, camera.position.z) ? 9000 : 60000) : L.S().view + 1200 + alt * 3; camera.near = fp ? 0.1 : L.clamp(Math.min((far ? 0.3 : 0.1) + alt * 0.004, (P.camDist || 4) * 0.25), 0.1, 1.5); }
     { const zf = L.weaponZoom ? L.weaponZoom() : 1, fov = 70 / zf; camera.fov += (fov - camera.fov) * Math.min(1, dt * 10); }
     camera.updateProjectionMatrix();
   }
