@@ -51,6 +51,7 @@
     try { if (N.conn) N.conn.close(); } catch (e) { /* egal */ }
     for (const c of N.conns.values()) { try { c.close(); } catch (e) { /* egal */ } }
     try { if (N.peer) N.peer.destroy(); } catch (e) { /* egal */ }
+    if (L.relayClose) L.relayClose(); N.relayTried = false;
     N.peer = null; N.conn = null; N.conns.clear(); N.connected = false; N.role = 'solo'; N.pid = 0;
     for (const pid of [...RM.keys()]) removeRemote(pid);
   }
@@ -61,6 +62,7 @@
     N.code = codeGen(); N.role = 'host'; N.pid = 0;
     status('⏳ Raum wird erstellt …');
     N.peer = new Peer(peerId(N.code), PEER_OPTS);
+    if (L.relayHost) L.relayHost(N.code, (c) => setupHostConn(c));
     N.peer.on('open', () => renderLobby());
     N.peer.on('connection', (c) => setupHostConn(c));
     N.peer.on('error', (e) => { status(e.type === 'unavailable-id' ? 'Der Code ist gerade belegt. Bitte nochmal „Raum erstellen“.' : '❌ Fehler: ' + e.type); });
@@ -96,19 +98,33 @@
     cleanup(); L.initAudio();
     N.role = 'client'; N.code = code;
     status('⏳ Verbinde mit Raum ' + code + ' …');
+    const bindClient = (c) => {
+      c.on('open', () => { N.connected = true; rawSend(c, { t: 'hello', app: L.save.char || L.DEFAULT_CHAR, name: myName() }); status('✅ Verbunden' + (c.relay ? ' (über Server-Umweg)' : '') + '. Warte, bis der Host die Runde startet …'); renderLobby(); });
+      c.on('data', (m) => { try { handle(m, m.from === undefined ? 0 : m.from); } catch (e) { console.error(e); } });
+      c.on('close', clientLost); c.on('error', clientLost);
+    };
+    const tryRelay = () => {
+      if (N.relayTried || N.connected || N.role !== 'client' || !L.relayJoin) return;
+      N.relayTried = true;
+      status('🔁 Direkte Verbindung klappt nicht – verbinde über einen Server-Umweg …');
+      L.relayJoin(code, (c) => {
+        if (N.connected || N.role !== 'client') { c.close(); return; }
+        try { if (N.conn && !N.conn.relay) N.conn.close(); } catch (e) { /* egal */ }
+        N.conn = c; bindClient(c); c._emit('open');
+      }, () => { if (!N.connected) status('❌ Raum nicht gefunden. Ist der Code richtig, und ist der Host noch im Mehrspieler-Menü?'); });
+    };
+    setTimeout(tryRelay, 5000);
     N.peer = new Peer(undefined, PEER_OPTS);
     N.peer.on('open', () => {
       const c = N.peer.connect(peerId(code), { reliable: true });
       N.conn = c;
       // hängt die Verbindung? Dann Tipps zeigen
       setTimeout(() => { if (N.conn === c && !N.connected && N.role === 'client') status('⚠️ Die Verbindung klappt noch nicht. Tipps: 1) Code genau so eingeben, wie er beim Host steht (z. B. WOLF-42). 2) Der Host muss im Mehrspieler-Menü bleiben. 3) Beide die Seite einmal neu laden (gleiche Version). 4) Klappt es gar nicht: beide ins gleiche WLAN oder einen anderen Browser (Chrome) nehmen.'); }, 15000);
-      c.on('open', () => { N.connected = true; rawSend(c, { t: 'hello', app: L.save.char || L.DEFAULT_CHAR, name: myName() }); renderLobby(); });
-      c.on('data', (m) => { try { handle(m, m.from === undefined ? 0 : m.from); } catch (e) { console.error(e); } });
-      c.on('close', clientLost); c.on('error', clientLost);
+      bindClient(c);
     });
     N.peer.on('error', (e) => {
-      status(e.type === 'peer-unavailable' ? '❌ Raum nicht gefunden. Ist der Code richtig und wartet der Raum noch?' : '❌ Fehler: ' + e.type);
-      if (!N.connected) { try { N.peer.destroy(); } catch (x) { /* egal */ } N.peer = null; N.role = 'solo'; renderLobby(); }
+      if (!N.connected && !N.relayTried) { tryRelay(); return; }
+      if (!N.connected && !N.relayTried) status(e.type === 'peer-unavailable' ? '❌ Raum nicht gefunden. Ist der Code richtig und wartet der Raum noch?' : '❌ Fehler: ' + e.type);
     });
     renderLobby();
   };
@@ -134,7 +150,7 @@
     const list = [`<span style="color:${mp.color(N.pid)}">● ${esc(myName())} (du${N.role === 'host' ? ', Host' : ''})</span>`]
       .concat(others.sort((a, b) => a.pid - b.pid).map((r) => `<span style="color:${mp.color(r.pid)}">● ${esc(r.name)}${r.pid === 0 ? ' (Host)' : ''}${r.inRound ? ' – spielt gerade' : ''}</span> <button class="giftc" data-pid="${r.pid}" style="font-size:12px;padding:2px 6px;border-radius:6px;cursor:pointer">🪙 schenken</button>`));
     let head = '';
-    if (N.role === 'host') head = N.peer && N.peer.open ? `Raum-Code:<div class="bigcode">${N.code}</div>Bis zu ${MAXP} Spieler. Gib den Code deinen Freunden.` : '⏳ Raum wird erstellt …';
+    if (N.role === 'host') head = (N.peer && N.peer.open) || L.relayReady ? `Raum-Code:<div class="bigcode">${N.code}</div>Bis zu ${MAXP} Spieler. Gib den Code deinen Freunden.` : '⏳ Raum wird erstellt …';
     else head = N.connected ? '✅ Verbunden. Warte, bis der Host die Runde startet …' : '⏳ Verbinde …';
     status(`${head}<div class="plist">Spieler (${others.length + 1}/${MAXP}):<br>${list.join('<br>')}</div>` + (N.role === 'host' && mp.anyInRound() ? '<br>⏳ Es läuft noch eine Runde. Warte, bis alle fertig sind.' : ''));
   }
