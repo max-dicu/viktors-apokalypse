@@ -162,14 +162,14 @@
   }
   // BEYZA (BEYY): riesige, wunderschöne, friedliche Riesin mit langen dunkelbraunen Locken
   const BEY_S = 22;
-  function buildBeyza() {
-    const rig = L.buildHuman(Object.assign({}, L.DEFAULT_CHAR, { name: 'BEYZA', skin: '#eec7a4', hair: 'lang', hairColor: '#3a2214', eyes: '#5a3418', brows: 'gebogen', mouth: 'laecheln', nose: 'klein', beard: 'kein', glasses: 'keine', hat: 'keine', top: 'pullover', topColor: '#e8a0c8', pants: 'rock', pantsColor: '#e8a0c8', shoeType: 'lackschuh', shoes: '#f0c8e0', build: 'schmal', height: 'mittel' }), true);
+  L.buildBeyzaRig = function () {
+    const rig = L.buildHuman(Object.assign({}, L.DEFAULT_CHAR, { name: 'BEYZA', koerper: 'frau', lippen: 'rosa', skin: '#eec7a4', hair: 'lang', hairColor: '#3a2214', eyes: '#5a3418', brows: 'gebogen', mouth: 'laecheln', nose: 'klein', beard: 'kein', glasses: 'keine', hat: 'keine', top: 'pullover', topColor: '#e8a0c8', pants: 'rock', pantsColor: '#e8a0c8', shoeType: 'lackschuh', shoes: '#f0c8e0', build: 'schmal', height: 'mittel' }), true);
     const gown = L.mat('#eaa6cc'), gown2 = L.mat('#f6d0e6'), gold = new T.MeshStandardMaterial({ color: 0xf0c850, metalness: 0.85, roughness: 0.3, emissive: 0x3a2800 });
     const P3 = (geo, m, sx, sy, sz, x, y, z, par) => { const o = new T.Mesh(geo, m); o.scale.set(sx, sy, sz); o.position.set(x, y, z); o.castShadow = true; par.add(o); return o; };
     // langes Ballkleid (über den Beinen)
     P3(new T.CylinderGeometry(0.17, 0.5, 0.98, 20, 1, true), new T.MeshLambertMaterial({ color: 0xeaa6cc, side: T.DoubleSide }), 1, 1, 1, 0, -0.5, 0, rig.hips);
     P3(new T.CylinderGeometry(0.5, 0.52, 0.04, 20), gold, 1, 1, 1, 0, -0.99, 0, rig.hips);
-    for (let k = 0; k < 10; k++) { const a = k / 10 * 6.283; const f = P3(G().box, gown2, 0.05, 0.85, 0.02, Math.sin(a) * 0.36, -0.52, Math.cos(a) * 0.36, rig.hips); f.rotation.y = a; f.rotation.x = Math.cos(a) * 0.32; f.rotation.z = -Math.sin(a) * 0.32; }
+    for (let k = 0; k < 10; k++) { const a = k / 10 * 6.283; const f = P3(G().box, gown2, 0.05, 0.85, 0.02, Math.sin(a) * 0.36, -0.52, Math.cos(a) * 0.36, rig.hips); f.rotation.y = a; f.rotation.x = -Math.cos(a) * 0.3; f.rotation.z = Math.sin(a) * 0.3; }
     P3(G().box, gold, 0.34, 0.05, 0.22, 0, 0.02, 0, rig.torso);
     P3(G().box, gown, 0.36, 0.3, 0.23, 0, 0.18, 0, rig.torso);
     // Locken: viele kleine Kugeln, die in Spiralen bis zur Hüfte fallen
@@ -192,6 +192,10 @@
     P3(new T.TorusGeometry(0.075, 0.006, 6, 20), gold, 1, 1, 1, 0, 0.6, 0.04, rig.torso).rotation.x = 1.25;
     // Wimpern und Rouge
     for (const sd of [-1, 1]) { P3(G().box, L.mat('#1a0e08'), 0.07, 0.01, 0.012, sd * 0.058, 0.205, 0.139, rig.head); P3(G().box, L.mat('#f0a0a0'), 0.04, 0.02, 0.005, sd * 0.085, 0.12, 0.132, rig.head); }
+    return rig;
+  };
+  function buildBeyza() {
+    const rig = L.buildBeyzaRig();
     rig.root.scale.setScalar(BEY_S);
     rig.root.traverse((o) => { if (o.isMesh) o.frustumCulled = false; });
     const tag = label('💖 BEYZA', '#ffd0ec', 3.2); tag.position.set(0, 2.25, 0); tag.scale.multiplyScalar(1 / BEY_S * 3.2); rig.root.add(tag);

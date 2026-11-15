@@ -25,7 +25,7 @@
     const axis = R() * Math.PI * 2, gap = (sL + sW) * 0.5;
     D = { t: 0, x, z, loser, winner, sL, sW, r: { loser: rl, winner: rw }, moves, end, axis, gap, ph: 0, cam: [R(), R(), R()], landed: false, endHit: false, won: false };
     const nameW = winner === 'viktor' ? 'RIESEN-VIKTOR' : 'RIESEN-DANIEL', nameL = loser === 'viktor' ? 'RIESEN-VIKTOR' : 'RIESEN-DANIEL';
-    L.banner(nameW + ' GEGEN ' + nameL, nameW.replace('RIESEN-', '') + ' kommt, um ' + nameL.replace('RIESEN-', '') + ' zu stoppen!');
+    ((a, b) => { if (!L.atHome || L.atHome()) L.banner(a, b); })(nameW + ' GEGEN ' + nameL, nameW.replace('RIESEN-', '') + ' kommt, um ' + nameL.replace('RIESEN-', '') + ' zu stoppen!');
     const side = axis + Math.PI / 2 * (D.cam[0] < 0.5 ? 1 : -1), sz = Math.max(sL, sW);
     L.startCine(nameW + ' GEGEN ' + nameL, T_TOTAL - 0.5, (t) => {
       if (!D) return null;
@@ -122,7 +122,7 @@
       }
       const impact = D.end === 'wuergen' ? 0.85 : D.end === 'suplex' ? 0.6 : 0.67;
       if (u > impact && !D.endHit) { D.endHit = true; epicHit({ x: D.x, y: gy + 2, z: D.z }, true); L.snd.stomp({ x: D.x, y: 0, z: D.z }); L.fx('#6a5a40', D.x, gy + 1, D.z, 50, 18, { size: 1.6, life: 2 }); }
-      if (u > 0.9 && !D.won) { D.won = true; voice(D.winner, pos); L.banner((D.winner === 'viktor' ? 'VIKTOR' : 'DANIEL') + ' GEWINNT!', { wuergen: 'Erwürgt und fallen gelassen.', suplex: 'Ein gigantischer Suplex!', wurf: 'Hochgestemmt und auf den Boden geschmettert!' }[D.end]); }
+      if (u > 0.9 && !D.won) { D.won = true; voice(D.winner, pos); ((a, b) => { if (!L.atHome || L.atHome()) L.banner(a, b); })((D.winner === 'viktor' ? 'VIKTOR' : 'DANIEL') + ' GEWINNT!', { wuergen: 'Erwürgt und fallen gelassen.', suplex: 'Ein gigantischer Suplex!', wurf: 'Hochgestemmt und auf den Boden geschmettert!' }[D.end]); }
       D.lEnd = lOff; D.lEndY = lY; D.lRz = lRz; D.lRx = lRx;
     } else {
       // der Verlierer versinkt im Boden, der Sieger brüllt und geht weg

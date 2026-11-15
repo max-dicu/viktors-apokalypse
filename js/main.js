@@ -73,6 +73,8 @@ body.cinema #hud,body.cinema #touch,body.cinema #banner{visibility:hidden}`;
   // shot(t) gibt die Kamera zurück: { x, y, z, lx, ly, lz } oder null (dann endet der Film)
   L.startCine = function (title, dur, shot) {
     if (L.state !== 'game' || !P.alive) return;
+    // Szenen nur in der Welt zeigen, in der sie spielen (z. B. keine Heimat-Boss-Szene auf dem Mond oder in der Märchenwelt)
+    if (typeof shot === 'function' && L.worldOf) { let c0 = null; try { c0 = shot(0); } catch (e) { c0 = null; } if (c0 && typeof c0.lx === 'number' && (Math.abs(c0.lx) + Math.abs(c0.lz || 0) > 1) && L.worldOf(c0.lx, c0.lz) !== L.worldOf(P.x, P.z)) return; }
     L.cine = { t: 0, dur, shot };
     L.$('cineT').textContent = title;
     cineEl.hidden = false; requestAnimationFrame(() => cineEl.classList.add('on'));

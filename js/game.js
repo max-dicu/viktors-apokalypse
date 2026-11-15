@@ -88,6 +88,7 @@
   L.worldOf = worldOf;
   const atHome = (p) => worldOf(p.x, p.z) === 'home';
   L.atHome = () => atHome(P);
+  const homeBanner = (a, b) => { if (atHome(P)) L.banner(a, b); };
   // Ort für Heimat-Bosse: neben einem Spieler, der gerade in der Heimat ist – sonst irgendwo in der Heimat
   function homeAnchor() { for (const p of players()) if (atHome(p)) return p; return { x: L.rand(-900, 900), z: L.rand(-900, 900) }; }
   const bossAt = (x, z) => (onIsl(x, z) ? !!(L.islandBoss && L.islandBoss.active && !L.inDim(x)) : homeBossOn());
@@ -424,7 +425,7 @@
     }
     if (e.kind === 'npc') { L.blood(e.x, 1, e.z, 25, true); L.decal(e.x, e.z, 1.8); dropNpcLoot(e); }
     if (e.kind === 'walker') { L.explode(e.x, e.hy, e.z, 12, 0, null, true); L.msg('💥 Ein Stelzer ist zerstört!'); for (let i = 0; i < 2; i++) L.spawnItem('artefakt', e.x + L.rand(-6, 6), e.z + L.rand(-6, 6), 1); }
-    if (e.kind === 'boss') { L.ivaDone = e.idx; calmMonsters(); L.explode(e.x, e.hy, e.z, 20, 0, null, true); L.banner('MAMA IVA IST GEFALLEN', 'Unglaublich. Sammle seine Beute ein.'); for (let i = 0; i < 6; i++) L.spawnItem(i < 3 ? 'artefakt' : 'gold', e.x + L.rand(-10, 10), e.z + L.rand(-10, 10), 1); }
+    if (e.kind === 'boss') { L.ivaDone = e.idx; calmMonsters(); L.explode(e.x, e.hy, e.z, 20, 0, null, true); homeBanner('MAMA IVA IST GEFALLEN', 'Unglaublich. Sammle seine Beute ein.'); for (let i = 0; i < 6; i++) L.spawnItem(i < 3 ? 'artefakt' : 'gold', e.x + L.rand(-10, 10), e.z + L.rand(-10, 10), 1); }
   }
 
   // ---------- Inventar ----------
@@ -2245,7 +2246,7 @@
     b.fp = null;
     duelStart(b.capy, b);
     rig.root.position.set(x, -85, z); rig.root.rotation.y = b.capy.yaw;
-    L.banner('GIGA-CAPY ERWACHT', 'Ein riesiges Capybara bricht aus dem Boden – und greift MAMA IVA an!');
+    homeBanner('GIGA-CAPY ERWACHT', 'Ein riesiges Capybara bricht aus dem Boden – und greift MAMA IVA an!');
     if (L.cineCapy) L.cineCapy(b);
   };
   const ease3 = (k) => 1 - Math.pow(1 - L.clamp(k, 0, 1), 3);
@@ -2497,7 +2498,7 @@
   L.bossAppear = function (b) {
     L.towerRestore();
     if (!atHome(P)) { L.fusionStart(b.x, b.z); L.msg('📡 In der Heimat ist MAMA IVA aufgetaucht – hier bei dir ist es sicher.', 5000); return; }
-    if (b.instant) { L.banner("MAMA IVA IST DA", "Nur noch 30 Sekunden – bleib leise im Turm!"); L.snd.bossRoar({ x: b.x, y: 40, z: b.z }); return; }
+    if (b.instant) { homeBanner("MAMA IVA IST DA", "Nur noch 30 Sekunden – bleib leise im Turm!"); L.snd.bossRoar({ x: b.x, y: 40, z: b.z }); return; }
     // erst verschmelzen alle Monster zu MAMA IVA, dann steigt sie auf
     L.fusionStart(b.x, b.z);
     if (b.how === "boden") {
@@ -2505,7 +2506,7 @@
       L.fx("#5a4630", b.x, 1, b.z, 40, 14, { size: 0.9, life: 2.5 });
     }
     const lv = (b.lvl || 0) + 1;
-    L.banner("MAMA IVA ENTSTEHT – STUFE " + lv, (lv > 1 ? "Schneller und stärker als letztes Mal! " : "") + "Alle Monster drehen durch! Schaff es zum 🗼 TURM in der Stadtmitte (Karte: M)");
+    homeBanner("MAMA IVA ENTSTEHT – STUFE " + lv, (lv > 1 ? "Schneller und stärker als letztes Mal! " : "") + "Alle Monster drehen durch! Schaff es zum 🗼 TURM in der Stadtmitte (Karte: M)");
     L.msg('🗼 Turm = sicher (aber leise sein!). Tipp: Sprinte weg und duck dich dann (C) – so verlieren die Monster deine Spur.', 9000);
     if (L.cineBossAppear) L.cineBossAppear(b);
   };
@@ -2671,6 +2672,7 @@
   // Aussehen je Typ: gehen/rennen, Bodenschlag (u = 0 … 1)
   function gbPose(w, moving, slamU) {
     const G0 = GBT[w.type], rig = w.rig;
+    if (G0.pose) { G0.pose(w, moving, slamU); return; }
     if (w.type === 'walross') {
       const ws = { rear: 0, hop: 0, headX: 0, headY: 0, flip: 0, roll: 0 };
       if (moving) { ws.hop = Math.abs(Math.sin(w.ph)) * 0.25; ws.rear = -Math.sin(w.ph) * 0.12; ws.flip = Math.sin(w.ph) * 0.5; }
@@ -2700,6 +2702,7 @@
     L.wbossAppear(w);
     return w;
   }
+  L.spawnGiantBoss = spawnGiantBoss;
   // Auftritt (auch auf den Geräten der Mitspieler)
   L.wbossAppear = function (w) {
     const G0 = GBT[w.type || 'walross'];
@@ -2717,6 +2720,7 @@
     });
   };
   function wbEnd(w) {
+    if (GBT[w.type] && GBT[w.type].end) { L.byId.delete('wboss'); L.wboss = null; GBT[w.type].end(w); L.ivaDone = w.idx; calmMonsters(); L.round.bossT = ivaClock().left; return; }
     const rs = Math.floor(Math.random() * 1e9);
     L.scene.remove(w.rig.root); L.byId.delete('wboss'); L.wboss = null;
     if (w.type === 'walross') {
@@ -2941,7 +2945,7 @@
   // ---------- Runde ----------
   L.respawnQueue = [];
   function clearAll() {
-    clearCyls(); if (L.clearExtras) L.clearExtras(); if (L.clearWorkshop) L.clearWorkshop(); if (L.clearRevive) L.clearRevive(); if (L.clearInteriors) L.clearInteriors(); if (L.clearIslands) L.clearIslands(); if (L.clearIslandBosses) L.clearIslandBosses(); if (L.clearDimBoss) L.clearDimBoss(); if (L.clearPolice) L.clearPolice(); if (L.clearCrates) L.clearCrates(); if (L.clearMoon) L.clearMoon(); if (L.clearTentacles) L.clearTentacles(); if (L.clearSuitPortals) L.clearSuitPortals(); if (L.clearWeapons) L.clearWeapons(); if (L.clearLegend) L.clearLegend(); if (L.clearFireworks) L.clearFireworks(); if (L.clearEvents) L.clearEvents(); if (L.clearCarolina) L.clearCarolina(); if (L.clearBackrooms) L.clearBackrooms(); if (L.clearHeroes) L.clearHeroes(); if (L.clearTitan) L.clearTitan(); if (L.clearTitanArmor) L.clearTitanArmor(); if (L.clearRuslan) L.clearRuslan(); if (L.clearAsgard) L.clearAsgard(); if (L.clearFairy) L.clearFairy(); L.voyageOn = false; if (L.clearOcean) L.clearOcean(); if (L.clearNature) L.clearNature(); if (L.endRichard) L.endRichard(); if (L.endDuel) L.endDuel();
+    clearCyls(); if (L.clearExtras) L.clearExtras(); if (L.clearWorkshop) L.clearWorkshop(); if (L.clearRevive) L.clearRevive(); if (L.clearInteriors) L.clearInteriors(); if (L.clearIslands) L.clearIslands(); if (L.clearIslandBosses) L.clearIslandBosses(); if (L.clearDimBoss) L.clearDimBoss(); if (L.clearPolice) L.clearPolice(); if (L.clearCrates) L.clearCrates(); if (L.clearMoon) L.clearMoon(); if (L.clearTentacles) L.clearTentacles(); if (L.clearSuitPortals) L.clearSuitPortals(); if (L.clearWeapons) L.clearWeapons(); if (L.clearLegend) L.clearLegend(); if (L.clearFireworks) L.clearFireworks(); if (L.clearEvents) L.clearEvents(); if (L.clearCarolina) L.clearCarolina(); if (L.clearBackrooms) L.clearBackrooms(); if (L.clearHeroes) L.clearHeroes(); if (L.clearTitan) L.clearTitan(); if (L.clearTitanArmor) L.clearTitanArmor(); if (L.clearRuslan) L.clearRuslan(); if (L.clearAsgard) L.clearAsgard(); if (L.clearFairy) L.clearFairy(); if (L.clearKaiju) L.clearKaiju(); if (L.clearFairyCastle) L.clearFairyCastle(); L.voyageOn = false; if (L.clearOcean) L.clearOcean(); if (L.clearNature) L.clearNature(); if (L.endRichard) L.endRichard(); if (L.endDuel) L.endDuel();
     if (L.wboss) { L.scene.remove(L.wboss.rig.root); L.wboss = null; }
     for (const m of E.monsters) L.scene.remove(m.rig.root);
     for (const w of E.walkers) L.scene.remove(w.rig.root);
@@ -3165,15 +3169,15 @@
     } else if (!L.boss && !L.wboss && !isClient()) {
       const K = ivaClock();
       const nIdx = K.pause ? K.idx : K.idx + 1;
-      const BOSSES = ['iva', 'viktor', 'walross', 'daniel'];
-      R.nextBossType = BOSSES[nIdx % 4];
+      const BOSSES = ['iva', 'viktor', 'walross', 'daniel', 'echse'];
+      R.nextBossType = BOSSES[nIdx % 5];
       R.nextBoss = R.nextBossType === 'iva' ? 'MAMA IVA' : GBT[R.nextBossType].name;
       if (K.pause) {
         R.bossT = K.left;
         if (R.bossT < 30 && !R.warned && atHome(P)) { R.warned = true; L.banner('DER BODEN BEBT ...', 'In 30 Sekunden kommt ' + R.nextBoss + '.'); L.snd.horn({ x: P.x + 400, y: 50, z: P.z }); }
       } else if (L.ivaDone !== K.idx && K.left > 25) {
         R.warned = false;
-        const bt = ['iva', 'viktor', 'walross', 'daniel'][K.idx % 4];
+        const bt = ['iva', 'viktor', 'walross', 'daniel', 'echse'][K.idx % 5];
         if (bt !== 'iva' && !L.ivaInstant) { const w = spawnGiantBoss(bt, K.left); w.idx = K.idx; }
         else { spawnBoss(K.left); L.boss.idx = K.idx; }
       }
@@ -3222,6 +3226,8 @@
     if (L.updateAsgard) L.updateAsgard(dt);
     if (L.updateBackrooms) L.updateBackrooms(dt);
     if (L.updateFairy) L.updateFairy(dt);
+    if (L.updateKaiju) L.updateKaiju(dt);
+    if (L.updateFairyCastle) L.updateFairyCastle(dt);
     if (L.updateHeroes) L.updateHeroes(dt);
     if (L.updateTitan) L.updateTitan(dt);
     if (L.updateTitanArmor) L.updateTitanArmor(dt);

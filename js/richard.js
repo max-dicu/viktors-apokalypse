@@ -92,7 +92,7 @@
     const r1 = R(), r2 = R(), end = opts.win || r1 < 0.72 ? (r2 < 0.5 ? 'schleudern' : 'ko') : 'platt';
     const axis = R() * Math.PI * 2, gap = sw * 3.6 + sr * 0.9;
     F = { t: 0, x, z, seed, R, rich, wal, sr, sw, moves, end, axis, gap, ph: 0, landed: false, endHit: false, cam: [R(), R(), R()], said: false, noRise: !!opts.win };
-    L.banner('RICHARD GEGEN DAS RIESEN-WALROSS', opts.win ? 'Richard kommt, um das Walross zu besiegen!' : 'Ein neuer Kampf beginnt!');
+    ((a, b) => { if (!L.atHome || L.atHome()) L.banner(a, b); })('RICHARD GEGEN DAS RIESEN-WALROSS', opts.win ? 'Richard kommt, um das Walross zu besiegen!' : 'Ein neuer Kampf beginnt!');
     // Kurzfilm
     const side = axis + Math.PI / 2 * (F.cam[0] < 0.5 ? 1 : -1), size = Math.max(sr * 2.2, sw * 3);
     L.startCine('RICHARD GEGEN DAS WALROSS', T_TOTAL - 0.5, (t) => {
@@ -174,7 +174,7 @@
         if (u > 0.6) { rSquash = 0.25; rMode = 'dead'; }
         if (u > 0.6 && !F.endHit) { F.endHit = true; L.snd.stomp(pos); L.snd.crash(1, pos); L.shake = Math.max(L.shake, 1.4); sndWalross(pos); }
       }
-      if (u > 0.92 && !F.won) { F.won = true; L.banner(F.end === 'platt' ? 'DAS WALROSS GEWINNT!' : 'RICHARD GEWINNT!', F.end === 'platt' ? 'Bauchklatscher – Richard ist platt.' : F.end === 'ko' ? 'K.o. mit einem riesigen Aufwärtshaken!' : 'Am Stoßzahn gepackt und weggeschleudert!'); }
+      if (u > 0.92 && !F.won) { F.won = true; ((a, b) => { if (!L.atHome || L.atHome()) L.banner(a, b); })(F.end === 'platt' ? 'DAS WALROSS GEWINNT!' : 'RICHARD GEWINNT!', F.end === 'platt' ? 'Bauchklatscher – Richard ist platt.' : F.end === 'ko' ? 'K.o. mit einem riesigen Aufwärtshaken!' : 'Am Stoßzahn gepackt und weggeschleudert!'); }
     } else {
       // Sieger-Pose
       if (F.end === 'platt') { rSquash = 0.25; rMode = 'dead'; ws.headX = -0.6; ws.flip = -0.5; wOff = -F.gap / 2 + sw * 0.4; }

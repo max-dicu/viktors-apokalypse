@@ -676,15 +676,17 @@
       cb.onclick = () => { const k = ci.value.trim().toUpperCase(); { const hid = L.heroCheck && L.heroCheck(k); if (hid) { L.heroUnlock(hid, k); charApp.special = 'h_' + hid; charApp.hk = L.heroToken(hid); L.persist(); renderCharOpts(); rebuildPreview(); return; } } if (L.baerCheck && L.baerCheck(k)) { L.save.baerKey = k; charApp.special = 'baer'; charApp.bk = L.hash53(k); L.persist(); renderCharOpts(); rebuildPreview(); return; } if (L.titanCheck && L.titanCheck(k)) { L.save.titanKey = k; charApp.special = 'titan'; charApp.tk = L.hash53(k); L.persist(); renderCharOpts(); rebuildPreview(); return; } if (L.hash53(L.hash53(k)) === 'ofaw0xb94x') { L.save.skinKey = k; charApp.special = 'waechter'; charApp.wk = L.hash53(k); L.persist(); renderCharOpts(); rebuildPreview(); } else { ci.value = ''; ci.placeholder = '❌ falscher Code'; } };
       cd.appendChild(ci); cd.appendChild(cb); box.appendChild(cd); }
     for (const key in L.CHAR_OPTS) {
+      if (L.charKeyOk && !L.charKeyOk(key, charApp)) continue;
       const d = document.createElement('div'); d.className = 'opt';
-      d.innerHTML = `<label>${CHAR_LABELS[key] || key}</label>`;
+      d.innerHTML = `<label>${CHAR_LABELS[key] || (L.CHAR_LABELS_X || {})[key] || key}</label>`;
       const ch = document.createElement('div'); ch.className = 'choices';
       for (const v of L.CHAR_OPTS[key]) {
+        if (L.charOptOk && !L.charOptOk(key, v, charApp)) continue;
         const b = document.createElement('button');
         const isColor = v[0] === '#';
-        if (isColor) { b.className = 'sw'; b.style.background = v; b.title = v; } else b.textContent = WORDS[v] || v;
+        if (isColor) { b.className = 'sw'; b.style.background = v; b.title = v; } else b.textContent = WORDS[v] || (L.WORDS_X || {})[v] || v;
         if (charApp[key] === v) b.classList.add('sel');
-        b.onclick = () => { charApp[key] = v; renderCharOpts(); rebuildPreview(); };
+        b.onclick = () => { charApp[key] = v; if (L.charOptChanged) L.charOptChanged(key, v, charApp); renderCharOpts(); rebuildPreview(); };
         ch.appendChild(b);
       }
       d.appendChild(ch); box.appendChild(d);
