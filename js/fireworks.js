@@ -63,7 +63,7 @@
   }
   function explode(kind, x, y, z, seed, text) {
     const cam = L.camera, c1 = PAL[seed % PAL.length], c2 = PAL[(seed * 3 + 2) % PAL.length];
-    if (kind === 'kugel') { burst(x, y, z, sphereDirs(220), [c1, c2, 0xffffff], { speed: 52, life: 2.6, twinkle: true }); }
+    if (kind === 'kugel') { burst(x, y, z, sphereDirs(220), [c1, c1, c1, 0xffffff], { speed: 52, life: 2.6, twinkle: true }); void c2; }
     else if (kind === 'gold') { burst(x, y, z, sphereDirs(260), [0xffd040, 0xffb020, 0xfff0a0], { speed: 40, life: 4.4, grav: 9, drag: 1.2, size: 1.3, twinkle: true }); }
     else if (kind === 'herz') {
       const p = []; for (let i = 0; i < 160; i++) { const t = i / 160 * 6.283; p.push([16 * Math.pow(Math.sin(t), 3) / 17, (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) / 17]); }
@@ -85,19 +85,27 @@
     text = String(text).slice(0, o.max || 40); if (!text.trim()) text = '🎆';
     const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
     const c = document.createElement('canvas'), g = c.getContext('2d'); const fs = 64, lh = Math.round(fs * 1.18);
-    g.font = 'bold ' + fs + 'px Arial'; let mw = 0; for (const l of lines) mw = Math.max(mw, g.measureText(l).width);
+    g.font = '900 ' + fs + 'px Arial Black, Arial'; let mw = 0; for (const l of lines) mw = Math.max(mw, g.measureText(l).width);
     c.width = Math.min(2600, Math.ceil(mw) + 20); c.height = lines.length * lh + 24;
-    g.font = 'bold ' + fs + 'px Arial'; g.fillStyle = '#fff'; g.textBaseline = 'middle'; g.textAlign = 'center';
+    g.font = '900 ' + fs + 'px Arial Black, Arial'; g.fillStyle = '#fff'; g.textBaseline = 'middle'; g.textAlign = 'center';
     lines.forEach((l, i) => g.fillText(l, c.width / 2, 12 + lh * (i + 0.5)));
-    const data = g.getImageData(0, 0, c.width, c.height).data, step = Math.max(3, Math.round(Math.sqrt(c.width * c.height / (o.gentle ? 4200 : 1800))));
+    const data = g.getImageData(0, 0, c.width, c.height).data, step = Math.max(2, Math.round(Math.sqrt(c.width * c.height / (o.gentle ? 9000 : 7000))));
     const pts = []; for (let yy = 0; yy < c.height; yy += step) for (let xx = 0; xx < c.width; xx += step) if (data[(yy * c.width + xx) * 4 + 3] > 128) pts.push([xx - c.width / 2, c.height / 2 - yy]);
-    const scale = Math.min(0.35, (o.width || 70) / c.width);
+    const scale = Math.min(0.5, (o.width || 100) / c.width);
     const n = pts.length, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), cc = new T.Color();
-    for (let i = 0; i < n; i++) { if (o.gold) cc.setHex(i % 3 ? 0xffd870 : 0xffffff); else { cc.setHex(PAL[(i * 7) % PAL.length]); cc.lerp(new T.Color(1, 1, 1), 0.08); } col[i * 3] = cc.r; col[i * 3 + 1] = cc.g; col[i * 3 + 2] = cc.b; }
+    // eine einzige, gut lesbare Farbe pro Schrift (je nach Text), plus dunkler Rand dahinter
+    let hsh = 0; for (const ch of text) hsh = (hsh * 31 + ch.charCodeAt(0)) >>> 0;
+    const TXT = [0xffd040, 0xff4a6a, 0x40e0ff, 0xff70d0, 0x60ff80, 0xffffff];
+    const one = o.gold ? 0xffd870 : TXT[hsh % TXT.length];
+    for (let i = 0; i < n; i++) { cc.setHex(one); col[i * 3] = cc.r; col[i * 3 + 1] = cc.g; col[i * 3 + 2] = cc.b; }
+    const dotM = step * scale * 2.4;
     const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3)); geo.setAttribute('color', new T.BufferAttribute(col, 3));
-    const mat = new T.PointsMaterial({ size: o.gentle ? 3.0 : 3.2, map: dotTex(), vertexColors: true, transparent: true, depthWrite: false, blending: T.NormalBlending, alphaTest: 0.02, fog: false });
-    const ptsM = new T.Points(geo, mat); ptsM.frustumCulled = false;
-    const grp = new T.Group(); grp.position.set(x, y, z); grp.add(ptsM); L.scene.add(grp);
+    const mat = new T.PointsMaterial({ size: dotM, map: dotTex(), vertexColors: true, transparent: true, depthWrite: false, blending: T.NormalBlending, alphaTest: 0.02, fog: false });
+    const ptsM = new T.Points(geo, mat); ptsM.frustumCulled = false; ptsM.renderOrder = 3;
+    const omat = new T.PointsMaterial({ size: dotM * 1.9, map: dotTex(), color: 0x10081a, transparent: true, opacity: 0.55, depthWrite: false, fog: false });
+    const outl = new T.Points(geo, omat); outl.frustumCulled = false; outl.renderOrder = 2; outl.position.z = -0.3;
+    const grp = new T.Group(); grp.position.set(x, y, z); grp.add(outl); grp.add(ptsM); L.scene.add(grp);
+    mat.userData.outline = omat;
     const life = o.life || 7;
     texts.push({ grp, geo, mat, tgt: pts.map(([a, b]) => [a * scale, b * scale]), t: 0, life, fadeIn: o.gentle ? 2.2 : 0.6, gentle: !!o.gentle });
     if (!o.gentle) burst(x, y, z, sphereDirs(120), [0xffffff, 0xffd040], { speed: 30, life: 1.4, size: 1.2 });
@@ -184,8 +192,10 @@
       const p = s.geo.attributes.position.array, u = Math.min(1, s.t / s.fadeIn), e = 1 - Math.pow(1 - u, 3), fall = Math.max(0, s.t - (s.life - 2)) * 1.5;
       for (let j = 0; j < s.tgt.length; j++) { p[j * 3] = s.tgt[j][0] * e; p[j * 3 + 1] = s.tgt[j][1] * e - fall * (0.5 + (j % 5) * 0.2); p[j * 3 + 2] = 0; }
       s.geo.attributes.position.needsUpdate = true;
-      s.mat.opacity = s.t < s.life - 2 ? (s.gentle ? Math.min(1, s.t / s.fadeIn) * (0.9 + Math.random() * 0.1) : 0.85 + Math.random() * 0.15) : Math.max(0, 1 - (s.t - (s.life - 2)) / 2);
-      if (s.t >= s.life) { L.scene.remove(s.grp); s.geo.dispose(); s.mat.dispose(); texts.splice(i, 1); }
+      s.mat.opacity = s.t < s.life - 2 ? (s.gentle ? Math.min(1, s.t / s.fadeIn) : 1) : Math.max(0, 1 - (s.t - (s.life - 2)) / 2);
+      { const dy = L.env && L.env.day !== undefined ? L.env.day : 1, glow = dy < 0.45, bl = glow ? T.AdditiveBlending : T.NormalBlending; if (s.mat.blending !== bl) { s.mat.blending = bl; s.mat.needsUpdate = true; } if (glow) s.mat.opacity *= 0.8; }
+      if (s.mat.userData.outline) s.mat.userData.outline.opacity = s.mat.opacity * 0.5 * Math.min(1, s.t / s.fadeIn) * (L.env && L.env.day !== undefined ? L.env.day : 1);
+      if (s.t >= s.life) { L.scene.remove(s.grp); s.geo.dispose(); s.mat.dispose(); if (s.mat.userData.outline) s.mat.userData.outline.dispose(); texts.splice(i, 1); }
     }
   };
   L._fw = { bursts, texts, rockets };
