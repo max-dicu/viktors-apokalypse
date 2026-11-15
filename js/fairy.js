@@ -205,12 +205,15 @@
     // Himmel
     const skyT = cvTex(4, 256, (c, w, h) => { const gr = c.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#6aa8ff'); gr.addColorStop(0.35, '#a8c8ff'); gr.addColorStop(0.5, '#ffd8ec'); gr.addColorStop(0.56, '#ffe8c8'); gr.addColorStop(1, '#f8d0e8'); c.fillStyle = gr; c.fillRect(0, 0, w, h); });
     W0.sky = new T.Mesh(new T.SphereGeometry(6000, 32, 16), new T.MeshBasicMaterial({ map: skyT, side: T.BackSide, fog: false, depthWrite: false })); W0.sky.renderOrder = -10; W0.sky.frustumCulled = false; L.scene.add(W0.sky); W0.sky.visible = false;
-    const sun = new T.Sprite(new T.SpriteMaterial({ map: cvTex(128, 128, (c) => { const gr = c.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,240,1)'); gr.addColorStop(0.25, 'rgba(255,240,200,.9)'); gr.addColorStop(1, 'rgba(255,200,220,0)'); c.fillStyle = gr; c.fillRect(0, 0, 128, 128); }), fog: false, depthWrite: false, transparent: true })); sun.scale.set(900, 900, 1); W0.sky.add(sun); sun.position.set(2600, 1900, -3800);
+    const sun = new T.Sprite(new T.SpriteMaterial({ map: cvTex(128, 128, (c) => { const gr = c.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,240,1)'); gr.addColorStop(0.25, 'rgba(255,240,200,.9)'); gr.addColorStop(1, 'rgba(255,200,220,0)'); c.fillStyle = gr; c.fillRect(0, 0, 128, 128); }), fog: false, depthWrite: false, transparent: true })); sun.scale.set(900, 900, 1); W0.sky.add(sun); sun.position.set(2600, 1900, -3800); W0.sun = sun;
+    const moonT = cvTex(128, 128, (c) => { const gr = c.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,250,1)'); gr.addColorStop(0.42, 'rgba(240,240,255,1)'); gr.addColorStop(0.5, 'rgba(200,210,255,.45)'); gr.addColorStop(1, 'rgba(160,170,255,0)'); c.fillStyle = gr; c.fillRect(0, 0, 128, 128); c.fillStyle = 'rgba(180,185,210,.5)'; for (const [x, y, r] of [[52, 50, 9], [74, 66, 6], [60, 78, 7], [80, 46, 4]]) { c.beginPath(); c.arc(x, y, r, 0, 6.283); c.fill(); } });
+    const moon = new T.Sprite(new T.SpriteMaterial({ map: moonT, fog: false, depthWrite: false, transparent: true, opacity: 0 })); moon.scale.set(700, 700, 1); moon.position.set(-2400, 2100, -3600); W0.sky.add(moon); W0.moon = moon;
+    W0.cloudM = [];
     const cloudT = cvTex(128, 64, (c) => { for (let k = 0; k < 9; k++) { const x = 20 + Math.random() * 88, y = 28 + Math.random() * 16, r = 14 + Math.random() * 16; const gr = c.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, 'rgba(255,255,255,.95)'); gr.addColorStop(1, 'rgba(255,240,250,0)'); c.fillStyle = gr; c.fillRect(0, 0, 128, 64); } });
     W0.clouds = [];
-    for (let k = 0; k < 46; k++) { const sp = new T.Sprite(new T.SpriteMaterial({ map: cloudT, transparent: true, depthWrite: false, fog: false, opacity: 0.9 })); const a = R() * 6.283, d = 600 + R() * 2600, sc = 160 + R() * 260; sp.scale.set(sc * 2, sc, 1); sp.position.set(FX + Math.sin(a) * d, 260 + R() * 500, FZ + Math.cos(a) * d); g.add(sp); W0.clouds.push(sp); }
+    for (let k = 0; k < 46; k++) { const sp = new T.Sprite(new T.SpriteMaterial({ map: cloudT, transparent: true, depthWrite: false, fog: false, opacity: 0.9 })); const a = R() * 6.283, d = 600 + R() * 2600, sc = 160 + R() * 260; sp.scale.set(sc * 2, sc, 1); sp.position.set(FX + Math.sin(a) * d, 260 + R() * 500, FZ + Math.cos(a) * d); g.add(sp); W0.clouds.push(sp); W0.cloudM.push(sp.material); }
     // unter der Welt: Wolkenmeer
-    for (let k = 0; k < 40; k++) { const sp = new T.Sprite(new T.SpriteMaterial({ map: cloudT, transparent: true, depthWrite: false, fog: false, opacity: 0.85 })); const a = R() * 6.283, d = R() * 3200, sc = 400 + R() * 400; sp.scale.set(sc * 2, sc, 1); sp.position.set(FX + Math.sin(a) * d, -260 - R() * 200, FZ + Math.cos(a) * d); g.add(sp); }
+    for (let k = 0; k < 40; k++) { const sp = new T.Sprite(new T.SpriteMaterial({ map: cloudT, transparent: true, depthWrite: false, fog: false, opacity: 0.85 })); const a = R() * 6.283, d = R() * 3200, sc = 400 + R() * 400; sp.scale.set(sc * 2, sc, 1); sp.position.set(FX + Math.sin(a) * d, -260 - R() * 200, FZ + Math.cos(a) * d); g.add(sp); W0.cloudM.push(sp.material); }
     // Boden: Wiese mit Blumen, Felsrand, Wurzeln unten
     const gt = cvTex(256, 256, (c, w, h) => { c.fillStyle = '#5cb848'; c.fillRect(0, 0, w, h); for (let i = 0; i < 5000; i++) { c.fillStyle = Math.random() < 0.5 ? 'rgba(60,150,50,.35)' : 'rgba(170,230,110,.35)'; c.fillRect(Math.random() * w, Math.random() * h, 2, 3); } for (let i = 0; i < 90; i++) { c.fillStyle = ['#ffffff', '#ffe060', '#ff90c0', '#c0a0ff'][i % 4]; c.fillRect(Math.random() * w, Math.random() * h, 2, 2); } }, 160);
     const ground = new T.Mesh(new T.CylinderGeometry(FR, FR * 0.93, 40, 96), [new T.MeshLambertMaterial({ color: 0x8a6a4a }), new T.MeshLambertMaterial({ map: gt }), new T.MeshLambertMaterial({ color: 0x6a4a3a })]);
@@ -296,6 +299,7 @@
         npc({ name: 'Müller Hans', skin: '#d49e74', hair: 'wuschel', hairColor: '#7a7a7a', hat: 'sonnenhut', hatColor: '#d8b46a', top: 'hemd', topColor: '#f2f2f2', pants: 'latzhose', pantsColor: '#2a6ac0', beard: 'schnurrbart' }, D.x + 40, D.z - 8, -1.2)
       ];
     }
+    { const vl = new T.PointLight(0xffc070, 0, 160, 2); vl.position.set(LOC.dorf.x, 14, LOC.dorf.z); g.add(vl); W0.villageL = vl; }
     // Windmühle
     { const M = LOC.muehle; add(G().cylB, '#f0e8d8', 6, 16, 6, M.x, 0, M.z); add(G().cone, '#a84a3a', 7, 7, 7, M.x, 19.5, M.z); solid(M.x, M.z, 5, 5, 17); const hub = new T.Group(); hub.position.set(M.x, 15, M.z + 6.6); g.add(hub); for (let k = 0; k < 4; k++) { const b = add(G().box, '#f8f4ec', 1.6, 12, 0.2, 0, 6.5, 0, null); const p = new T.Group(); p.rotation.z = k * 1.5708; p.add(b); hub.add(p); } add(G().cyl, '#5a3a22', 0.6, 1, 0.6, 0, 0, 0, hub).rotation.x = Math.PI / 2; W0.mill = hub; }
     // Babydrache
@@ -311,7 +315,7 @@
       const spire = (x, z, r, h) => { add(G().cylB, cm, r, h, r, x, 0, z); add(G().cone, cm, r * 1.1, r * 4, r * 1.1, x, h + r * 2, z); solid(x, z, r * 0.8, r * 0.8, h); };
       spire(C.x, C.z, 9, 70); for (let k = 0; k < 8; k++) { const a = k / 8 * 6.283; spire(C.x + Math.sin(a) * 30, C.z + Math.cos(a) * 30, 4 + (k % 2) * 2, 30 + (k % 3) * 14); }
       for (let k = 0; k < 120; k++) { const a = R() * 6.283, d = 70 + R() * 170, x = C.x + Math.sin(a) * d, z = C.z + Math.cos(a) * d; const c2 = add(new T.OctahedronGeometry(1), cm, RR(0.6, 2), RR(2, 6), RR(0.6, 2), x, 1, z); c2.rotation.set(RR(-0.3, 0.3), R() * 3, RR(-0.3, 0.3)); }
-      const l = new T.PointLight(0x80d8ff, 2, 260, 2); l.position.set(C.x, 40, C.z); g.add(l); }
+      const l = new T.PointLight(0x80d8ff, 2, 260, 2); l.position.set(C.x, 40, C.z); g.add(l); W0.crystalL = l; }
     // ---- Drachenhöhle: offene Grotte im Berg ----
     { const C = CAVE, face = Math.atan2(FX - C.x, FZ - C.z), rock = new T.MeshLambertMaterial({ color: 0x7a6a62, side: T.DoubleSide });
       const dome = new T.Mesh(new T.SphereGeometry(C.r, 32, 16, face + Math.PI / 2 + 0.35, Math.PI * 2 - 0.7, 0, Math.PI / 2), rock); dome.position.set(C.x, 0, C.z); dome.castShadow = true; dome.receiveShadow = true; g.add(dome);
@@ -407,7 +411,7 @@
     { const N = 700, pos = new Float32Array(N * 3), base = []; for (let i = 0; i < N; i++) { const inF2 = i < 450, x = inF2 ? FX + RR(-1400, -300) : FX + RR(-1500, 1500), z = inF2 ? FZ + RR(-400, 850) : FZ + RR(-1500, 1500); base.push([x, RR(0.5, 6), z, R() * 6.283]); }
       const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3));
       const dotT = cvTex(32, 32, (c) => { const gr = c.createRadialGradient(16, 16, 0, 16, 16, 16); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.4, 'rgba(255,240,160,.8)'); gr.addColorStop(1, 'rgba(255,200,120,0)'); c.fillStyle = gr; c.fillRect(0, 0, 32, 32); });
-      const pts = new T.Points(geo, new T.PointsMaterial({ size: 0.9, map: dotT, color: 0xfff0a0, transparent: true, depthWrite: false, blending: T.AdditiveBlending })); pts.frustumCulled = false; g.add(pts); W0.flies = { geo, pos, base };
+      const pts = new T.Points(geo, W0.fliesM = new T.PointsMaterial({ size: 0.9, map: dotT, color: 0xfff0a0, transparent: true, depthWrite: false, blending: T.AdditiveBlending })); pts.frustumCulled = false; g.add(pts); W0.flies = { geo, pos, base };
     }
     // ---- schwebende Inseln mit Wasserfällen ----
     W0.floaters = [];
@@ -482,7 +486,7 @@
     W0.mill.rotation.z -= dt * 0.6;
     W0.wft.offset.y -= dt * 1.5; W0.lakeT.offset.x += dt * 0.01;
     W0.wish.scale.setScalar(3.2 + Math.sin(t * 2) * 0.4);
-    W0.ringGlow.forEach((m, k) => { m.scale.y = 0.4 + Math.sin(t * 3 + k) * 0.12; }); W0.ringCol.material.opacity = 0.14 + Math.sin(t * 2) * 0.06; W0.ringCol.rotation.y += dt * 0.5;
+    W0.ringGlow.forEach((m, k) => { m.scale.y = 0.4 + Math.sin(t * 3 + k) * 0.12; }); W0.ringCol.rotation.y += dt * 0.5;
     if (W0.fairy) { W0.fairy.root.position.y = 1.2 + Math.sin(t * 1.6) * 0.4; L.animHuman(W0.fairy, { mode: 'idle', phase: t }); W0.fairyWings.forEach((w, k) => { w.rotation.y = (k ? 1 : -1) * (0.6 + Math.sin(t * 20) * 0.5); }); }
     for (const r of W0.folk) L.animHuman(r, { mode: 'idle', phase: t + r.root.position.x });
     for (const r of W0.dwarfs) L.animHuman(r, { mode: 'idle', phase: t * 1.4 + r.root.position.x });
@@ -806,16 +810,32 @@
     return '💖 BEYZA (BEYY) – friedliche Riesin · ' + (d > 1000 ? (d / 1000).toFixed(1) + ' km' : Math.round(d) + ' m') + ' entfernt';
   };
   // Licht und Himmel
-  const oue = L.updateEnv;
+  const oue = L.updateEnv, C1 = new T.Color(), C2 = new T.Color();
+  // Fenster und Leuchtteile (gemeinsame Materialien), die nachts heller werden
+  const GLOW = [['#ffe9a0', { emissive: '#ffcf60', ei: 0.4 }], ['#3a4a9a', { emissive: '#6a7aff', ei: 0.4 }], ['#4a5ab0', { emissive: '#8a9aff', ei: 0.5 }], ['#ffe8f0', { emissive: '#ffc0e0', ei: 0.3 }], ['#3a4a9a', { emissive: '#8a9aff', ei: 0.3 }]];
   L.updateEnv = function (dt, cam, focus, paused) {
     oue(dt, cam, focus, paused);
     if (!cam || !L.inFairy(cam.position.x, cam.position.z) || cam.position.y > 1000) return;
     const E2 = L.env;
-    L.scene.background.set('#a8c8ff'); L.scene.fog.color.set('#f6dcf0'); L.scene.fog.near = 500; L.scene.fog.far = 4200;
-    if (E2.stars) E2.stars.material.opacity = 0; if (E2.sunDisc) E2.sunDisc.material.opacity = 0; if (E2.moon) E2.moon.material.opacity = 0; if (E2.rainMesh) E2.rainMesh.visible = false;
-    E2.hemi.intensity = 0.72; E2.hemi.color.set('#fff0f4'); E2.hemi.groundColor.set('#d8c4b8');
-    E2.sun.intensity = 0.85; E2.sun.color.set('#ffecd8');
-    if (built && built.sky) built.sky.position.copy(cam.position);
+    // gleiche Uhrzeit wie in der Heimat: Tag, Abendrot, Sternennacht mit großem Mond
+    const a = ((E2.time || 12) - 6) / 24 * Math.PI * 2, el = Math.sin(a), day = L.clamp(el * 4 + 0.25, 0, 1), night = 1 - day, dusk = L.clamp(1 - Math.abs(el) * 5, 0, 1) * 0.85;
+    const mix3 = (d, du, n) => C1.set(n).lerp(C2.set(d), day).lerp(C2.set(du), dusk * Math.max(day, 0.35));
+    L.scene.background.copy(mix3('#a8c8ff', '#f0a080', '#0a0e2a'));
+    L.scene.fog.color.copy(mix3('#f6dcf0', '#ffb890', '#141638')); L.scene.fog.near = 500; L.scene.fog.far = 4200 - night * 1200;
+    if (E2.stars) E2.stars.material.opacity = L.clamp(night * 1.3 - 0.2, 0, 1); if (E2.sunDisc) E2.sunDisc.material.opacity = 0; if (E2.moon) E2.moon.material.opacity = 0; if (E2.rainMesh) E2.rainMesh.visible = false;
+    E2.hemi.intensity = 0.38 + day * 0.34; E2.hemi.color.copy(mix3('#fff0f4', '#ffc8a8', '#7a80d8')); E2.hemi.groundColor.copy(mix3('#d8c4b8', '#c09080', '#302a58'));
+    E2.sun.intensity = 0.3 + day * 0.55; E2.sun.color.copy(mix3('#ffecd8', '#ffa070', '#a8b8ff'));
+    if (built && built.sky) {
+      const W0 = built; W0.sky.position.copy(cam.position);
+      W0.sky.material.color.copy(mix3('#ffffff', '#ffc0a0', '#1c2250'));
+      W0.sun.material.opacity = day; W0.sun.position.y = 300 + day * 1600; W0.moon.material.opacity = L.clamp(night * 1.4 - 0.3, 0, 1);
+      const cc = mix3('#ffffff', '#ffd0b8', '#4a5088'); for (const m of W0.cloudM) m.color.copy(cc);
+      // nachts leuchtet alles Magische stärker
+      W0.fliesM.size = 0.9 + night * 1.1; W0.fliesM.opacity = 0.6 + night * 0.4;
+      W0.ringCol.material.opacity = (0.14 + Math.sin(performance.now() / 500) * 0.06) * (1 + night * 1.6);
+      W0.crystalL.intensity = 2 + night * 3; W0.villageL.intensity = night * 1.2;
+      for (const [c, o] of GLOW) L.mat(c, o).emissiveIntensity = o.ei + night * 1.3;
+    }
   };
   // Pause-Menü-Taste „Zurück beamen“ auch hier
   L.clearFairy = function () {
