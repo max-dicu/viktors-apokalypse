@@ -89,6 +89,8 @@
   const atHome = (p) => worldOf(p.x, p.z) === 'home';
   L.atHome = () => atHome(P);
   const homeBanner = (a, b) => { if (atHome(P)) L.banner(a, b); };
+  const homeMsg = (a, b) => { if (atHome(P)) L.msg(a, b); };
+  L.homeMsg = homeMsg;
   // Ort für Heimat-Bosse: neben einem Spieler, der gerade in der Heimat ist – sonst irgendwo in der Heimat
   function homeAnchor() { for (const p of players()) if (atHome(p)) return p; return { x: L.rand(-900, 900), z: L.rand(-900, 900) }; }
   const bossAt = (x, z) => (onIsl(x, z) ? !!(L.islandBoss && L.islandBoss.active && !L.inDim(x)) : homeBossOn());
@@ -1682,7 +1684,7 @@
       m.state = 'investigate'; m.alertT = 0; m.prey = null; m.timer = 25; m.calmT = 25;
       m.tx = L.clamp(m.x + Math.sin(a) * 220, -1480, 1480); m.tz = L.clamp(m.z + Math.cos(a) * 220, -1480, 1480);
     }
-    L.msg('😮‍💨 MAMA IVA ist weg – die Monster laufen davon.', 6000);
+    homeMsg('😮‍💨 MAMA IVA ist weg – die Monster laufen davon.', 6000);
   }
   // Monster bleiben draußen vor dem Turm
   function keepOutOfTower(e) {
@@ -2293,7 +2295,7 @@
     if (!D.jumped) {
       D.jumped = true; L.scene.attach(dan.root);
       D.sx = dan.root.position.x; D.sy = dan.root.position.y; D.sz = dan.root.position.z;
-      L.msg('💪 Daniel springt von GIGA-CAPY!', 3000); L.snd.daniel({ x: D.x, y: 30, z: D.z });
+      homeMsg('💪 Daniel springt von GIGA-CAPY!', 3000); L.snd.daniel({ x: D.x, y: 30, z: D.z });
     }
     let vOff = -D.gap / 2, dOff = dOff0, vY = 0, dY = 0, vRx = 0, vRz = 0, dRx = 0, vYaw = D.axis, dYaw = D.axis + Math.PI;
     let vMode = 'alert', dMode = 'alert', vAtk = 0, dAtk = 0;
@@ -2313,7 +2315,7 @@
       vik.root.visible = false;
       const tw = t - (J0 + 1.6), wd = Math.max(0, tw - 1.8) * sd * 1.1;
       if (!D.roar2) { D.roar2 = true; L.snd.daniel({ x: D.x, y: 20, z: D.z }); }
-      if (tw > 1.8 && !D.leave) { D.leave = true; L.msg('💪 Daniel geht weg …', 3000); }
+      if (tw > 1.8 && !D.leave) { D.leave = true; homeMsg('💪 Daniel geht weg …', 3000); }
       L.animDaniel(dan, { mode: tw < 1.8 ? 'alert' : 'walk', phase: D.ph });
       if (tw < 1.8) for (const a of dan.arms) { a.arm.rotation.x = -2.6; a.elbow.rotation.x = -0.6; }
       dan.root.position.set(D.x + ax * dOff0 + Math.sin(D.walkA) * wd, gy, D.z + az * dOff0 + Math.cos(D.walkA) * wd);
@@ -2322,7 +2324,7 @@
     }
     // (alt) Viktor steigt aus dem Boden
     let vRise = 0;
-    if (t < V0 + 2.6) { vRise = -(1 - ease3(L.clamp((t - V0) / 2.4, 0, 1))) * sv * 3.2; if (t > V0 && !D.rose) { D.rose = true; L.snd.viktor({ x: D.x, y: 20, z: D.z }); L.msg('👁️ Riesen-Viktor stellt sich Daniel!', 3000); } if (Math.random() < dt * 14) L.fx('#5a4630', D.x - ax * D.gap / 2 + L.rand(-8, 8), gy + 1, D.z - az * D.gap / 2 + L.rand(-8, 8), 3, 10, { size: 1, life: 2 }); }
+    if (t < V0 + 2.6) { vRise = -(1 - ease3(L.clamp((t - V0) / 2.4, 0, 1))) * sv * 3.2; if (t > V0 && !D.rose) { D.rose = true; L.snd.viktor({ x: D.x, y: 20, z: D.z }); homeMsg('👁️ Riesen-Viktor stellt sich Daniel!', 3000); } if (Math.random() < dt * 14) L.fx('#5a4630', D.x - ax * D.gap / 2 + L.rand(-8, 8), gy + 1, D.z - az * D.gap / 2 + L.rand(-8, 8), 3, 10, { size: 1, life: 2 }); }
     vik.root.visible = t > V0;
     if (t >= D_FIGHT && t < D_END) {
       const i = Math.floor((t - D_FIGHT) / D_MOVE), u = (t - D_FIGHT - i * D_MOVE) / D_MOVE, mv = D.moves[i];
@@ -2367,7 +2369,7 @@
         if (u > 0.67 && !D.endHit) { D.endHit = true; L.snd.stomp({ x: D.x, y: 0, z: D.z }); L.shake = Math.max(L.shake, 0.8); L.fx('#6a5a40', D.x, gy + 1, D.z, 30, 14, { size: 1.2, life: 1.8 }); }
         if (u > 0.67) vMode = 'dead';
       }
-      if (u > 0.85) { dMode = 'alert'; if (!D.won) { D.won = true; L.snd.daniel({ x: D.x, y: 10, z: D.z }); L.msg('💪 Daniel hat Viktor besiegt!', 3000); } }
+      if (u > 0.85) { dMode = 'alert'; if (!D.won) { D.won = true; L.snd.daniel({ x: D.x, y: 10, z: D.z }); homeMsg('💪 Daniel hat Viktor besiegt!', 3000); } }
       D.vEnd = vOff; D.vEndY = vY;
     } else if (t >= D_END + D_ENDLEN) {
       // 4) Viktor rappelt sich auf – dann gehen beide weg
@@ -2378,7 +2380,7 @@
         const w = t - W0, spd = Math.max(sv, sd) * 1.1;
         D.wv = w * spd; D.wd = w * spd * 0.95;
         vMode = 'walk'; dMode = 'walk'; vYaw = D.walkA - 0.35; dYaw = D.walkA + 0.35;
-        if (!D.leave) { D.leave = true; L.msg('👣 Viktor und Daniel gehen beide weg …', 3000); }
+        if (!D.leave) { D.leave = true; homeMsg('👣 Viktor und Daniel gehen beide weg …', 3000); }
       }
     }
     // Weggehen: jeder in seine Richtung
@@ -2475,7 +2477,7 @@
       c.rumbleT -= dt; if (c.rumbleT <= 0) { c.rumbleT = 0.6; L.snd.stomp({ x: c.x, y: 0, z: c.z }); }
     }
     if (t > C_GRAB) L.bossRise(b, dt);
-    if (t >= C_GRAB && !c.pulled) { c.pulled = true; L.msg('🦫 MAMA IVA hat verloren – GIGA-CAPY zieht sie in die Tiefe!', 5000); }
+    if (t >= C_GRAB && !c.pulled) { c.pulled = true; homeMsg('🦫 MAMA IVA hat verloren – GIGA-CAPY zieht sie in die Tiefe!', 5000); }
     return t < C_GRAB ? 0 : ease3((t - C_GRAB) / 5.5);
   };
   // Kampf-Haltung von MAMA IVA (nach ihrer normalen Animation anwenden)
@@ -2497,7 +2499,7 @@
   // Effekte beim Erscheinen (auch auf den Geräten der Mitspieler)
   L.bossAppear = function (b) {
     L.towerRestore();
-    if (!atHome(P)) { L.fusionStart(b.x, b.z); L.msg('📡 In der Heimat ist MAMA IVA aufgetaucht – hier bei dir ist es sicher.', 5000); return; }
+    if (!atHome(P)) { L.fusionStart(b.x, b.z); return; }
     if (b.instant) { homeBanner("MAMA IVA IST DA", "Nur noch 30 Sekunden – bleib leise im Turm!"); L.snd.bossRoar({ x: b.x, y: 40, z: b.z }); return; }
     // erst verschmelzen alle Monster zu MAMA IVA, dann steigt sie auf
     L.fusionStart(b.x, b.z);
@@ -2538,7 +2540,7 @@
       const k = L.clamp(b.emerge / b.emergeDur, 0, 1), ease = 1 - Math.pow(1 - k, 3);
       b.rootY = b.startY * (1 - ease);
       if (b.emerge > 0) L.bossRise(b, dt);
-      if (k >= 1) { b.rootY = 0; b.leaving = false; L.msg('👹 MAMA IVA ist da – ' + Math.round(b.life / 60) + ' Minuten lang!'); }
+      if (k >= 1) { b.rootY = 0; b.leaving = false; homeMsg('👹 MAMA IVA ist da – ' + Math.round(b.life / 60) + ' Minuten lang!'); }
     } else if (!b.sinking) {
       b.life -= dt;
       if (b.life <= 0) {
@@ -2551,7 +2553,7 @@
       // GIGA-CAPY zieht MAMA IVA in den Boden
       b.rootY = -72 * L.capyUpdate(b, dt);
       if (b.sinking >= L.CAPY_TOTAL) {
-        L.ivaDone = b.idx; calmMonsters(); L.capyRemove(b); L.scene.remove(rig.root); L.boss = null; L.round.bossT = ivaClock().left; if (isHost()) L.mp.send({ t: 'bossGone' }); L.msg('Ruhe … ' + Math.max(1, Math.round(ivaClock().left / 60)) + ' Minuten Pause, dann kommt MAMA IVA wieder.', 6000); return; }
+        L.ivaDone = b.idx; calmMonsters(); L.capyRemove(b); L.scene.remove(rig.root); L.boss = null; L.round.bossT = ivaClock().left; if (isHost()) L.mp.send({ t: 'bossGone' }); homeMsg('Ruhe … ' + Math.max(1, Math.round(ivaClock().left / 60)) + ' Minuten Pause, dann kommt MAMA IVA wieder.', 6000); return; }
     }
     // Ziel: Spieler im Umkreis jagen, sonst letztem Lärm folgen
     // MAMA IVA hört jeden, der nicht schleicht – egal wie weit weg. Nur im Turm ist man sicher, solange man leise ist
@@ -2708,7 +2710,7 @@
     const G0 = GBT[w.type || 'walross'];
     L.towerRestore();
     const lv = (w.lvl || 0) + 1;
-    if (!atHome(P)) { L.msg('📡 In der Heimat ist ' + G0.name + ' aufgetaucht – hier bei dir ist es sicher.', 5000); return; }
+    if (!atHome(P)) return;
     L.banner(G0.name + ' – STUFE ' + lv, (lv > 1 ? 'Schneller und stärker als letztes Mal! ' : '') + 'Alle Monster drehen durch! Schaff es zum 🗼 TURM in der Stadtmitte!');
     G0.voice({ x: w.x, y: 10, z: w.z });
     const a0 = Math.atan2(P.x - w.x, P.z - w.z);
@@ -2743,7 +2745,7 @@
       w.rootY = -S * 3.2 * (1 - k);
       if (Math.random() < dt * 14) L.fx('#5a4630', w.x + L.rand(-20, 20), 1, w.z + L.rand(-20, 20), 3, 10, { size: 1, life: 2 });
       L.shake = Math.max(L.shake, L.clamp((350 - L.dist(P.x, P.z, w.x, w.z)) / 350, 0, 0.7));
-      if (w.emerge >= 6) { w.leaving = false; w.rootY = 0; L.msg(G0.icon + ' ' + G0.short + ' ist da!', 4000); }
+      if (w.emerge >= 6) { w.leaving = false; w.rootY = 0; homeMsg(G0.icon + ' ' + G0.short + ' ist da!', 4000); }
     } else {
       w.life -= dt;
       if (w.life <= 0 || w.hp <= 0 || w.dead) { wbEnd(w); return; }

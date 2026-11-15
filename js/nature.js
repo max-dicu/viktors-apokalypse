@@ -35,7 +35,7 @@
     f.g.position.set(x, 0, z);
     tors.push(t);
     const d = L.dist(P.x, P.z, x, z);
-    L.msg(d < 600 ? '🌪️ Ein Tornado ist ganz in deiner Nähe! Bleib weg von ihm!' : '🌪️ Auf der Karte ist ein Tornado aufgetaucht.', 6000);
+    if (!L.atHome || L.atHome()) L.msg(d < 600 ? '🌪️ Ein Tornado ist ganz in deiner Nähe! Bleib weg von ihm!' : '🌪️ Auf der Karte ist ein Tornado aufgetaucht.', 6000);
     return t;
   };
   function removeTornado(i) { L.scene.remove(tors[i].f.g); tors.splice(i, 1); }

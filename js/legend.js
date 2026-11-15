@@ -254,12 +254,13 @@
   L.bossReward = function (id, x, z, y, how) {
     const items = (LOOT[id] || []).concat([['gold', 2], ['medkit', 1]]);
     const name = bossName(id);
+    const here = !L.worldOf || L.worldOf(x, z) === L.worldOf(L.player.x, L.player.z);
     if (how === 'survive') {
       L.spawnGiantChest(x, z, y, items, name + '-KISTE');
-      L.msg('🎁 Du hast ' + name + ' überlebt! Am sicheren Ort steht jetzt eine RIESENKISTE – öffne sie (E)!', 8000);
+      if (here) L.msg('🎁 Du hast ' + name + ' überlebt! Am sicheren Ort steht jetzt eine RIESENKISTE – öffne sie (E)!', 8000);
     } else {
       for (const [ty, n] of items) L.spawnItem(ty, x + L.rand(-4, 4), z + L.rand(-4, 4), n, I[ty] ? I[ty].mag : undefined, undefined, undefined, y || 0, true);
-      L.msg('⭐ ' + name + ' hat seine Boss-Waffe fallen lassen: ' + (LOOT[id] || []).map(([t]) => I[t].icon + ' ' + I[t].name).join(', ') + ' – heb sie auf!', 8000);
+      if (here) L.msg('⭐ ' + name + ' hat seine Boss-Waffe fallen lassen: ' + (LOOT[id] || []).map(([t]) => I[t].icon + ' ' + I[t].name).join(', ') + ' – heb sie auf!', 8000);
     }
   };
 

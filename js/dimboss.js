@@ -44,7 +44,7 @@
       if (L.snd.bossRoar) L.snd.bossRoar({ x: P.x, y: 0, z: P.z });
       L.shake = Math.max(L.shake, 1.4);
       giveCrate();
-    } else L.msg('🪱 Der Leerenwurm ist in der Dimension zurück.', 3500);
+    }
   }
   function giveCrate() {
     const c = L.dimCheckpoint(), x = c.x + 10, z = c.z - 6;
@@ -61,10 +61,9 @@
   };
   function die() {
     W.state = 'die'; W.st = 0; W.ent.dead = true; W.wasKilled = true;
-    L.banner('🪱 LEERENWURM BESIEGT!', 'Das Portal ist wieder offen – flieh nach Hause!');
+    if (inDim()) L.banner('🪱 LEERENWURM BESIEGT!', 'Das Portal ist wieder offen – flieh nach Hause!');
     if (L.snd.bossRoar) L.snd.bossRoar({ x: P.x, y: 5, z: P.z });
     if (inDim() && P.alive && L.gotBossCoins) L.gotBossCoins(1000, 'den Leerenwurm');
-    if (!inDim()) L.msg('🪱 Der Leerenwurm ist gestorben.', 3500);
   }
 
   // ---------- Angriffe ----------

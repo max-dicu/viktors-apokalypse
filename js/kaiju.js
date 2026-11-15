@@ -117,7 +117,6 @@
     const txt = killed ? ['🦖 DIE URZEIT-ECHSE IST BESIEGT!', 'Sie bricht zusammen und versinkt in der Erde.'] : ['🦖 DIE URZEIT-ECHSE ZIEHT SICH ZURÜCK', 'Mit einem letzten Brüllen versinkt sie wieder im Boden …'];
     if (L.atHome && L.atHome()) L.banner(txt[0], txt[1]);
     if (killed && L.atHome && L.atHome() && L.gotBossCoins) L.gotBossCoins(900, 'die Urzeit-Echse');
-    if (L.mp && L.mp.send && L.net && L.net.connected) L.mp.send({ t: 'msg', text: txt[0] });
   }
   L.updateKaiju = function (dt) {
     if (!leaving) return;
