@@ -17,12 +17,14 @@
     geist: { ring: 0x6a7a70, inner: 0xb0ffd0, deco: 'wisps', dc: '#d0ffe8', fx: '#c0ffe0', name: 'Geisterinsel' },
     oma: { ring: 0xff8fc0, inner: 0xffd0e8, deco: 'dots', dc: '#ff4f9a', fx: '#ffb7d5', name: 'Omas Garteninsel' },
     dim: { ring: 0x2a0050, inner: 0xff40d0, deco: 'crystals', dc: '#9a50ff', fx: '#ff40d0', name: 'Dimension' },
+    fairy: { ring: 0xff9ad0, inner: 0xfff0fa, deco: 'dots', dc: '#ffe0f4', fx: '#ffb8e8', name: 'Märchenwelt' },
     back: { ring: 0xd8c050, inner: 0xfff0a0, deco: 'dots', dc: '#fff6c8', fx: '#fff0a0', name: 'Backrooms' },
     titan: { ring: 0xff7a20, inner: 0xffc060, deco: 'flames', dc: '#ff9a40', fx: '#ffb060', name: 'Titanenmond' },
     moon: { ring: 0xc8c8d0, inner: 0x101030, deco: 'stars', dc: '#ffffff', fx: '#ffffff', name: 'Mond' }
   };
   function worldAt(x, z) {
     if (L.inBack && L.inBack(x)) return 'back';
+    if (L.inFairy && L.inFairy(x, z)) return 'fairy';
     if (L.inTitan && L.inTitan(x, z)) return 'titan';
     if (L.inMoon && L.inMoon(x)) return 'moon';
     if (L.inDim(x)) return 'dim';
@@ -131,6 +133,7 @@
     const out = [['🏠 Heimat (Altheim)', 30, 30]];
     if (L.TITAN) out.push(['🪐 Titanenmond', L.TITAN.x - 936, L.TITAN.z]);
     if (L.ASGARD) out.push(['🌈 Asgard (goldene Stadt)', L.ASGARD.x, L.ASGARD.z]);
+    if (L.FAIRY_LOC) out.push(['🏰 Märchenwelt (Dorf)', L.FAIRY_LOC.dorf.x + 20, L.FAIRY_LOC.dorf.z - 30]);
     if (L.backSpawn) { const b = L.backSpawn(0); out.push(['🟨 Backrooms (Level 0)', b.x, b.z]); }
     for (const I of L.ISL || []) { if (I.moon) out.push(['🌕 Mond', L.moonCheckpoint().x, L.moonCheckpoint().z]); else if (I.dim) out.push(['🌌 Dimension', L.dimCheckpoint().x, L.dimCheckpoint().z]); else out.push([I.icon + ' ' + I.name, I.x + 25, I.z + 25]); }
     return out;

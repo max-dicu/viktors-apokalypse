@@ -226,20 +226,20 @@
   L.beamBusy = () => !!beam;
   const flash = () => L.backFade;
   function sfxBeam() { for (let k = 0; k < 8; k++) L.tn && L.tn({ f: 220 + k * 140, fTo: 2600, dur: 1.2, type: 'sine', vol: 0.09, delay: k * 0.18 }); L.nz && L.nz({ dur: 2.5, f: 3000, fTo: 600, type: 'bandpass', vol: 0.25 }); }
-  function startBeam(dir) {
+  function startBeam(dir, dest) {
     if (beam || !P.alive || L.cine) return false;
     if (P.vehicle && L._leaveVehicle) L._leaveVehicle(true);
-    beam = { dir, t: 0, from: { x: P.x, y: P.y || 0, z: P.z }, cam: { x: 0, y: 0, z: 0, lx: 0, ly: 0, lz: 0 }, phase: 0 };
+    beam = { dir, dest: dest || 'back', fromFairy: !!(L.inFairy && L.inFairy(P.x, P.z)), t: 0, from: { x: P.x, y: P.y || 0, z: P.z }, cam: { x: 0, y: 0, z: 0, lx: 0, ly: 0, lz: 0 }, phase: 0 };
     if (!tunnel) tunnel = makeTunnel();
     beamCol = makeColumn(); beamCol.g.position.set(P.x, P.y || 0, P.z);
     const dur = dir === 'out' ? 8.2 : 6.2;
     L.startCine(dir === 'out' ? '🌈 HEIMDALL ÖFFNET DEN BIFRÖST' : '🌈 HEIMDALL HOLT DICH ZURÜCK', dur, () => beam && beam.cam);
     if (!L.cine) { beam = null; dropColumn(beamCol); beamCol = null; return false; }
-    if (dir === 'out') L.banner('🌈 HEIMDALL', '„Ich sehe alle neun Welten … und einen Ort dazwischen, an dem niemand sein sollte. Halte dich fest.“');
+    if (dir === 'out') L.banner('🌈 HEIMDALL', dest === 'fairy' ? '„Ich sehe eine Welt aus Märchen – Schlösser, Drachen und eine gütige Riesin. Halte dich fest.“' : '„Ich sehe alle neun Welten … und einen Ort dazwischen, an dem niemand sein sollte. Halte dich fest.“');
     return true;
   }
   L.beamHome = function () {
-    if (!(L.inBack && L.inBack(P.x))) { L.msg('🌈 Zurück beamen geht nur aus den Backrooms.', 2500); return; }
+    if (!(L.inBack && L.inBack(P.x)) && !(L.inFairy && L.inFairy(P.x, P.z))) { L.msg('🌈 Zurück beamen geht nur aus den Backrooms oder der Märchenwelt.', 2500); return; }
     startBeam('in');
   };
   const ease = (u) => { u = L.clamp(u, 0, 1); return u * u * (3 - 2 * u); };
@@ -287,7 +287,7 @@
       return;
     }
     if (t < 4.6) {
-      if (!B.inTun) { B.inTun = true; beamCol.set(0); tunnel.g.visible = true; if (L.backLeft) L.backLeft(); }
+      if (!B.inTun) { B.inTun = true; beamCol.set(0); tunnel.g.visible = true; if (B.fromFairy) { if (L.fairyLeft) L.fairyLeft(); } else if (L.backLeft) L.backLeft(); }
       const u = (t - 2.6) / 2, z = TUN.z + 560 - u * 560;
       setP(TUN.x, TUN.y, z); if (P.rig) P.rig.root.rotation.set(1.2, 0, 0);
       tunnel.rings.forEach((r, k) => { r.rotation.z += dt * (k % 2 ? 1 : -1); });
@@ -315,7 +315,7 @@
     if (out) {
       tunnel.g.visible = false;
       if (P.rig) P.rig.root.rotation.set(0, 0, 0);
-      L.backEnter(0, 2.2);
+      if (B.dest === 'fairy' && L.fairyEnter) L.fairyEnter(); else L.backEnter(0, 2.2);
       if (built) { built.sword.position.set(0, 0.95, 0.42); built.ringSpd = 0.15; }
       // kurzer Lichtschein bei der Ankunft
       beamCol.g.position.set(P.x, 0, P.z); beamCol.set(1); B.arriveFade = 1.6;
@@ -336,8 +336,26 @@
     const h = built.H.root.position; return Math.hypot(P.x - h.x, P.z - h.z) < 6 && Math.abs((P.y || 0) - TOP) < 3;
   }
   const och = L.crateHint, oci = L.crateInteract;
-  L.crateHint = () => (nearHeimdall() ? 'E: 🌈 Heimdall: „Soll ich dich in die Backrooms beamen?“' : och ? och() : null);
-  L.crateInteract = function () { if (!nearHeimdall()) return oci ? oci() : false; startBeam('out'); return true; };
+  L.crateHint = () => (nearHeimdall() ? 'E: 🌈 Heimdall: „Wohin soll ich dich beamen?“' : och ? och() : null);
+  // Auswahl: Backrooms oder Märchenwelt
+  let pick = null;
+  function closePick() { if (!pick || pick.style.display === 'none') return; pick.style.display = 'none'; L.uiBlock = false; if (L.state === 'game' && !L.paused && L.lock) L.lock(); }
+  function openPick() {
+    if (!pick) {
+      pick = document.createElement('div');
+      pick.style.cssText = 'position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:rgba(10,8,30,.55)';
+      pick.innerHTML = '<div style="background:linear-gradient(#2a2050,#14102a);border:3px solid #e8c040;border-radius:16px;padding:18px;width:min(460px,92vw);color:#fff;font:15px Arial,sans-serif;text-align:center;box-shadow:0 10px 40px #000">' +
+        '<div style="font-size:20px;font-weight:bold;margin-bottom:6px">🌈 Heimdall</div><div style="opacity:.9;margin-bottom:12px">„Wohin soll dich der Bifröst tragen, Reisender?“</div>' +
+        '<button data-w="fairy" style="display:block;width:100%;margin:6px 0;padding:12px;border:0;border-radius:10px;font:bold 16px Arial;background:linear-gradient(90deg,#ff9ad0,#a0c8ff);color:#2a1030;cursor:pointer">🏰 Märchenwelt<br><span style="font-weight:normal;font-size:12px">Schlösser, Drachen, Einhörner, BEYZA &amp; tägliche Quests</span></button>' +
+        '<button data-w="back" style="display:block;width:100%;margin:6px 0;padding:12px;border:0;border-radius:10px;font:bold 16px Arial;background:#d8c050;color:#2a2008;cursor:pointer">🟨 Backrooms<br><span style="font-weight:normal;font-size:12px">1000 Level – wer findet den Ausgang?</span></button>' +
+        '<button data-w="" style="margin-top:8px;padding:8px 16px;border:0;border-radius:8px;background:#555;color:#fff;font:bold 13px Arial;cursor:pointer">Abbrechen</button></div>';
+      pick.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b && e.target !== pick) return; const w = b ? b.dataset.w : ''; closePick(); if (w) startBeam('out', w); });
+      addEventListener('keydown', (e) => { if (pick.style.display === 'flex' && (e.code === 'Escape' || e.code === 'KeyE')) { closePick(); e.preventDefault(); e.stopPropagation(); } }, true);
+      document.body.appendChild(pick);
+    }
+    pick.style.display = 'flex'; L.uiBlock = true; if (L.unlock) L.unlock();
+  }
+  L.crateInteract = function () { if (!nearHeimdall()) return oci ? oci() : false; openPick(); return true; };
   let talkT = 0;
   L.updateAsgard = function (dt) {
     if (!cleared) clearIslandPath();
@@ -368,7 +386,7 @@
       const hp = W.H.root.position, dP = Math.hypot(P.x - hp.x, P.z - hp.z);
       if (dP < 25) { const want = Math.atan2(P.x - hp.x, P.z - hp.z) - W.H.root.rotation.y; W.H.head.rotation.y = L.clamp(Math.atan2(Math.sin(want), Math.cos(want)), -0.9, 0.9); }
       talkT -= dt;
-      if (dP < 9 && talkT <= 0 && Math.abs((P.y || 0) - TOP) < 3 && !beam) { talkT = 40; L.msg('🌈 Heimdall: „Ich bin Heimdall, Wächter der Brücke. Drück E, und ich schicke dich an einen Ort zwischen den Welten.“', 6000); }
+      if (dP < 9 && talkT <= 0 && Math.abs((P.y || 0) - TOP) < 3 && !beam) { talkT = 40; L.msg('🌈 Heimdall: „Ich bin Heimdall, Wächter der Brücke. Drück E, und ich schicke dich in die Märchenwelt oder an einen Ort zwischen den Welten.“', 6000); }
     }
     // Wachen
     for (const q of W.guards) {

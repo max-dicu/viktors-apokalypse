@@ -487,6 +487,7 @@
     if (L.inMoon && L.inMoon(P.x)) return L.moonBossText ? L.moonBossText() : null;
     if (L.inBack && L.inBack(P.x)) return null;
     if (L.inTitan && L.inTitan(P.x, P.z)) return L.titanBossText ? L.titanBossText() : null;
+    if (L.inFairy && L.inFairy(P.x, P.z)) return L.fairyText ? L.fairyText() : null;
     if (L.inDim(P.x)) return L.dimBossText ? L.dimBossText() : null;
     const I = L.curIsland; if (!I || I.dim || !BY_ISL[I.id]) return null;
     if (boss && boss.I === I) return `${boss.b.icon} ${boss.b.name} ist da – noch ${L.fmt(Math.max(0, boss.life))} · 🛡️ Zuflucht = sicher`;

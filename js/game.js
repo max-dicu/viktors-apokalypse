@@ -84,7 +84,7 @@
   const homeBossOn = () => !!((L.boss && !L.boss.dead) || L.wboss || L.frenzy);
   const onIsl = (x, z) => !!((L.islandAt && L.islandAt(x, z)) || L.inDim(x));
   // in welcher Welt liegt (x, z)? Monster jagen nur Spieler in derselben Welt
-  const worldOf = (x, z) => { if (L.inBack && L.inBack(x)) return 'back'; if (L.inTitan && L.inTitan(x, z)) return 'titan'; if (L.inMoon && L.inMoon(x)) return 'moon'; if (L.inDim(x)) return 'dim'; const I = L.islandAt && L.islandAt(x, z); return I ? I.id : 'home'; };
+  const worldOf = (x, z) => { if (L.inBack && L.inBack(x)) return 'back'; if (L.inFairy && L.inFairy(x, z)) return 'fairy'; if (L.inTitan && L.inTitan(x, z)) return 'titan'; if (L.inMoon && L.inMoon(x)) return 'moon'; if (L.inDim(x)) return 'dim'; const I = L.islandAt && L.islandAt(x, z); return I ? I.id : 'home'; };
   L.worldOf = worldOf;
   const atHome = (p) => worldOf(p.x, p.z) === 'home';
   L.atHome = () => atHome(P);
@@ -250,7 +250,7 @@
     for (const w of E.walkers) if (!w.dead) a.push(w);
     if (L.boss && !L.boss.dead) a.push(L.boss);
     if (L.wboss && !L.wboss.leaving) a.push(L.wboss);
-    if (L.dimWorm && !L.dimWorm.dead && L.inDim(P.x)) a.push(L.dimWorm);
+    if (L.dimWorm && !L.dimWorm.dead && L.inDim(P.x) && !(L.inFairy && L.inFairy(P.x, P.z))) a.push(L.dimWorm);
     if (L.tentacleEnts) for (const e of L.tentacleEnts) if (!e.dead && e.rig.root.visible) a.push(e);
     if (L.islandTargets) for (const e of L.islandTargets()) a.push(e);
     if (L.bernTarget) { const b = L.bernTarget(); if (b) a.push(b); }
@@ -349,6 +349,7 @@
     if (e.kind === 'walker' || e.kind === 'boss') L.fx('#ffb040', e.x, hy, e.z, 6, 4, { basic: true, size: 0.15, life: 0.5 });
     else L.blood(e.x, hy, e.z, 10);
     const byPlayer = src && (src === P || isRemote(src));
+    if (byPlayer && e.isl && e.isl.peace) e.angryT = 90; // friedliche Monster (Märchenwelt) wehren sich nur, wenn man sie angreift
     if (MK[e.kind] && byPlayer && (e.calmT || 0) <= 0) { e.state = 'chase'; e.tx = src.x; e.tz = src.z; e.prey = src; }
     if (e.kind === 'npc' && byPlayer) { e.hostile = true; e.alertT = 10; }
     if (e.kind === 'walker' && byPlayer) walkerHear(e, src.x, src.z);
@@ -1729,6 +1730,10 @@
       m.lod += dt; if (m.lod < 0.5) return true; dt = m.lod; m.lod = 0;
     }
     m.calmT = (m.calmT || 0) - dt; m.callCd = (m.callCd || 0) - dt;
+    // friedliche Welt: jagt niemanden, solange es nicht angegriffen wurde
+    const peaceful = !!(m.isl && m.isl.peace && !((m.angryT = (m.angryT || 0) - dt) > 0));
+    if (peaceful && (m.state === 'chase' || m.state === 'investigate' || m.state === 'attack' || m.alertT > 0)) { m.state = 'wander'; m.prey = null; m.alertT = 0; m.timer = 0; m.tx = m.x; m.tz = m.z; }
+    else if (m.isl && m.isl.peace && m.angryT > 0 && m.prey && !m.prey.dead && m.prey.alive !== false && m.state !== 'attack' && L.dist(m.x, m.z, m.prey.x, m.prey.z) < 120) { m.state = 'chase'; m.tx = m.prey.x; m.tz = m.prey.z; m.timer = 2; m.alertT = 0; }
     // Raserei, solange MAMA IVA da ist: alle stürmen auf den nächsten Spieler zu
     if (L.frenzy && !m.isl && m.state !== 'attack') {
       m.frT = (m.frT || 0) - dt;
@@ -1804,7 +1809,7 @@
     }
     keepOutOfTower(m);
     // Opfer ertasten
-    if (m.state !== 'attack' && m.cd <= 0 && dN < 30) {
+    if (m.state !== 'attack' && m.cd <= 0 && dN < 30 && !peaceful) {
       for (const v of monsterVictims(m)) {
         const d = L.dist(v.x, v.z, m.x, m.z);
         if (v.hidden && d >= 0.6) continue; // Boss-Zeit: wer schleicht, wird nur beim direkten Zusammenstoß bemerkt
@@ -2936,7 +2941,7 @@
   // ---------- Runde ----------
   L.respawnQueue = [];
   function clearAll() {
-    clearCyls(); if (L.clearExtras) L.clearExtras(); if (L.clearWorkshop) L.clearWorkshop(); if (L.clearRevive) L.clearRevive(); if (L.clearInteriors) L.clearInteriors(); if (L.clearIslands) L.clearIslands(); if (L.clearIslandBosses) L.clearIslandBosses(); if (L.clearDimBoss) L.clearDimBoss(); if (L.clearPolice) L.clearPolice(); if (L.clearCrates) L.clearCrates(); if (L.clearMoon) L.clearMoon(); if (L.clearTentacles) L.clearTentacles(); if (L.clearSuitPortals) L.clearSuitPortals(); if (L.clearWeapons) L.clearWeapons(); if (L.clearLegend) L.clearLegend(); if (L.clearFireworks) L.clearFireworks(); if (L.clearEvents) L.clearEvents(); if (L.clearCarolina) L.clearCarolina(); if (L.clearBackrooms) L.clearBackrooms(); if (L.clearHeroes) L.clearHeroes(); if (L.clearTitan) L.clearTitan(); if (L.clearTitanArmor) L.clearTitanArmor(); if (L.clearRuslan) L.clearRuslan(); if (L.clearAsgard) L.clearAsgard(); L.voyageOn = false; if (L.clearOcean) L.clearOcean(); if (L.clearNature) L.clearNature(); if (L.endRichard) L.endRichard(); if (L.endDuel) L.endDuel();
+    clearCyls(); if (L.clearExtras) L.clearExtras(); if (L.clearWorkshop) L.clearWorkshop(); if (L.clearRevive) L.clearRevive(); if (L.clearInteriors) L.clearInteriors(); if (L.clearIslands) L.clearIslands(); if (L.clearIslandBosses) L.clearIslandBosses(); if (L.clearDimBoss) L.clearDimBoss(); if (L.clearPolice) L.clearPolice(); if (L.clearCrates) L.clearCrates(); if (L.clearMoon) L.clearMoon(); if (L.clearTentacles) L.clearTentacles(); if (L.clearSuitPortals) L.clearSuitPortals(); if (L.clearWeapons) L.clearWeapons(); if (L.clearLegend) L.clearLegend(); if (L.clearFireworks) L.clearFireworks(); if (L.clearEvents) L.clearEvents(); if (L.clearCarolina) L.clearCarolina(); if (L.clearBackrooms) L.clearBackrooms(); if (L.clearHeroes) L.clearHeroes(); if (L.clearTitan) L.clearTitan(); if (L.clearTitanArmor) L.clearTitanArmor(); if (L.clearRuslan) L.clearRuslan(); if (L.clearAsgard) L.clearAsgard(); if (L.clearFairy) L.clearFairy(); L.voyageOn = false; if (L.clearOcean) L.clearOcean(); if (L.clearNature) L.clearNature(); if (L.endRichard) L.endRichard(); if (L.endDuel) L.endDuel();
     if (L.wboss) { L.scene.remove(L.wboss.rig.root); L.wboss = null; }
     for (const m of E.monsters) L.scene.remove(m.rig.root);
     for (const w of E.walkers) L.scene.remove(w.rig.root);
@@ -3216,6 +3221,7 @@
     L.updateInteriors(dt);
     if (L.updateAsgard) L.updateAsgard(dt);
     if (L.updateBackrooms) L.updateBackrooms(dt);
+    if (L.updateFairy) L.updateFairy(dt);
     if (L.updateHeroes) L.updateHeroes(dt);
     if (L.updateTitan) L.updateTitan(dt);
     if (L.updateTitanArmor) L.updateTitanArmor(dt);
