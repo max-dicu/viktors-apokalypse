@@ -65,6 +65,7 @@
     open.push({ g, id: o.id, x: o.x, y: o.y, z: o.z, tx: o.tx, tz: o.tz, th: o.th, t: 0, mine: !!o.mine });
     while (open.length > 4) { L.scene.remove(open[0].g); open.shift(); }
   }
+  L._portalsOpen = () => open.length;
   L.portalRemote = function (m) { if (THEMES[m.th]) { openPortal(m); if (Math.hypot(P.x - m.x, P.z - m.z) < 300) L.msg('🌀 Ein Portal nach ' + THEMES[m.th].name + ' hat sich geöffnet – du kannst hindurchgehen!', 3500); } };
   // Ziel festlegen und Portal vor dir öffnen
   L.suitPortalTo = function (x, z, label) {
