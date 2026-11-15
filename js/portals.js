@@ -17,10 +17,12 @@
     geist: { ring: 0x6a7a70, inner: 0xb0ffd0, deco: 'wisps', dc: '#d0ffe8', fx: '#c0ffe0', name: 'Geisterinsel' },
     oma: { ring: 0xff8fc0, inner: 0xffd0e8, deco: 'dots', dc: '#ff4f9a', fx: '#ffb7d5', name: 'Omas Garteninsel' },
     dim: { ring: 0x2a0050, inner: 0xff40d0, deco: 'crystals', dc: '#9a50ff', fx: '#ff40d0', name: 'Dimension' },
+    back: { ring: 0xd8c050, inner: 0xfff0a0, deco: 'dots', dc: '#fff6c8', fx: '#fff0a0', name: 'Backrooms' },
     titan: { ring: 0xff7a20, inner: 0xffc060, deco: 'flames', dc: '#ff9a40', fx: '#ffb060', name: 'Titanenmond' },
     moon: { ring: 0xc8c8d0, inner: 0x101030, deco: 'stars', dc: '#ffffff', fx: '#ffffff', name: 'Mond' }
   };
   function worldAt(x, z) {
+    if (L.inBack && L.inBack(x)) return 'back';
     if (L.inTitan && L.inTitan(x, z)) return 'titan';
     if (L.inMoon && L.inMoon(x)) return 'moon';
     if (L.inDim(x)) return 'dim';
@@ -81,13 +83,14 @@
   };
   function groundAt(x, z) { const f = L.seaFloor(x, z); return f > -0.5 ? Math.max(0, f) : L.WATER_Y; }
   function arrive(e) {
-    const x = e.tx, z = e.tz, y = groundAt(x, z);
+    const x = e.tx, z = e.tz, fla = L.floorAt ? L.floorAt(x, z, 999) : null, y = typeof fla === 'number' ? fla : groundAt(x, z);
     // Lichtblitz
     let fl = document.getElementById('portalFlash');
     if (!fl) { fl = document.createElement('div'); fl.id = 'portalFlash'; fl.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:40;opacity:0;transition:opacity .45s'; document.body.appendChild(fl); }
     fl.style.background = '#' + new T.Color(THEMES[e.th].inner).getHexString(); fl.style.opacity = '0.9'; setTimeout(() => { fl.style.opacity = '0'; }, 120);
     const yaw = P.camYaw;
-    L.carryTo(x, z, y, true);
+    if (e.th === 'back' && L.backEnter) { if (P.vehicle && L._leaveVehicle) L._leaveVehicle(true); L.backEnter(0); }
+    else L.carryTo(x, z, y, true);
     if (P.vehicle) { P.vehicle.yaw = yaw; P.vehicle.x += Math.sin(yaw) * 3; P.vehicle.z += Math.cos(yaw) * 3; }
     if (L.underwaterDive) L.underwaterDive = false;
     // Ausgangsportal hinter dir, schließt sich
@@ -127,6 +130,8 @@
   L.suitWorldTargets = function () {
     const out = [['🏠 Heimat (Altheim)', 30, 30]];
     if (L.TITAN) out.push(['🪐 Titanenmond', L.TITAN.x - 936, L.TITAN.z]);
+    if (L.ASGARD) out.push(['🌈 Asgard (goldene Stadt)', L.ASGARD.x, L.ASGARD.z]);
+    if (L.backSpawn) { const b = L.backSpawn(0); out.push(['🟨 Backrooms (Level 0)', b.x, b.z]); }
     for (const I of L.ISL || []) { if (I.moon) out.push(['🌕 Mond', L.moonCheckpoint().x, L.moonCheckpoint().z]); else if (I.dim) out.push(['🌌 Dimension', L.dimCheckpoint().x, L.dimCheckpoint().z]); else out.push([I.icon + ' ' + I.name, I.x + 25, I.z + 25]); }
     return out;
   };
