@@ -106,7 +106,7 @@
     // Teppich, Säulen, Fenster, Banner
     const cp = new T.Mesh(new T.PlaneGeometry(7, 56), new T.MeshLambertMaterial({ map: carpetTex() })); cp.material.map.repeat.set(1, 4); cp.material.map.wrapT = T.RepeatWrapping; cp.rotation.x = -Math.PI / 2; cp.position.set(A.x, 0.05, A.z + 1); g.add(cp);
     for (let k = 0; k < 5; k++) for (const sd of [-1, 1]) { const px = A.x + sd * 12, pz = A.z - 20 + k * 10; add(G().cylB, '#fbf8f4', 0.9, H, 0.9, px, 0, pz); add(G().cylB, gold(), 1.2, 0.6, 1.2, px, H - 0.6, pz); add(G().cylB, gold(), 1.2, 0.5, 1.2, px, 0, pz); solid(px - 0.9, pz - 0.9, px + 0.9, pz + 0.9, H); }
-    const winM = new T.MeshStandardMaterial({ color: 0xbfe0ff, emissive: 0x8ac0ff, emissiveIntensity: 0.6 });
+    const winM = new T.MeshStandardMaterial({ color: 0xbfe0ff, emissive: 0x8ac0ff, emissiveIntensity: 0.3 });
     for (let k = 0; k < 4; k++) for (const sd of [-1, 1]) { const pz = A.z - 24 + k * 15, wx = sd > 0 ? tx2 - 0.45 : tx1 + 0.45; if (Math.abs(pz - A.z) < 5) continue; add(G().box, winM, 0.1, 8, 3.5, wx, 7.5, pz); add(G().box, gold(), 0.15, 0.3, 3.8, wx, 11.6, pz); add(G().cone, winM, 1.9, 1.6, 0.1, wx, 12.3, pz).rotation.x = 0; }
     for (let k = 0; k < 3; k++) for (const sd of [-1, 1]) { const b = add(G().box, sd > 0 ? '#2a4ab0' : '#c02a5a', 2.2, 6, 0.1, A.x + sd * 6 + (k - 1) * 0, 9, tz1 + 0.5); b.position.x = A.x + sd * (5 + k * 4); add(G().sph, gold(), 0.5, 0.5, 0.1, b.position.x, 10, tz1 + 0.58); }
     // Podest mit zwei Thronen
@@ -152,7 +152,7 @@
   let pool = null, aurora = [];
   function buildCrystal() {
     const B = QB, R = RB.r, H = 20;
-    const cm = new T.MeshStandardMaterial({ color: 0xa8e8ff, metalness: 0.2, roughness: 0.1, emissive: 0x2a80c0, emissiveIntensity: 0.45, transparent: true, opacity: 0.8, side: T.DoubleSide });
+    const cm = new T.MeshStandardMaterial({ color: 0xa8e8ff, metalness: 0.2, roughness: 0.1, emissive: 0x2a80c0, emissiveIntensity: 0.3, transparent: true, opacity: 0.8, side: T.DoubleSide });
     const flT = cvTex(128, 128, (c, w, h) => { c.fillStyle = '#d8f4ff'; c.fillRect(0, 0, w, h); c.strokeStyle = 'rgba(120,200,255,.5)'; c.lineWidth = 2; for (let k = 0; k < 9; k++) { c.beginPath(); const x = Math.random() * w, y = Math.random() * h; for (let q = 0; q < 6; q++) { const a = q / 6 * 6.283; c.moveTo(x, y); c.lineTo(x + Math.cos(a) * 14, y + Math.sin(a) * 14); } c.stroke(); } }, 10);
     const fl = new T.Mesh(new T.CircleGeometry(R, 48), new T.MeshStandardMaterial({ map: flT, emissive: 0x3a90c0, emissiveIntensity: 0.3, roughness: 0.15 })); fl.rotation.x = -Math.PI / 2; fl.position.set(B.x, 0.02, B.z); g.add(fl);
     const wl = new T.Mesh(new T.CylinderGeometry(R, R, H, 48, 1, true), cm); wl.position.set(B.x, H / 2, B.z); g.add(wl);

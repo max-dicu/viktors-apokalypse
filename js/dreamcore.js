@@ -42,7 +42,7 @@
     // ---------- Wolken ----------
     const ct = cloudTex(); clouds = [];
     for (let k = 0; k < 70; k++) {
-      const s = new T.Sprite(new T.SpriteMaterial({ map: ct, color: k % 5 === 0 ? 0xffe0f0 : 0xffffff, transparent: true, opacity: 0.85, depthWrite: false, fog: false }));
+      const s = new T.Sprite(new T.SpriteMaterial({ map: ct, color: k % 5 === 0 ? 0xf0d8e6 : 0xe8e8f0, transparent: true, opacity: 0.85, depthWrite: false, fog: false }));
       const a = Math.random() * 6.28, d = 200 + Math.random() * 1400, sc = 90 + Math.random() * 240;
       s.position.set(I.x + Math.sin(a) * d, -140 + Math.random() * 320, I.z + Math.cos(a) * d); s.scale.set(sc * 1.6, sc, 1); g.add(s); clouds.push({ s, sp: 2 + Math.random() * 5 });
     }
@@ -72,10 +72,10 @@
     for (let k = 0; k < 5; k++) {
       const e = new T.Group(), a = k / 5 * 6.28 + 0.4, d = 2200;
       e.position.set(I.x + Math.sin(a) * d, 350 + (k % 3) * 160, I.z + Math.cos(a) * d);
-      const white = new T.Mesh(new T.SphereGeometry(140, 32, 20), new T.MeshBasicMaterial({ color: 0xffffff, fog: false })); white.scale.set(1.6, 1, 0.5); e.add(white);
+      const white = new T.Mesh(new T.SphereGeometry(140, 32, 20), new T.MeshBasicMaterial({ color: 0xdedee6, fog: false })); white.scale.set(1.6, 1, 0.5); e.add(white);
       const iris = new T.Mesh(new T.CircleGeometry(70, 32), new T.MeshBasicMaterial({ color: new T.Color(['#7ab8ff', '#b07aff', '#ff8ac0', '#7affd0', '#ffd07a'][k]), fog: false })); iris.position.z = 72; e.add(iris);
       const pupil = new T.Mesh(new T.CircleGeometry(32, 24), new T.MeshBasicMaterial({ color: 0x111111, fog: false })); pupil.position.z = 73; e.add(pupil);
-      const shine = new T.Mesh(new T.CircleGeometry(12, 12), new T.MeshBasicMaterial({ color: 0xffffff, fog: false })); shine.position.set(20, 22, 74); e.add(shine);
+      const shine = new T.Mesh(new T.CircleGeometry(12, 12), new T.MeshBasicMaterial({ color: 0xececf0, fog: false })); shine.position.set(20, 22, 74); e.add(shine);
       const lid = new T.Mesh(new T.SphereGeometry(142, 32, 20, 0, Math.PI * 2, 0, Math.PI / 2), new T.MeshBasicMaterial({ color: 0xffc8e0, fog: false })); lid.scale.set(1.62, 1.02, 0.52); lid.rotation.x = -Math.PI / 2 + 0.2; e.add(lid);
       e.traverse((o) => { o.frustumCulled = false; }); g.add(e); eyes.push({ e, lid, blink: 2 + Math.random() * 6 });
     }

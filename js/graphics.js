@@ -5,8 +5,8 @@
   const S = () => L.S();
   if (S().grafik === undefined) { S().grafik = L.isTouch ? 'normal' : 'ultra'; }
   const PRE = {
-    ultra: { pr: 2, shadow: 4096, bloom: 0.9, aniso: 8 },
-    hoch: { pr: 1.5, shadow: 2048, bloom: 0.5, aniso: 4 },
+    ultra: { pr: 2, shadow: 4096, bloom: 0.42, aniso: 8 },
+    hoch: { pr: 1.5, shadow: 2048, bloom: 0.28, aniso: 4 },
     normal: { pr: 1.15, shadow: 1024, bloom: 0, aniso: 1 }
   };
   let applied = null, composer = null, bloomPass = null, renderPass = null, anisoT = 0;
@@ -23,7 +23,7 @@
       if (!composer) {
         composer = new T.EffectComposer(r);
         renderPass = new T.RenderPass(L.scene, L.camera); composer.addPass(renderPass);
-        bloomPass = new T.UnrealBloomPass(new T.Vector2(window.innerWidth, window.innerHeight), q.bloom, 0.5, 0.93); composer.addPass(bloomPass);
+        bloomPass = new T.UnrealBloomPass(new T.Vector2(window.innerWidth, window.innerHeight), q.bloom, 0.35, 0.97); composer.addPass(bloomPass);
       }
       bloomPass.strength = q.bloom;
       composer.setPixelRatio ? composer.setPixelRatio(r.getPixelRatio()) : null;
