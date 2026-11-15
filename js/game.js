@@ -547,6 +547,7 @@
     if (L.gauntletStart) L.gauntletStart();
     if (L.titanOn()) { P.hot[1] = { type: 'repulsor', count: 1, mag: 1 }; P.hot[2] = { type: 'schulterkanone', count: 1, mag: 1 }; P.hot[3] = { type: 'minirakete', count: 1, mag: 1 }; P.hot[4] = { type: 'brustlaser', count: 1, mag: 1 }; }
     if (L.titanArmorStart) L.titanArmorStart();
+    if (L.monsterStart) L.monsterStart();
   }
   // Schusswaffen (nur mit denen zoomt die rechte Maustaste): keine Fäuste, Nahkampf, Handschuh oder Feuerwerk
   function isGun(t) { const d = t && ITEMS[t]; return !!(d && d.slot === 'waffe' && !d.hero && !d.gauntlet && !d.admin && t !== 'donneraxt' && (d.range || 0) >= 30); }
@@ -3220,6 +3221,7 @@
     if (L.updateTitanArmor) L.updateTitanArmor(dt);
     if (L.updateRuslan) L.updateRuslan(dt);
     if (L.updateJoyorTalk) L.updateJoyorTalk(dt);
+    if (L.updateMonsterPlay) L.updateMonsterPlay(dt);
     L.updateExtras(dt);
     if (L.updateWorkshop) L.updateWorkshop(dt);
     if (L.updateRevive) L.updateRevive(dt);
