@@ -70,17 +70,70 @@
     return { g, upper, boom, stick, bucket, cab };
   }
   function buildSafeHouse() {
+    // begehbares Häuschen: feste Wände mit Tür vorne, geschlossenes Dach, innen ein gekachelter Behandlungsraum
     const g = new T.Group(); g.position.set(SAFE.x, 0, SAFE.z);
+    const W = 9, H = 7, TH = 0.4, DW = 2.4, DH = 3.4;
     const stripes = cv(256, 256, (c) => { for (let k = 0; k < 16; k++) { c.fillStyle = k % 2 ? '#2a6ac8' : '#f4f6fa'; c.fillRect(k * 16, 0, 16, 256); } });
-    const walls = new T.Mesh(new T.BoxGeometry(9, 7, 9), [new T.MeshLambertMaterial({ map: stripes }), new T.MeshLambertMaterial({ map: stripes }), new T.MeshLambertMaterial({ color: 0x2a6ac8 }), new T.MeshLambertMaterial({ color: 0xffffff }), new T.MeshLambertMaterial({ map: stripes }), new T.MeshLambertMaterial({ map: stripes })]);
-    walls.position.y = 3.5; g.add(walls);
-    part(L.GEO.box, '#1a3a7a', 9.6, 0.6, 9.6, 0, 7.2, 0, g);
-    const dome = new T.Mesh(new T.SphereGeometry(3.6, 24, 12, 0, 6.283, 0, Math.PI / 2), new T.MeshStandardMaterial({ color: 0xe8b830, metalness: 0.7, roughness: 0.3 })); dome.position.y = 7.4; g.add(dome);
-    part(L.GEO.cone, '#e8b830', 0.25, 1.6, 0.25, 0, 11.6, 0, g);
-    part(L.GEO.box, '#3a2a1a', 2.2, 4, 0.2, 0, 2, 4.55, g);
-    const sign = new T.Mesh(new T.PlaneGeometry(6, 1.2), new T.MeshBasicMaterial({ map: L.textTex('🛡️ ZUFLUCHT', 512, 100, '#0a1a3a', '#ffffff', 'bold 62px Arial') })); sign.position.set(0, 9, 4.7); g.add(sign);
-    g.traverse((o) => { if (o.isMesh) o.castShadow = true; });
-    L.scene.add(g); return g;
+    const tiles = cv(256, 256, (c) => { c.fillStyle = '#dfe8e4'; c.fillRect(0, 0, 256, 256); c.fillStyle = '#b8c8c2'; for (let k = 0; k <= 256; k += 32) { c.fillRect(k, 0, 2, 256); c.fillRect(0, k, 256, 2); } for (let k = 0; k < 60; k++) { c.fillStyle = 'rgba(90,70,50,' + (Math.random() * 0.08).toFixed(3) + ')'; c.fillRect(Math.random() * 256, Math.random() * 256, 3 + Math.random() * 10, 3 + Math.random() * 18); } });
+    tiles.wrapS = tiles.wrapT = T.RepeatWrapping; tiles.repeat.set(3, 2.4);
+    const floorT = cv(256, 256, (c) => { for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) { c.fillStyle = (x + y) % 2 ? '#3a4a5a' : '#e8ecee'; c.fillRect(x * 32, y * 32, 32, 32); } });
+    const outM = new T.MeshLambertMaterial({ map: stripes }), inM = new T.MeshLambertMaterial({ map: tiles, side: T.DoubleSide });
+    const boxes = [];
+    const wall = (x1, z1, x2, z2, y0, y1) => {
+      const w = Math.abs(x2 - x1), d = Math.abs(z2 - z1), m = new T.Mesh(L.GEO.box, outM); m.scale.set(w, y1 - y0, d); m.position.set((x1 + x2) / 2, (y0 + y1) / 2, (z1 + z2) / 2); m.castShadow = true; g.add(m);
+      boxes.push(L.addBoxY(SAFE.x + Math.min(x1, x2), SAFE.z + Math.min(z1, z2), SAFE.x + Math.max(x1, x2), SAFE.z + Math.max(z1, z2), y0, y1, 'building'));
+    };
+    const h = W / 2;
+    wall(-h, -h, h, -h + TH, 0, H); wall(-h, -h, -h + TH, h, 0, H); wall(h - TH, -h, h, h, 0, H);
+    wall(-h, h - TH, -DW / 2, h, 0, H); wall(DW / 2, h - TH, h, h, 0, H); wall(-DW / 2, h - TH, DW / 2, h, DH, H);
+    const lin = (w, hh, x, y, z, ry) => { const p = new T.Mesh(new T.PlaneGeometry(w, hh), inM); p.position.set(x, y, z); p.rotation.y = ry; g.add(p); return p; };
+    lin(W - 2 * TH, H, 0, H / 2, -h + TH + 0.01, 0); lin(W - 2 * TH, H, -h + TH + 0.01, H / 2, 0, Math.PI / 2); lin(W - 2 * TH, H, h - TH - 0.01, H / 2, 0, -Math.PI / 2);
+    for (const sx of [-1, 1]) lin((W - DW) / 2 - TH, H, sx * (DW / 2 + ((W - DW) / 2 - TH) / 2), H / 2, h - TH - 0.01, Math.PI);
+    lin(DW, H - DH, 0, (H + DH) / 2, h - TH - 0.01, Math.PI);
+    const fl = new T.Mesh(new T.PlaneGeometry(W - 2 * TH, W - 2 * TH), new T.MeshLambertMaterial({ map: floorT })); fl.rotation.x = -Math.PI / 2; fl.position.y = 0.02; g.add(fl);
+    const ce = new T.Mesh(new T.PlaneGeometry(W, W), new T.MeshLambertMaterial({ color: 0xe8ece8 })); ce.rotation.x = Math.PI / 2; ce.position.y = H - 0.02; g.add(ce);
+    part(L.GEO.box, '#1a3a7a', W + 0.6, 0.6, W + 0.6, 0, H + 0.3, 0, g);
+    boxes.push(L.addBoxY(SAFE.x - h - 0.3, SAFE.z - h - 0.3, SAFE.x + h + 0.3, SAFE.z + h + 0.3, H, H + 0.6, 'building'));
+    const dome = new T.Mesh(new T.SphereGeometry(3.6, 24, 12, 0, 6.283, 0, Math.PI / 2), new T.MeshStandardMaterial({ color: 0xe8b830, metalness: 0.7, roughness: 0.3 })); dome.position.y = H + 0.6; g.add(dome);
+    part(L.GEO.cone, '#e8b830', 0.25, 1.6, 0.25, 0, H + 5, 0, g);
+    const sign = new T.Mesh(new T.PlaneGeometry(6, 1.2), new T.MeshBasicMaterial({ map: L.textTex('🛡️ ZUFLUCHT', 512, 100, '#0a1a3a', '#ffffff', 'bold 62px Arial') })); sign.position.set(0, H + 1.6, h + 0.32); g.add(sign);
+    // ---- Behandlungsraum ----
+    const vinyl = L.mat('#2a8a8a'), metal = L.mat('#9aa0a8'), dark = L.mat('#2a2e34');
+    const chair = new T.Group(); chair.position.set(0, 0, -1.2); g.add(chair);
+    part(L.GEO.cylB, metal, 0.5, 0.5, 0.5, 0, 0, 0, chair); part(L.GEO.cylB, metal, 0.12, 0.6, 0.12, 0, 0.5, 0, chair);
+    part(L.GEO.box, vinyl, 0.9, 0.18, 1.0, 0, 1.15, 0.1, chair);
+    const back = part(L.GEO.box, vinyl, 0.9, 1.3, 0.18, 0, 1.75, -0.55, chair); back.rotation.x = -0.55;
+    const head = part(L.GEO.box, vinyl, 0.5, 0.3, 0.16, 0, 2.45, -0.92, chair); head.rotation.x = -0.55;
+    const foot = part(L.GEO.box, vinyl, 0.8, 0.14, 1.0, 0, 0.95, 0.95, chair); foot.rotation.x = 0.45;
+    for (const sx of [-1, 1]) part(L.GEO.box, dark, 0.12, 0.08, 0.7, sx * 0.55, 1.45, 0.05, chair);
+    part(L.GEO.cylB, metal, 0.07, 2.6, 0.07, 1.1, 0, -0.6, chair);
+    const arm = part(L.GEO.box, metal, 0.08, 0.08, 1.2, 0.8, 2.6, -0.2, chair); arm.rotation.y = 0.5;
+    part(L.GEO.cyl, '#f4f4f4', 0.28, 0.14, 0.28, 0.45, 2.5, 0.25, chair);
+    part(L.GEO.cyl, new T.MeshBasicMaterial({ color: 0xfffbe0 }), 0.22, 0.02, 0.22, 0.45, 2.42, 0.25, chair);
+    const tray = new T.Group(); tray.position.set(-1.4, 0, -0.6); g.add(tray);
+    part(L.GEO.cylB, metal, 0.05, 1.2, 0.05, 0, 0, 0, tray); part(L.GEO.box, metal, 0.7, 0.04, 0.45, 0, 1.22, 0, tray);
+    for (let k = 0; k < 5; k++) part(L.GEO.box, '#d8dce0', 0.03, 0.02, 0.28, -0.25 + k * 0.12, 1.26, 0, tray);
+    part(L.GEO.box, '#f2f2f0', 2.6, 1.0, 0.6, -2.4, 0.5, -h + TH + 0.32, g); part(L.GEO.box, '#c8ccd0', 2.6, 0.06, 0.62, -2.4, 1.03, -h + TH + 0.32, g);
+    part(L.GEO.box, '#e8ecee', 0.6, 2.1, 1.6, h - TH - 0.32, 1.05, -2.4, g);
+    part(L.GEO.box, new T.MeshBasicMaterial({ color: 0xf4fff8 }), 2.2, 0.05, 0.3, 0, H - 0.06, 0, g);
+    const lt = new T.PointLight(0xe8fff4, 1.1, 14, 1.6); lt.position.set(0, H - 0.5, 0); g.add(lt);
+    // Gesichtsmasken an den Wänden
+    const face = (k) => cv(128, 160, (c) => {
+      c.clearRect(0, 0, 128, 160); const tone = ['#f2e4d6', '#e8d0bc', '#f4f0ea', '#d8c0a8', '#efe2d2'][k % 5];
+      c.fillStyle = tone; c.beginPath(); c.ellipse(64, 80, 50, 70, 0, 0, 6.3); c.fill();
+      c.fillStyle = 'rgba(0,0,0,0.12)'; c.beginPath(); c.ellipse(64, 104, 40, 40, 0, 0, Math.PI); c.fill();
+      c.fillStyle = '#141414'; const sad = k % 3;
+      c.beginPath(); c.ellipse(44, 66, 11, sad ? 6 : 9, sad ? 0.2 : 0, 0, 6.3); c.fill(); c.beginPath(); c.ellipse(84, 66, 11, sad ? 6 : 9, sad ? -0.2 : 0, 0, 6.3); c.fill();
+      c.strokeStyle = '#8a7060'; c.lineWidth = 3; c.beginPath(); c.moveTo(64, 74); c.lineTo(60, 96); c.lineTo(68, 98); c.stroke();
+      c.fillStyle = '#2a1a1a'; c.beginPath();
+      if (k % 4 === 0) c.ellipse(64, 120, 14, 9, 0, 0, 6.3); else if (k % 4 === 1) c.ellipse(64, 122, 18, 3, 0, 0, 6.3); else if (k % 4 === 2) c.ellipse(64, 124, 8, 12, 0, 0, 6.3); else c.ellipse(64, 118, 20, 6, 0, 0, Math.PI);
+      c.fill();
+    });
+    let k = 0;
+    const hang = (x, y, z, ry) => { const m = new T.Mesh(new T.PlaneGeometry(0.7, 0.9), new T.MeshLambertMaterial({ map: face(k++), transparent: true, side: T.DoubleSide })); m.position.set(x, y, z); m.rotation.y = ry; g.add(m); };
+    for (let n = 0; n < 4; n++) hang(-3 + n * 2, 4.6 - (n % 2) * 0.4, -h + TH + 0.03, 0);
+    for (let n = 0; n < 3; n++) { hang(-h + TH + 0.03, 4.3 + (n % 2) * 0.5, -2.5 + n * 2.2, Math.PI / 2); hang(h - TH - 0.03, 4.5 - (n % 2) * 0.5, -1.9 + n * 2.2, -Math.PI / 2); }
+    L.scene.add(g); g.userData.boxes = boxes; return g;
   }
 
   // ---------- Zustand ----------
@@ -214,6 +267,8 @@
   // ---------- jedes Bild ----------
   L.updateRuslan = function (dt) {
     if (!B.house && L.curIsland === I) B.house = buildSafeHouse();
+    // drinnen: Kamera bleibt im Raum
+    if (B.house && Math.abs(P.x - SAFE.x) < 4.1 && Math.abs(P.z - SAFE.z) < 4.1 && (P.y || 0) < 6.5 && !P.vehicle) L.indoor = { ceil: 6.95, shelter: true };
     for (let i = B.fx.length - 1; i >= 0; i--) { const f = B.fx[i]; f.t += dt; f.m.material.opacity = 0.4 + Math.sin(f.t * 20) * 0.4; if (f.t >= f.dur) { L.scene.remove(f.m); B.fx.splice(i, 1); if (f.cb) f.cb(); } }
     if (B.state === 'pause') { if (onIsland()) { B.pauseT -= dt; if (B.pauseT <= 0 && P.alive && !L.cine) startIntro(); } return; }
     if (B.state === 'intro') { B.t += dt; updIntro(dt); return; }
