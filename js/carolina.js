@@ -62,9 +62,19 @@
     add(belly, L.GEO.sph, skin, 0.42, 0.36, 0.34, 0, -0.08, 0.1); add(belly, L.GEO.sph, skin, 0.36, 0.26, 0.3, 0, -0.3, 0.12);
     add(belly, L.GEO.sph, L.mat('#c8a898'), 0.03, 0.03, 0.02, 0, -0.1, 0.43);
     r.belly = belly;
-    // Maul (für die Fress-Szene)
-    r.maw = add(r.head, L.GEO.sph, L.mat('#3a0408'), 0.001, 0.001, 0.001, 0, 0.03, 0.15);
-    for (let k = 0; k < 6; k++) { const tt = add(r.maw, L.GEO.cone, L.mat('#f0ece0'), 0.12, 0.35, 0.12, (k - 2.5) * 0.32, 0.75, 0.5); tt.rotation.x = Math.PI; }
+    // Maul (für die Fress-Szene): Rachen, obere/untere Zahnreihe, Zunge, Kinn, das nach unten klappt
+    const M0 = new T.Group(); M0.position.set(0, 0.075, 0.133); r.head.add(M0); M0.visible = false;
+    const throat = add(M0, L.GEO.sph, L.mat('#2a0206'), 1, 1, 1, 0, 0, 0);
+    const gum = L.mat('#a8283a'), tooth = L.mat('#f4f0e2'), up = [], lo = [];
+    const lipU = add(M0, L.GEO.box, L.mat('#7a2a3a'), 0.17, 0.02, 0.02, 0, 0, 0.004), lipL = add(M0, L.GEO.box, L.mat('#7a2a3a'), 0.15, 0.02, 0.02, 0, 0, 0.004);
+    const gumU = add(M0, L.GEO.box, gum, 0.15, 0.012, 0.012, 0, 0, 0.002), gumL = add(M0, L.GEO.box, gum, 0.13, 0.012, 0.012, 0, 0, 0.002);
+    for (let k = 0; k < 8; k++) { const x = (k - 3.5) * 0.018, big = k === 1 || k === 6; const tt = add(M0, L.GEO.cone, tooth, big ? 0.009 : 0.007, big ? 0.03 : 0.018, 0.006, x, 0, 0.006); tt.rotation.x = Math.PI; up.push(tt); }
+    for (let k = 0; k < 7; k++) { const x = (k - 3) * 0.018; lo.push(add(M0, L.GEO.cone, tooth, 0.007, 0.016, 0.006, x, 0, 0.006)); }
+    const tongue = add(M0, L.GEO.sph, L.mat('#d85a78'), 0.045, 0.012, 0.03, 0, 0, -0.005);
+    const chin = add(r.head, L.GEO.box, skin, 0.16, 0.05, 0.05, 0, 0.03, 0.115); chin.visible = false;
+    r.mouth = { g: M0, throat, up, lo, lipU, lipL, gumU, gumL, tongue, chin };
+    // Schluck-Beule (wandert vom Hals in den Bauch)
+    r.gulp = add(r.torso, L.GEO.sph, skin, 0.09, 0.09, 0.08, 0, 0.6, 0.1); r.gulp.visible = false;
     // breite Hüften, Nietengürtel
     add(r.hips, L.GEO.sph, blk, 0.44, 0.22, 0.32, 0, -0.02, 0);
     for (let k = 0; k < 10; k++) { const a = k / 10 * 6.283; add(r.hips, L.GEO.sph, L.mat('#c8c8d0'), 0.025, 0.025, 0.025, Math.sin(a) * 0.43, 0.08, Math.cos(a) * 0.31); }
@@ -151,42 +161,98 @@
   }
   // ---------- Fress-Szene ----------
   const ease = (u) => { u = L.clamp(u, 0, 1); return u * u * (3 - 2 * u); };
+  // open: 0 = zu, 1 = ganz weit auf
+  function setMouth(rig, open) {
+    const m = rig.mouth; if (!m) return;
+    const o = L.clamp(open, 0, 1.2), on = o > 0.02; m.g.visible = on; m.chin.visible = on;
+    const h = 0.012 + o * 0.095, w = 0.07 + o * 0.05;
+    m.throat.scale.set(w, h, 0.02); m.throat.position.set(0, -h * 0.35, -0.006);
+    m.lipU.position.y = h * 0.62; m.gumU.position.y = h * 0.6 - 0.006; m.lipL.position.y = -h * 1.3; m.gumL.position.y = -h * 1.28 + 0.006;
+    m.up.forEach((t) => { t.position.y = h * 0.6 - 0.006 - t.scale.y * 0.5; });
+    m.lo.forEach((t) => { t.position.y = -h * 1.28 + 0.006 + t.scale.y * 0.5; });
+    m.tongue.position.y = -h * 1.0; m.tongue.scale.x = 0.04 + o * 0.015;
+    m.chin.position.y = 0.03 - h * 1.25;
+  }
   function startEat() {
     C.eat = { t: 0, cam: { x: 0, y: 0, z: 0, lx: 0, ly: 0, lz: 0 }, from: { x: P.x, y: P.y || 0, z: P.z } };
     P.vx = P.vz = 0;
-    L.startCine('🖤 DIE WAHRE CAROLINA HAT DICH', 4.2, () => (C && C.eat ? C.eat.cam : null));
+    L.startCine('🖤 DIE WAHRE CAROLINA HAT DICH', 6.4, () => (C && C.eat ? C.eat.cam : null));
     if (!L.cine) { C.eat = null; L.hurtPlayer(99999, 'Die wahre Carolina hat dich gefunden'); return; }
-    L.snd.scream && L.snd.scream({ x: P.x, y: 2, z: P.z });
+    L.snd.bossRoar ? L.snd.bossRoar({ x: C.x, y: 8, z: C.z }) : null;
   }
+  // Ablauf (6,4 s): Brüllen → bückt sich und packt dich → hebt dich vors Gesicht (du zappelst) → Maul weit auf → schnappt zu →
+  // kaut, schluckt (Beule wandert in den Bauch), Bauch wird dicker, sie klopft drauf und rülpst.
   function updateEat(dt) {
-    const E0 = C.eat, rig = C.rig; E0.t += dt; const t = E0.t;
-    C.yaw += L.angDiff(C.yaw, Math.atan2(E0.from.x - C.x, E0.from.z - C.z)) * Math.min(1, dt * 6);
+    const E0 = C.eat, rig = C.rig; E0.t += dt; const t = E0.t, f = E0.from;
+    C.yaw += L.angDiff(C.yaw, Math.atan2(f.x - C.x, f.z - C.z)) * Math.min(1, dt * 6);
     rig.root.position.set(C.x, 0, C.z); rig.root.rotation.set(0, C.yaw, 0);
-    L.animHuman(rig, { mode: 'walk', phase: 0, speed: 0 });
-    const reach = ease(t / 0.7), lift = ease((t - 0.7) / 1.2);
-    for (const a of rig.arms) { a.arm.rotation.x = -1.3 * reach - 1.0 * lift; a.elbow.rotation.x = -0.4 - lift * 0.9; }
-    rig.head.rotation.x = -0.25 * ease((t - 1.6) / 0.6);
+    L.animHuman(rig, { mode: 'idle', phase: t });
+    const fx = Math.sin(C.yaw), fz = Math.cos(C.yaw), sx = Math.cos(C.yaw), sz = -Math.sin(C.yaw);
+    const roar = t < 0.9 ? Math.sin(Math.PI * L.clamp(t / 0.9, 0, 1)) : 0;
+    const bend = ease((t - 0.8) / 0.45) * (1 - ease((t - 1.45) / 0.5)); // bückt sich nach vorn
+    const lift = ease((t - 1.45) / 0.9);                                 // hebt dich hoch
+    const toss = ease((t - 2.75) / 0.25);                                // wirft dich ins Maul
+    const [grab, other] = rig.arms;
+    // Körper
+    rig.torso.rotation.x = bend * 0.55 - roar * 0.15; rig.head.rotation.x = -roar * 0.45 + bend * 0.2 - ease((t - 2.2) / 0.4) * 0.12 * (1 - ease((t - 3.2) / 0.3));
+    rig.head.rotation.z = t > 3.2 && t < 4.6 ? Math.sin(t * 9) * 0.04 : 0;
+    // Arme: beim Brüllen ausgebreitet, dann greift der eine, der andere klopft später auf den Bauch
+    const pat = t > 4.6 ? Math.abs(Math.sin((t - 4.6) * 7)) : 0;
+    const down = ease((t - 3.2) / 0.7); // Arm danach wieder runter
+    grab.arm.rotation.x = (-0.5 * roar - 0.9 * bend - 1.55 * lift - 0.2 * toss) * (1 - down);
+    grab.arm.rotation.z = (-0.9 * roar + 0.25 * lift) * (1 - down); grab.elbow.rotation.x = (-0.2 - 0.7 * lift - 0.9 * toss) * (1 - down);
+    other.arm.rotation.x = -0.5 * roar - 0.3 * bend + (t > 4.4 ? -0.5 : 0); other.arm.rotation.z = 0.9 * roar + (t > 4.4 ? -0.35 : 0);
+    other.elbow.rotation.x = t > 4.4 ? -1.2 - pat * 0.35 : -0.3;
     rig.root.updateMatrixWorld(true);
     const hp = new T.Vector3(); rig.head.getWorldPosition(hp);
-    const fx = Math.sin(C.yaw), fz = Math.cos(C.yaw);
-    const mouth = new T.Vector3(hp.x + fx * 1.4, hp.y - 0.3, hp.z + fz * 1.4);
-    // Maul geht auf, schnappt zu, kaut
-    const open = t < 1.6 ? 0 : t < 2.4 ? ease((t - 1.6) / 0.8) : t < 2.55 ? 1 - (t - 2.4) / 0.15 : 0.25 + Math.abs(Math.sin(t * 9)) * 0.25;
-    rig.maw.scale.set(0.12 * Math.max(0.01, open), 0.15 * Math.max(0.01, open), 0.06 * Math.max(0.01, open));
-    // du wirst gepackt und hochgehoben
+    const mw = new T.Vector3(0, 0.075, 0.16); rig.head.localToWorld(mw);
+    const hand = new T.Vector3(); (rig.hand || grab.elbow).getWorldPosition(hand);
+    // Maul
+    let open = roar * 0.6;
+    if (t > 2.2 && t < 2.95) open = ease((t - 2.2) / 0.45) * 1.15;
+    else if (t >= 2.95 && t < 3.1) open = 1.15 * (1 - (t - 2.95) / 0.15);
+    else if (t >= 3.1 && t < 4.3) open = 0.12 + Math.abs(Math.sin((t - 3.1) * 8)) * 0.3; // kauen
+    else if (t >= 5.2 && t < 5.7) open = 0.5 * Math.sin(Math.PI * (t - 5.2) / 0.5); // Rülpser
+    setMouth(rig, open);
+    // du: gepackt, hochgehoben, zappelst, fliegst ins Maul
     if (P.rig) {
       const pr = P.rig.root;
-      if (t < 2.5) { pr.visible = true; pr.position.set(L.lerp(E0.from.x, mouth.x, lift), L.lerp(E0.from.y, mouth.y - 1.2, lift), L.lerp(E0.from.z, mouth.z, lift)); pr.rotation.set(-0.3 * lift, C.yaw + Math.PI, Math.sin(t * 14) * 0.25 * lift); L.animHuman(P.rig, { mode: 'tumble', tumble: 1, phase: t * 8 }); }
-      else pr.visible = false;
+      if (t < 1.2) { pr.visible = true; pr.position.set(f.x, f.y, f.z); pr.rotation.set(0, C.yaw + Math.PI, 0); L.animHuman(P.rig, { mode: t < 0.5 ? 'idle' : 'walk', phase: t * 14, speed: 1 }); }
+      else if (t < 3.0) {
+        pr.visible = true;
+        const hold = new T.Vector3(hand.x, hand.y - 1.9, hand.z);
+        const into = new T.Vector3(mw.x - fx * 0.4, mw.y - 0.9, mw.z - fz * 0.4);
+        const p0 = t < 1.45 ? new T.Vector3().lerpVectors(new T.Vector3(f.x, f.y, f.z), hold, ease((t - 1.2) / 0.25)) : hold.lerp(into, toss);
+        pr.position.copy(p0); pr.rotation.set(-0.2 - toss * 1.3, C.yaw + Math.PI + Math.sin(t * 5) * 0.2, Math.sin(t * 13) * 0.22 * (1 - toss));
+        pr.scale.setScalar(1 - toss * 0.35);
+        L.animHuman(P.rig, { mode: 'tumble', tumble: 0.3, phase: t * 16 });
+        if (t > 1.6 && !E0.scr) { E0.scr = true; L.snd.scream && L.snd.scream({ x: hand.x, y: hand.y, z: hand.z }); }
+      } else { pr.visible = false; pr.scale.setScalar(1); }
     }
-    if (t > 2.5 && !E0.chomp) { E0.chomp = true; L.shake = Math.max(L.shake, 1.4); L.blood && L.blood(mouth.x, mouth.y, mouth.z, 40, true); L.snd.splat && L.snd.splat({ x: mouth.x, y: mouth.y, z: mouth.z }); L.snd.stomp && L.snd.stomp({ x: C.x, y: 5, z: C.z }); }
-    if (t > 2.5 && Math.random() < dt * 10) L.blood && L.blood(mouth.x, mouth.y - 0.5, mouth.z, 3);
-    if (rig.belly) { const j = t > 2.6 ? Math.sin(t * 6) * 0.05 : 0; rig.belly.scale.set(1 + j, 1 - j, 1 + j); }
-    // Kamera: von der Seite, langsam näher
-    const side = C.yaw + Math.PI / 2, d = 26 - ease(t / 3) * 9;
-    Object.assign(E0.cam, { x: C.x + Math.sin(side) * d + fx * 6, y: hp.y * 0.75, z: C.z + Math.cos(side) * d + fz * 6, lx: L.lerp(E0.from.x, mouth.x, 0.6), ly: L.lerp(2, mouth.y, 0.7), lz: L.lerp(E0.from.z, mouth.z, 0.6) });
-    if (t > 3.9 || (!L.cine && t > 0.1)) {
-      C.eat = null; rig.maw.scale.setScalar(0.001);
+    // Biss
+    if (t > 3.0 && !E0.chomp) {
+      E0.chomp = true; L.shake = Math.max(L.shake, 1.3); L.blood && L.blood(mw.x, mw.y, mw.z, 18, true);
+      L.snd.splat && L.snd.splat({ x: mw.x, y: mw.y, z: mw.z }); L.snd.stomp && L.snd.stomp({ x: C.x, y: 5, z: C.z });
+      if (L.backFade) { L.backFade.style.background = '#3a0006'; L.backFade.style.opacity = '0.55'; setTimeout(() => { if (L.backFade) L.backFade.style.opacity = '0'; }, 140); }
+    }
+    if (t > 3.1 && t < 4.2 && Math.random() < dt * 6) L.blood && L.blood(mw.x, mw.y - 0.3, mw.z, 2);
+    // Kauen-Geräusche, Schlucken, Rülpser
+    if (t > 3.2 && t < 4.3 && Math.floor(t * 4) !== E0.chewN) { E0.chewN = Math.floor(t * 4); L.nz && L.nz({ dur: 0.12, f: 700, type: 'bandpass', q: 2, vol: 0.25 }); }
+    if (t > 4.3 && !E0.gulp) { E0.gulp = true; L.tn && L.tn({ f: 180, fTo: 60, dur: 0.5, type: 'sine', vol: 0.4 }); }
+    if (t > 5.2 && !E0.burp) { E0.burp = true; L.tn && L.tn({ f: 95, fTo: 70, dur: 0.6, type: 'sawtooth', vol: 0.3 }); L.tn && L.tn({ f: 140, fTo: 90, dur: 0.5, type: 'square', vol: 0.12 }); L.msg('🖤 Carolina: „*RÜLPS* … lecker.“', 3000); }
+    // Schluck-Beule wandert vom Hals in den Bauch, Bauch wird dicker und wackelt beim Klopfen
+    const gu = L.clamp((t - 4.3) / 0.6, 0, 1);
+    if (rig.gulp) { rig.gulp.visible = gu > 0 && gu < 1; rig.gulp.position.set(0, 0.6 - gu * 0.62, 0.11 + gu * 0.22); }
+    if (rig.belly) { const big = 1 + ease((t - 4.75) / 0.4) * 0.3, j = pat * 0.05; rig.belly.scale.set(big + j, big - j, big + j * 0.5); }
+    // Kamera: 1) von unten zu ihr hoch  2) über deine Schulter in ihr Gesicht  3) zurück, ganze Figur
+    const cam = E0.cam;
+    if (t < 1.45) { const a = C.yaw + Math.PI / 2 + 0.35, mx = (C.x + f.x) / 2, mz = (C.z + f.z) / 2, d = 26 - t * 3; Object.assign(cam, { x: mx + Math.sin(a) * d, y: 4 + t * 2, z: mz + Math.cos(a) * d, lx: C.x, ly: L.lerp(hp.y * 0.75, hand.y * 0.6, bend), lz: C.z }); }
+    else if (t < 3.3) { const u = ease((t - 1.45) / 1.0); Object.assign(cam, { x: mw.x + fx * 9 + sx * L.lerp(5, 2.5, u), y: mw.y + L.lerp(-1, 0.6, u), z: mw.z + fz * 9 + sz * L.lerp(5, 2.5, u), lx: mw.x, ly: mw.y - 0.8 + u * 0.6, lz: mw.z }); }
+    else { const u = ease((t - 3.3) / 1.6), d = L.lerp(12, 24, u), a = C.yaw + L.lerp(0.4, 0.9, u); Object.assign(cam, { x: C.x + Math.sin(a) * d, y: L.lerp(mw.y, hp.y * 0.55, u), z: C.z + Math.cos(a) * d, lx: C.x, ly: L.lerp(mw.y - 0.5, hp.y * 0.55, u), lz: C.z }); }
+    if (t > 6.2 || (!L.cine && t > 0.1)) {
+      C.eat = null; setMouth(rig, 0); if (rig.gulp) rig.gulp.visible = false; rig.torso.rotation.x = 0; rig.head.rotation.set(0, 0, 0);
+      if (rig.belly) rig.belly.scale.set(1, 1, 1);
+      if (P.rig) P.rig.root.scale.setScalar(1);
       if (L.cine && L.endCine) L.endCine();
       L.hurtPlayer(99999, 'Die wahre Carolina hat dich gefressen');
       if (P.rig) P.rig.root.visible = false;

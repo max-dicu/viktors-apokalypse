@@ -37,7 +37,7 @@
   function dotTex() {
     if (spriteTex) return spriteTex;
     const c = document.createElement('canvas'); c.width = c.height = 32; const g = c.getContext('2d');
-    const gr = g.createRadialGradient(16, 16, 0, 16, 16, 16); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.3, 'rgba(255,255,255,0.8)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    const gr = g.createRadialGradient(16, 16, 0, 16, 16, 16); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.45, 'rgba(255,255,255,0.95)'); gr.addColorStop(0.7, 'rgba(255,255,255,0.35)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
     g.fillStyle = gr; g.fillRect(0, 0, 32, 32); spriteTex = new T.CanvasTexture(c); return spriteTex;
   }
   // dirs: Liste von Richtungen (Einheitsvektoren), cols: Farben je Punkt
@@ -45,7 +45,7 @@
     const n = dirs.length, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), c = new T.Color();
     for (let i = 0; i < n; i++) { pos[i * 3] = x; pos[i * 3 + 1] = y; pos[i * 3 + 2] = z; c.setHex(cols[i % cols.length]); col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b; }
     const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3)); geo.setAttribute('color', new T.BufferAttribute(col, 3));
-    const mat = new T.PointsMaterial({ size: (o.size || 1.6) * 2.8, map: dotTex(), vertexColors: true, transparent: true, depthWrite: false, blending: T.AdditiveBlending, fog: false, sizeAttenuation: true });
+    const mat = new T.PointsMaterial({ size: (o.size || 1.6) * 2.8, map: dotTex(), vertexColors: true, transparent: true, depthWrite: false, blending: T.NormalBlending, alphaTest: 0.02, fog: false, sizeAttenuation: true });
     const pts = new T.Points(geo, mat); pts.frustumCulled = false; L.scene.add(pts);
     const vel = dirs.map((d) => d.clone().multiplyScalar(o.speed * (0.85 + Math.random() * 0.3)));
     bursts.push({ pts, geo, mat, vel, size0: mat.size, t: 0, life: o.life || 2.4, grav: o.grav === undefined ? 5 : o.grav, drag: o.drag || 1.6, twinkle: !!o.twinkle });
@@ -75,7 +75,7 @@
     } else if (kind === 'text') skyText(x, y, z, text || '');
     if (L.env) { L.env.bolt = Math.max(L.env.bolt || 0, 0.25); }
     // heller Blitz in der Mitte (nicht bei der Schrift, sonst verdeckt er sie)
-    if (kind !== 'text') { const fl = new T.Sprite(new T.SpriteMaterial({ map: dotTex(), color: c1, transparent: true, blending: T.AdditiveBlending, depthWrite: false, fog: false })); fl.position.set(x, y, z); fl.scale.setScalar(26); L.scene.add(fl); let k = 1; const iv = setInterval(() => { k -= 0.12; fl.material.opacity = Math.max(0, k); fl.scale.setScalar(26 + (1 - k) * 20); if (k <= 0) { clearInterval(iv); L.scene.remove(fl); fl.material.dispose(); } }, 40); }
+    if (kind !== 'text') { const fl = new T.Sprite(new T.SpriteMaterial({ map: dotTex(), color: c1, transparent: true, blending: T.AdditiveBlending, depthWrite: false, fog: false })); fl.position.set(x, y, z); fl.scale.setScalar(14); fl.material.opacity = 0.4; L.scene.add(fl); let k = 0.4; const iv = setInterval(() => { k -= 0.12; fl.material.opacity = Math.max(0, k); fl.scale.setScalar(14 + (0.4 - k) * 25); if (k <= 0) { clearInterval(iv); L.scene.remove(fl); fl.material.dispose(); } }, 40); }
     bang(x, y, z, kind === 'text');
   }
   // ---------- Text am Himmel: Punkte formen die Buchstaben ----------
@@ -93,9 +93,9 @@
     const pts = []; for (let yy = 0; yy < c.height; yy += step) for (let xx = 0; xx < c.width; xx += step) if (data[(yy * c.width + xx) * 4 + 3] > 128) pts.push([xx - c.width / 2, c.height / 2 - yy]);
     const scale = Math.min(0.35, (o.width || 70) / c.width);
     const n = pts.length, pos = new Float32Array(n * 3), col = new Float32Array(n * 3), cc = new T.Color();
-    for (let i = 0; i < n; i++) { if (o.gold) cc.setHex(i % 3 ? 0xffd870 : 0xffffff); else { cc.setHex(PAL[(i * 7) % PAL.length]); cc.lerp(new T.Color(1, 1, 1), 0.35); } col[i * 3] = cc.r; col[i * 3 + 1] = cc.g; col[i * 3 + 2] = cc.b; }
+    for (let i = 0; i < n; i++) { if (o.gold) cc.setHex(i % 3 ? 0xffd870 : 0xffffff); else { cc.setHex(PAL[(i * 7) % PAL.length]); cc.lerp(new T.Color(1, 1, 1), 0.08); } col[i * 3] = cc.r; col[i * 3 + 1] = cc.g; col[i * 3 + 2] = cc.b; }
     const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3)); geo.setAttribute('color', new T.BufferAttribute(col, 3));
-    const mat = new T.PointsMaterial({ size: o.gentle ? 3.0 : 3.2, map: dotTex(), vertexColors: true, transparent: true, depthWrite: false, blending: T.AdditiveBlending, fog: false });
+    const mat = new T.PointsMaterial({ size: o.gentle ? 3.0 : 3.2, map: dotTex(), vertexColors: true, transparent: true, depthWrite: false, blending: T.NormalBlending, alphaTest: 0.02, fog: false });
     const ptsM = new T.Points(geo, mat); ptsM.frustumCulled = false;
     const grp = new T.Group(); grp.position.set(x, y, z); grp.add(ptsM); L.scene.add(grp);
     const life = o.life || 7;

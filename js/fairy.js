@@ -799,6 +799,7 @@
     // von der Welt gefallen → zurück ins Dorf
     if (here && P.alive && (P.y || 0) < -60 && !P.vehicle) { const s0 = ARRIVE(); P.x = s0.x; P.z = s0.z; P.y = 2; P.vy = 0; P.air = true; L.hurtPlayer && L.hurtPlayer(15, 'Von der Märchenwelt gefallen'); L.msg('☁️ Du bist von der Welt gefallen – eine Fee hat dich ins Dorf zurückgebracht.', 4000); }
   };
+  L.fairyBeyza = () => (built ? { x: built.bey.root.position.x, z: built.bey.root.position.z } : null);
   L.fairyText = function () {
     if (!built) return '💖 BEYZA spaziert durch die Märchenwelt';
     const d = Math.hypot(P.x - built.bey.root.position.x, P.z - built.bey.root.position.z);

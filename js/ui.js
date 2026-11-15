@@ -176,6 +176,7 @@
     g.fill(); g.stroke(); g.restore();
   }
   function drawMinimap() {
+    { const lm = L.localMap && L.localMap(); if (lm) { L.drawLocalMini(mm, 200, 420, lm); return; } }
     const S = 200, view = 420, k = L.mapScale, src = view * k, g = mm;
     g.save(); g.clearRect(0, 0, S, S);
     g.beginPath(); g.arc(S / 2, S / 2, S / 2, 0, Math.PI * 2); g.clip();
@@ -237,7 +238,7 @@
   $('bigmap').addEventListener('click', (e) => {
     const c = $('bigmap'), r = c.getBoundingClientRect(), X = L.bigMapXform; if (!X) return;
     const px = (e.clientX - r.left) * c.width / r.width, py = (e.clientY - r.top) * c.height / r.height;
-    const wx = px / X.k - X.ox, wz = py / X.k - X.ox;
+    const wx = px / X.k - X.ox, wz = py / X.k - (X.oz !== undefined ? X.oz : X.ox);
     if (L.suitOn && L.suitOn() && L.mapTp !== false && L.suitPortalTo) { L.suitPortalTo(wx, wz); closeOverlays(); return; }
     L.setWaypoint(wx, wz);
     drawBigMap();
@@ -253,6 +254,7 @@
   }
   function drawBigMap() {
     suitWorldButtons();
+    { const lm = L.localMap && L.localMap(); if (lm) { L.drawLocalBig($('bigmap'), lm); return; } }
     if (Math.max(Math.abs(P.x), Math.abs(P.z)) > L.HALF + 200) { drawWorldMap(); return; }
     const c = $('bigmap'), g = c.getContext('2d'), S = c.width, k = S / (L.HALF * 2);
     g.drawImage(L.mapCanvas, 0, 0, S, S);
