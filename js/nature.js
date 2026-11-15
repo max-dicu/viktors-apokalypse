@@ -124,7 +124,7 @@
     g.rotation.y = side === 0 ? Math.PI / 2 : side === 1 ? -Math.PI / 2 : Math.PI;
     tsu = { side, t: -TSU_WARN, g, wall, front, foam, hitT: 0 };
     const name = ['Westen', 'Osten', 'Süden'][side];
-    tsu.warned = !(L.atHome && !L.atHome() && !L.curIsland);
+    tsu.warned = !!(L.atHome && L.atHome()); // nur wer in der Heimat ist, bekommt die Warnung
     if (tsu.warned) L.banner('🌊 TSUNAMI-WARNUNG', `Eine Riesenwelle rollt aus dem ${name} über die ganze Karte! Rette dich in den 🗼 Turm, flieg mit dem T10 hoch oder setz dich ins Auto!`);
     if (tsu.warned) for (let k = 0; k < 6; k++) setTimeout(() => L.snd.alarm({ x: P.x, y: 5, z: P.z }), k * 1300);
     if (send && isHost()) L.mp.send({ t: 'tsu', side });

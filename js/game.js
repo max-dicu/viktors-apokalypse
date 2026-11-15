@@ -257,6 +257,7 @@
     if (L.extraTargets) for (const e of L.extraTargets()) a.push(e);
     if (L.seaTargets) for (const e of L.seaTargets()) a.push(e);
     if (L.titanTargets) for (const e of L.titanTargets()) a.push(e);
+    if (L.backTargets) for (const e of L.backTargets()) a.push(e);
     for (const r of remotesList()) if (r.inRound && r.alive && !r.gone && !r.inVeh) a.push(r);
     return a;
   }
@@ -337,6 +338,7 @@
     if (e.kind === 'carolina') { if (L.carolinaHit) L.carolinaHit(dmg, src); return; }
     if (e.kind === 'seamon') { if (L.seaHit) L.seaHit(e, dmg, src); return; }
     if (e.kind === 'thanatos') { if (L.thanatosHit) L.thanatosHit(dmg, src); return; }
+    if (e.kind === 'shade') { if (L.shadeHit) L.shadeHit(e, dmg); return; }
     if (e.kind === 'remote') { if (src === P) { L.mp.sendTo(e.pid, { t: 'pvp', dmg, by: (L.save.char || {}).name || 'Mitspieler' }); L.blood(e.x, e.y + 1.2, e.z, 10); } return; }
     if (isClient()) { if (src === P) L.mp.send({ t: 'dmg', id: e.key, dmg }); L.blood(e.x, e.kind === 'walker' ? e.hy : 1.5, e.z, 6); return; }
     e.hp -= dmg;
@@ -3216,7 +3218,7 @@
     if (L.updateWorkshop) L.updateWorkshop(dt);
     if (L.updateRevive) L.updateRevive(dt);
     // solange MAMA IVA da ist, leuchtet der Turm rot – bis man drin ist
-    L.towerCall = !!(((L.boss && !L.boss.dead) || L.wboss) && L.towerSafe() && P.alive && !P.gone && !L.inTower(P.x, P.z) && !onIsl(P.x, P.z));
+    L.towerCall = !!(((L.boss && !L.boss.dead) || L.wboss) && L.towerSafe() && P.alive && !P.gone && !L.inTower(P.x, P.z) && !onIsl(P.x, P.z) && atHome(P));
     L.setTowerGlow(L.towerCall);
     L.updateFusion(dt);
     L.updateTower(dt);

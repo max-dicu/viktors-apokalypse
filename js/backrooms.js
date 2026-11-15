@@ -5,8 +5,8 @@
 // Raus kommt man über das Pause-Menü: „🌈 Zurück beamen“. Eigene Umsetzung der Internet-Legende, alle Level selbst entworfen.
 (function () {
   const L = window.L, T = THREE, P = L.player;
-  const X0 = 81000, SPAN = 2000, CELL = 5, CN = 8, CH = CELL * CN, PER = SPAN / CELL, CPER = SPAN / CH, NLEV = 100;
-  const zc = (n) => (n - 49.5) * 2400;
+  const X0 = 81000, SPAN = 2000, CELL = 5, CN = 8, CH = CELL * CN, PER = SPAN / CELL, CPER = SPAN / CH, NLEV = 1000;
+  const zc = (n) => ((n % 100) - 49.5) * 2400;
   L.inBack = (x) => x > 78000 && x < 84000;
   L.BACK_N = NLEV;
   setTimeout(() => { const od = L.dimLand; L.dimLand = (x, z) => (L.inBack(x) ? true : od ? od(x, z) : false); }, 0);
@@ -43,9 +43,9 @@
       d.dens = L.clamp(base.dens + j(1) * 0.2, 0.03, 0.65);
       d.H = Math.max(2.6, base.H + j(2) * 1.2);
       d.wc = shade(base.wc, j(3)); d.fc = shade(base.fc, j(4));
-      d.flick = Math.min(0.7, base.flick + n / 400);
-      d.fogFar = Math.max(16, base.fogFar * (1 - n / 260));
-      d.hemi = base.hemi * (1 - n / 320);
+      d.flick = Math.min(0.75, base.flick + n / 600);
+      d.fogFar = Math.max(16, base.fogFar * (1 - Math.min(0.6, n / 1200)));
+      d.hemi = base.hemi * Math.max(0.25, 1 - n / 1200);
     }
     d.seed = n * 7919 + 13;
     return d;
@@ -145,7 +145,9 @@
     const spawnish = (gi, gj) => Math.abs(gi - PER / 2) <= 1 && Math.abs(gj - PER / 2) <= 1;
     // Ausgänge und Glitch-Wand in diesem Stück
     let doorCell = null, glitchCell = null;
-    if (h3(pcx, pcz, D.seed + 20) < (D.end ? 0.5 : 0.24)) doorCell = [Math.floor(h3(pcx, pcz, D.seed + 21) * CN), Math.floor(h3(pcx, pcz, D.seed + 22) * CN)];
+    const sd = (a) => { const q = Math.abs(a - CPER / 2); return Math.min(q, CPER - q); }, farOk = Math.max(sd(pcx), sd(pcz)) >= 3;
+    const doorP = D.end ? 0.5 : Math.max(0.025, 0.09 - D.n * 0.00006);
+    if ((D.end || farOk) && h3(pcx, pcz, D.seed + 20) < doorP) doorCell = [Math.floor(h3(pcx, pcz, D.seed + 21) * CN), Math.floor(h3(pcx, pcz, D.seed + 22) * CN)];
     if (!D.end && h3(pcx, pcz, D.seed + 30) < 0.06) glitchCell = [Math.floor(h3(pcx, pcz, D.seed + 31) * CN), Math.floor(h3(pcx, pcz, D.seed + 32) * CN)];
     for (let i = 0; i < CN; i++) for (let j = 0; j < CN; j++) {
       const gi = mod(cx * CN + i, PER), gj = mod(cz * CN + j, PER), x = ox + i * CELL, z = oz + j * CELL, sp = spawnish(gi, gj);
@@ -156,7 +158,7 @@
       if (!sp && !gapW && h3(gi, gj, D.seed) < (bW ? dB : dI)) walls.push({ x, z: z + CELL / 2, r: 1 });
       if (isGl) glitches.push({ x: x + CELL / 2, z });
       else if (!sp && (isDoor || (!gapN && h3(gi, gj, D.seed + 1) < (bN ? dB : dI)))) walls.push({ x: x + CELL / 2, z, r: 0 });
-      if (isDoor) doors.push({ x: x + CELL / 2, z, type: D.end ? 'home' : (() => { const r = h3(gi, gj, D.seed + 23); return r < 0.68 ? 'next' : r < 0.86 && D.n > 0 ? 'back' : 'skip'; })(), open: 0 });
+      if (isDoor) doors.push({ x: x + CELL / 2, z, type: D.end ? 'home' : (() => { const r = h3(gi, gj, D.seed + 23); return r < 0.5 ? 'next' : r < 0.72 && D.n > 0 ? 'back' : r < 0.77 ? 'skip' : 'trap'; })(), open: 0 });
       if (!sp && h3(gi, gj, D.seed + 2) < D.pill) pills.push({ x, z });
       if ((gi + gj) % 2 === 0 && h3(gi, gj, D.seed + 3) < D.lightP) lights.push({ x: x + CELL / 2, z: z + CELL / 2, fl: h3(gi, gj, D.seed + 4) < D.flick, ph: h3(gi, gj, 99) * 50 });
       // Dinge im Raum
@@ -168,7 +170,7 @@
         if (D.extra === 'toys' && pr < 0.2) { const c = ['#ff5a5a', '#5ab0ff', '#ffd040', '#7aff7a', '#ff8ad8'][Math.floor(pr * 25) % 5]; props.push({ x: px, z: pz, w: 0.5, h: 0.5, d: 0.5, col: c }); }
       }
       // Vorräte (nur einmal pro Stelle)
-      if (!sp && h3(gi, gj, D.seed + 40) < 0.012) {
+      if (!sp && h3(gi, gj, D.seed + 40) < 0.007) {
         const key = D.n + ':' + gi + ':' + gj;
         if (!spawnedItems.has(key)) { spawnedItems.add(key); const r = h3(gi, gj, D.seed + 41); L.spawnItem(r < 0.55 ? 'wasser' : r < 0.75 ? 'riegel' : r < 0.9 ? 'konserve' : 'verband', x + CELL / 2, z + CELL / 2, 1, undefined, undefined, undefined, 0, true); }
       }
@@ -197,7 +199,7 @@
         const hinge = new T.Group(); hinge.position.set(-0.6, 0, 0.04); side.add(hinge);
         const pan = new T.Mesh(L.GEO.box, M.door); pan.scale.set(1.2, 2.2, 0.06); pan.position.set(0.6, 1.1, 0); hinge.add(pan);
         const knob = new T.Mesh(L.GEO.sph, L.mat('#d8c070')); knob.scale.setScalar(0.05); knob.position.set(1.05, 1.05, 0.06); hinge.add(knob);
-        const sg = new T.Mesh(new T.PlaneGeometry(0.9, 0.34), signMat(d.type)); sg.position.set(0, 2.55, 0.05); side.add(sg);
+        const sg = new T.Mesh(new T.PlaneGeometry(0.9, 0.34), signMat(d.type === 'trap' ? 'next' : d.type)); sg.position.set(0, 2.55, 0.05); side.add(sg);
         (d.hinges = d.hinges || []).push(hinge);
       }
       d.g = dg;
@@ -243,7 +245,7 @@
   document.body.appendChild(fade);
   L.backFade = fade;
   const cst = document.createElement('style'); cst.textContent = 'body.cinema #brHud{visibility:hidden}'; document.head.appendChild(cst); hud.id = 'brHud';
-  function showHud() { if (!cur) { hud.style.display = 'none'; return; } hud.style.display = 'block'; hud.innerHTML = `🟨 BACKROOMS · LEVEL ${cur.n} – ${cur.name}<br><span style="font-size:11px;font-weight:normal;opacity:.85">Ausgänge: Türen 🚪 · Heimweg: Pause-Menü → 🌈 Zurück beamen</span>`; }
+  function showHud() { if (!cur) { hud.style.display = 'none'; return; } hud.style.display = 'block'; hud.innerHTML = `🟨 BACKROOMS · LEVEL ${cur.n} / ${NLEV - 1} – ${cur.name} · nächste Belohnung: Level ${Math.min(NLEV - 1, (Math.floor(cur.n / 100) + 1) * 100)}<br><span style="font-size:11px;font-weight:normal;opacity:.85">Ausgänge: Türen 🚪 · Heimweg: Pause-Menü → 🌈 Zurück beamen</span>`; }
   function beamBtn() { const b = L.$ && L.$('pBeam'); if (b) b.hidden = !(cur && L.inBack(P.x)); }
   L.backSpawn = (n) => ({ x: X0 + 2.5, z: zc(n) + 2.5 });
   // in Level n setzen (von Heimdall oder durch eine Tür)
@@ -255,7 +257,14 @@
     P.x = s.x; P.z = s.z; P.y = y || 0; P.vx = P.vz = P.vy = 0; P.air = (y || 0) > 0.1; P.flying = 0; P.swim = false;
     P.spawnProt = Math.max(P.spawnProt || 0, 5);
     root.visible = true; stream(true); showHud(); beamBtn();
-    L.save.backMax = Math.max(L.save.backMax || 0, n); if (L.persist) L.persist();
+    L.save.backMax = Math.max(L.save.backMax || 0, n);
+    L.save.backRewards = L.save.backRewards || [];
+    if ((n % 100 === 0 && n > 0 || n === NLEV - 1) && !L.save.backRewards.includes(n)) {
+      const coins = n === NLEV - 1 ? 25000 : n * 10; L.save.backRewards.push(n); L.save.coins = (L.save.coins || 0) + coins;
+      setTimeout(() => L.banner('🏆 LEVEL ' + n + ' ERREICHT!', '+' + coins + ' Münzen – sofort gespeichert. Weiter so!'), 2500); L.snd.codeOk && L.snd.codeOk();
+    }
+    if (L.persist) L.persist();
+    clearShades();
     L.banner('🟨 LEVEL ' + n, cur.name + (n === 0 ? ' – summende Neonröhren, feuchter Teppich, kein Ende in Sicht …' : n === NLEV - 1 ? ' – das letzte Level. Die goldene Tür bringt dich nach Asgard.' : ''));
   };
   L.backLeft = function () { root.visible = false; water.visible = false; pl.intensity = 0; hud.style.display = 'none'; L.indoor = null; beamBtn(); leftT = 0; };
@@ -281,20 +290,64 @@
     for (const c of chunks.values()) for (const d of c.doors) { const dd = Math.hypot(P.x - d.x, P.z - d.z); if (dd < bd) { bd = dd; best = d; } }
     return best;
   }
-  const target = (d) => d.type === 'next' ? cur.n + 1 : d.type === 'back' ? cur.n - 1 : d.type === 'skip' ? cur.n + 2 + Math.floor(h3(Math.round(d.x), Math.round(d.z), 77) * 5) : -1;
+  const target = (d) => d.type === 'next' ? cur.n + 1 : d.type === 'back' ? cur.n - 1 : d.type === 'skip' ? cur.n + 2 + Math.floor(h3(Math.round(d.x), Math.round(d.z), 77) * 5) : d.type === 'trap' ? Math.max(0, cur.n - 2 - Math.floor(h3(Math.round(d.x), Math.round(d.z), 78) * 6)) : -1;
   const och = L.crateHint, oci = L.crateInteract;
   L.crateHint = () => {
     const d = nearDoor();
-    if (d) { if (d.type === 'home') return 'E: 🌈 Goldene Tür – zurück nach Asgard'; const n = Math.min(NLEV - 1, target(d)); return 'E: 🚪 ' + (d.type === 'next' ? 'EXIT → Level ' + n : d.type === 'back' ? 'Zurück → Level ' + n : '??? → irgendwo weiter vorne …'); }
+    if (d) { if (d.type === 'home') return 'E: 🌈 Goldene Tür – zurück nach Asgard'; const n = Math.min(NLEV - 1, target(d)); return 'E: 🚪 ' + (d.type === 'trap' ? 'EXIT → Level ' + (cur.n + 1) : d.type === 'next' ? 'EXIT → Level ' + n : d.type === 'back' ? 'Zurück → Level ' + n : '??? → irgendwo weiter vorne …'); }
     return och ? och() : null;
   };
   L.crateInteract = function () {
     const d = nearDoor(); if (!d) return oci ? oci() : false;
     if (d.type === 'home') { if (L.beamHome) L.beamHome(); return true; }
-    d.opening = true; goLevel(Math.min(NLEV - 1, target(d)), 'door');
+    d.opening = true;
+    if (d.type === 'trap') { L.msg('🪤 Eine FALLE! Die Tür war gar kein Ausgang …', 3500); L.snd.scream && L.snd.scream({ x: P.x, y: 1, z: P.z }); }
+    goLevel(Math.min(NLEV - 1, target(d)), d.type === 'trap' ? 'glitch' : 'door');
     return true;
   };
 
+  // ---------- Schattenwesen: jagen dich, gehen durch Wände. Schleichen (C) = sie hören dich kaum ----------
+  const shades = [];
+  function buildShade() {
+    const g = new T.Group(), blk = new T.MeshBasicMaterial({ color: 0x050505, transparent: true, opacity: 0.92 }), eye = new T.MeshBasicMaterial({ color: 0xf4f4ff });
+    const b = (sx, sy, sz, x, y, z, m) => { const o = new T.Mesh(L.GEO.box, m || blk); o.scale.set(sx, sy, sz); o.position.set(x, y, z); g.add(o); return o; };
+    b(0.36, 1.1, 0.2, 0, 1.6, 0); b(0.3, 0.38, 0.3, 0, 2.38, 0.02);
+    for (const s of [-1, 1]) { b(0.06, 0.03, 0.02, s * 0.07, 2.42, 0.17, eye); const arm = b(0.08, 1.35, 0.08, s * 0.26, 1.35, 0); arm.rotation.z = s * 0.12; b(0.1, 1.05, 0.1, s * 0.1, 0.52, 0); }
+    g.traverse((o) => { o.frustumCulled = false; }); root.add(g); return g;
+  }
+  function clearShades() { for (const s of shades) root.remove(s.g); shades.length = 0; }
+  L.backTargets = () => (cur && L.inBack(P.x) ? shades.filter((s) => !s.dead) : []);
+  L.shadeHit = function (e, dmg) {
+    if (e.dead) return; e.hp -= dmg; e.state = 'chase';
+    L.fx('#202020', e.x, 1.8, e.z, 8, 3, { size: 0.3, life: 0.6 });
+    if (e.hp <= 0) { e.dead = true; e.deadT = 0; L.nz && L.nz({ dur: 0.8, f: 300, fTo: 60, vol: 0.4 }); if (L.gotKillCoins) L.gotKillCoins(25 + Math.floor(cur.n / 20)); }
+  };
+  function updShades(dt) {
+    const n = cur.n, want = Math.min(9, 1 + Math.floor(n / 40));
+    if (shades.filter((s) => !s.dead).length < want && Math.random() < dt * 0.25) {
+      const a = Math.random() * 6.28, d = 38 + Math.random() * 20;
+      shades.push({ kind: 'shade', g: buildShade(), x: P.x + Math.sin(a) * d, z: P.z + Math.cos(a) * d, hp: 150 + n * 0.5, state: 'wander', cd: 0, t: 0, hitR: 4, bigR: 0.4, y: 0, rig: null });
+      const sh = shades[shades.length - 1]; sh.rig = { root: sh.g };
+    }
+    const crouch = P.stance === 'crouch' || P.stance === 'crawl', run = P.mode === 'run', hear = crouch ? 5 : run ? 45 : 26;
+    for (let i = shades.length - 1; i >= 0; i--) {
+      const s = shades[i]; s.t += dt;
+      if (s.dead) { s.deadT += dt; s.g.scale.setScalar(Math.max(0.01, 1 - s.deadT)); if (s.deadT > 1) { root.remove(s.g); shades.splice(i, 1); } continue; }
+      const dx = P.x - s.x, dz = P.z - s.z, d = Math.hypot(dx, dz);
+      if (d < hear && P.alive) { if (s.state !== 'chase' && d < 40) { L.nz && L.nz({ dur: 1.2, f: 160, fTo: 70, vol: 0.25, pos: { x: s.x, y: 2, z: s.z } }); } s.state = 'chase'; s.lx = P.x; s.lz = P.z; }
+      else if (s.state === 'chase' && d > hear * 1.6) s.state = 'search';
+      const sp = s.state === 'chase' ? Math.min(6.4, 3 + n * 0.0045) : 1.6;
+      let tx = s.state === 'wander' ? s.x + Math.sin(s.t * 0.3) * 10 : s.lx, tz = s.state === 'wander' ? s.z + Math.cos(s.t * 0.27) * 10 : s.lz;
+      const a = Math.atan2(tx - s.x, tz - s.z); if (Math.hypot(tx - s.x, tz - s.z) > 1) { s.x += Math.sin(a) * sp * dt; s.z += Math.cos(a) * sp * dt; }
+      if (s.state === 'search' && Math.hypot(tx - s.x, tz - s.z) < 2) s.state = 'wander';
+      if (d > 140) { root.remove(s.g); shades.splice(i, 1); continue; }
+      s.g.position.set(s.x, 0, s.z); s.g.rotation.y = a; s.g.visible = Math.random() > (s.state === 'chase' ? 0.04 : 0.12);
+      s.cd -= dt;
+      if (d < 1.5 && s.cd <= 0 && P.alive && !trans) { s.cd = 1.2; L.hurtPlayer(Math.min(45, 18 + n * 0.03), 'Von einem Schattenwesen in den Backrooms erwischt'); L.shake = Math.max(L.shake, 0.6); }
+      if (s.state === 'chase' && d < 25) flickNear = 1;
+    }
+  }
+  let flickNear = 0;
   // ---------- Geräusche ----------
   let humG = null, humOn = false, sndT = 6;
   function hum(on) {
@@ -338,10 +391,11 @@
       c.lights.forEach((q, i) => { if (!q.fl) return; const on = Math.sin(t * 7 + q.ph) + Math.sin(t * 23 + q.ph * 3) > (cur.n > 30 ? 0.2 : 0.9) || Math.random() < 0.02 ? 0.12 : 1; tmpC.set(cur.light).multiplyScalar(on); c.lm.instanceColor.setXYZ(i, on, on, on); ch = true; });
       if (ch) c.lm.instanceColor.needsUpdate = true;
       for (const d of c.doors) if (d.opening || d.hinges) { const want = d.opening ? -1.3 : 0; for (const h of d.hinges) h.rotation.y += (want - h.rotation.y) * Math.min(1, dt * 6); }
-      for (const q of c.glitches) { q.m.material.color.setHSL(Math.random(), 1, 0.5); q.m.material.opacity = 0.4 + Math.random() * 0.6; q.m.position.y = (Math.random() - 0.5) * 0.15; if (!trans && P.alive && Math.hypot(P.x - q.x, P.z - q.z) < 1.4) { let n = Math.floor(Math.random() * NLEV); if (n === cur.n) n = (n + 7) % NLEV; goLevel(n, 'glitch'); } }
+      for (const q of c.glitches) { q.m.material.color.setHSL(Math.random(), 1, 0.5); q.m.material.opacity = 0.4 + Math.random() * 0.6; q.m.position.y = (Math.random() - 0.5) * 0.15; if (!trans && P.alive && Math.hypot(P.x - q.x, P.z - q.z) < 1.4) { let n = L.clamp(cur.n + Math.floor(Math.random() * 25) - 18, 0, NLEV - 1); if (n === cur.n) n = Math.max(0, n - 3); goLevel(n, 'glitch'); } }
     }
     if (cur.extra === 'water') { water.visible = true; water.position.set(Math.round(P.x / 8) * 8, 0.08, Math.round(P.z / 8) * 8); water.material.map.offset.set(t * 0.01, t * 0.013); } else water.visible = false;
     ambient(dt);
+    flickNear = 0; if (!trans) updShades(dt);
     if (P.alive && Math.random() < dt * 0.4 && cur.dark) L.msg('🔦 Es ist stockdunkel … nur dein Licht hilft dir.', 2000);
   };
   // Licht, Nebel, Kamera
@@ -352,7 +406,7 @@
     hum(on && !L.paused);
     if (!on) { pl.intensity = 0; return; }
     const E = L.env, D = cur, t = performance.now() / 1000;
-    const flick = D.flick > 0.2 && Math.sin(t * 13) + Math.sin(t * 37) > 1.75 ? 0.6 : 1;
+    const flick = (flickNear && Math.random() < 0.35) ? 0.25 : D.flick > 0.2 && Math.sin(t * 13) + Math.sin(t * 37) > 1.75 ? 0.6 : 1;
     L.scene.background.set(D.fog); L.scene.fog.color.set(D.fog); L.scene.fog.near = 1.5; L.scene.fog.far = D.fogFar;
     if (E.stars) E.stars.material.opacity = 0; if (E.sunDisc) E.sunDisc.material.opacity = 0; if (E.moon) E.moon.material.opacity = 0;
     if (E.milky) E.milky.material.opacity = 0; if (E.planets) E.planets.visible = false; if (E.rainMesh) E.rainMesh.visible = false;
@@ -362,5 +416,6 @@
     if (cam.position.y > D.H - 0.3) cam.position.y = D.H - 0.3;
     cam.far = D.fogFar + 40; cam.near = 0.1; cam.updateProjectionMatrix();
   };
-  L.clearBackrooms = function () { disposeAll(); spawnedItems.clear(); trans = null; fade.style.opacity = '0'; L.backLeft(); hum(false); };
+  L.backLevelNow = () => (cur && L.inBack(P.x) ? cur.n : -1);
+  L.clearBackrooms = function () { clearShades(); disposeAll(); spawnedItems.clear(); trans = null; fade.style.opacity = '0'; L.backLeft(); hum(false); };
 })();
