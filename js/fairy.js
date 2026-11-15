@@ -495,6 +495,101 @@
     for (const fl of W0.g.children) if (fl.userData && fl.userData.flag) fl.rotation.y = Math.sin(t * 2 + fl.position.x) * 0.3;
   }
 
+  // ---------- Märchen-Fahrzeuge ----------
+  // Kürbiskutsche (4 Plätze), Einhorn (reiten), fliegender Teppich, Hexenbesen und Reitdrache (fliegen: E hoch, C/Shift runter)
+  Object.assign(L.VTYPES, {
+    mf_kutsche: { name: 'Kürbiskutsche', vmax: 120, acc: 7, hp: 220, kind: 'car', open: true, len: 7.5, wid: 2.6, off: 1, h: 3.2, fairy: true },
+    mf_einhorn: { name: 'Einhorn', vmax: 150, acc: 11, hp: 160, kind: 'bike', len: 2.6, wid: 0.9, off: 1, fairy: true },
+    mf_teppich: { name: 'Fliegender Teppich', vmax: 180, acc: 10, hp: 120, kind: 'car', open: true, fly: true, len: 3.4, wid: 2.2, off: 1, h: 0.6, fairy: true },
+    mf_besen: { name: 'Hexenbesen', vmax: 220, acc: 16, hp: 70, kind: 'bike', fly: true, len: 2.4, wid: 0.5, off: 1, fairy: true },
+    mf_drache: { name: 'Reitdrache', vmax: 320, acc: 18, hp: 400, kind: 'bike', fly: true, len: 6, wid: 3, off: 1, fairy: true }
+  });
+  const wheelGeo = new T.CylinderGeometry(1, 1, 1, 16).rotateZ(Math.PI / 2);
+  function horse(par, x, z, col) {
+    const hg = new T.Group(); hg.position.set(x, 0, z); par.add(hg);
+    const M = L.mat(col);
+    add(G().box, M, 0.7, 0.75, 1.7, 0, 1.45, 0, hg); const nk = add(G().box, M, 0.4, 1.0, 0.45, 0, 2.05, 0.8, hg); nk.rotation.x = 0.5;
+    add(G().box, M, 0.38, 0.42, 0.8, 0, 2.55, 1.15, hg); add(G().box, L.mat('#f0c840'), 0.75, 0.12, 0.2, 0, 1.75, 0.4, hg);
+    for (let k = 0; k < 5; k++) add(G().box, L.mat('#f4e8c0'), 0.12, 0.3, 0.16, 0, 2.55 - k * 0.16, 0.85 - k * 0.12, hg);
+    add(G().box, L.mat('#ff90c0'), 0.15, 0.35, 0.15, 0, 2.95, 1.0, hg);
+    const legs = [];
+    for (const [sx, sz] of [[-1, 1], [1, 1], [-1, -1], [1, -1]]) { const lg = new T.Group(); lg.position.set(sx * 0.24, 1.15, sz * 0.65); hg.add(lg); add(G().box, M, 0.17, 1.05, 0.17, 0, -0.52, 0, lg); add(G().box, L.mat('#f0c840'), 0.2, 0.12, 0.2, 0, -1.08, 0, lg); legs.push(lg); }
+    return legs;
+  }
+  const obv = L.buildVehicle;
+  L.buildVehicle = function (type, cust) {
+    if (!type || type.slice(0, 3) !== 'mf_') return obv(type, cust);
+    const root = new T.Group(), wheels = [], steer = [], fa = { legs: [], wings: null, type };
+    let seat, seats;
+    if (type === 'mf_kutsche') {
+      const gold = new T.MeshStandardMaterial({ color: 0xf0c850, metalness: 0.85, roughness: 0.3, emissive: 0x2a1a00 });
+      const body = new T.Group(); body.position.set(0, 0, -1.3); root.add(body);
+      add(G().sph, '#ff9a30', 1.6, 1.4, 1.8, 0, 2.0, 0, body);
+      for (let k = 0; k < 8; k++) { const r = add(G().sph, '#ffb050', 0.25, 1.42, 1.82, 0, 2.0, 0, body); r.rotation.y = k / 8 * Math.PI; }
+      for (const sd of [-1, 1]) add(G().box, L.mat('#ffe9a0', { emissive: '#ffcf60', ei: 0.4 }), 0.1, 0.8, 0.9, sd * 1.55, 2.2, 0, body);
+      add(G().cone, '#4aa83a', 0.25, 0.7, 0.25, 0, 3.6, 0, body); const lf = add(G().sph, '#5ac040', 0.5, 0.08, 0.3, 0.35, 3.45, 0, body); lf.rotation.z = -0.4;
+      add(G().box, gold, 2.2, 0.12, 2.6, 0, 0.75, 0, body);
+      for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const piv = new T.Group(); piv.position.set(sx * 1.25, 0.75, -1.3 + sz * 1.1); root.add(piv); const w = new T.Mesh(wheelGeo, gold); w.scale.set(0.14, 0.75, 0.75); piv.add(w); for (let q = 0; q < 4; q++) { const sp = add(G().box, gold, 0.06, 1.4, 0.06, 0, 0, 0, w); sp.scale.set(0.5, 1.9, 0.5); sp.rotation.x = q * 0.785; } wheels.push(w); if (sz > 0) steer.push(piv); }
+      // Kutschbock und Deichsel, zwei Schimmel
+      add(G().box, '#8a4a20', 1.6, 0.2, 0.9, 0, 1.35, 0.55, root); add(G().box, '#c02a5a', 1.4, 0.15, 0.7, 0, 1.5, 0.55, root);
+      add(G().box, '#6a3a1a', 0.12, 0.12, 2.6, 0, 1.0, 1.9, root);
+      fa.legs = horse(root, -0.55, 2.6, '#fbf8ff').concat(horse(root, 0.55, 2.6, '#fbf8ff'));
+      seat = { x: 0, y: 1.0, z: 0.5 };
+      seats = [seat, { x: -0.55, y: 0.95, z: -1.3 }, { x: 0.55, y: 0.95, z: -1.3 }, { x: 0, y: 0.95, z: -2.0 }];
+    } else if (type === 'mf_einhorn') {
+      const U = buildUnicorn(); root.add(U.root); fa.legs = U.legs;
+      add(G().box, '#c02a5a', 0.7, 0.12, 0.8, 0, 2.18 / 1.15, -0.05, U.root); add(G().box, '#f0c840', 0.72, 0.04, 0.82, 0, 2.25 / 1.15, -0.05, U.root);
+      seat = { x: 0, y: 1.5, z: -0.15 }; seats = [seat, { x: 0, y: 1.5, z: -0.75 }];
+    } else if (type === 'mf_teppich') {
+      const ct = cvTex(64, 96, (c, w, h) => { c.fillStyle = '#9a1a3a'; c.fillRect(0, 0, w, h); c.strokeStyle = '#f0c840'; c.lineWidth = 4; c.strokeRect(4, 4, w - 8, h - 8); c.fillStyle = '#1a3a8a'; c.fillRect(12, 12, w - 24, h - 24); c.fillStyle = '#f0c840'; for (let k = 0; k < 5; k++) { c.beginPath(); c.moveTo(w / 2, 18 + k * 14); c.lineTo(w / 2 + 10, 25 + k * 14); c.lineTo(w / 2, 32 + k * 14); c.lineTo(w / 2 - 10, 25 + k * 14); c.fill(); } c.fillStyle = '#e04a6a'; c.fillRect(8, 0, 2, h); c.fillRect(w - 10, 0, 2, h); });
+      const geo = new T.PlaneGeometry(2.2, 3.4, 8, 12); geo.rotateX(-Math.PI / 2);
+      const cm = new T.Mesh(geo, new T.MeshLambertMaterial({ map: ct, side: T.DoubleSide })); cm.position.y = 0.6; cm.castShadow = true; root.add(cm);
+      for (const sz of [-1, 1]) for (let k = 0; k < 8; k++) add(G().box, '#f0c840', 0.06, 0.02, 0.25, -1 + k * 0.28, 0.6, sz * 1.8, root);
+      fa.carpet = { geo, base: geo.attributes.position.array.slice() };
+      seat = { x: 0, y: 0.1, z: 0.3 }; seats = [seat, { x: 0.55, y: 0.1, z: -0.8 }, { x: -0.55, y: 0.1, z: -0.8 }];
+    } else if (type === 'mf_besen') {
+      const st = add(G().cyl, '#7a4a22', 0.07, 2.2, 0.07, 0, 1.0, 0.2, root); st.rotation.x = Math.PI / 2 - 0.08;
+      const br = new T.Group(); br.position.set(0, 0.95, -1.0); root.add(br);
+      for (let k = 0; k < 26; k++) { const a = k / 26 * 6.283, r = 0.05 + (k % 3) * 0.06; const tw = add(G().cyl, k % 2 ? '#c8a040' : '#a88028', 0.025, 0.9, 0.025, Math.sin(a) * r, Math.cos(a) * r, -0.35, br); tw.rotation.x = Math.PI / 2 + Math.cos(a) * 0.25; tw.rotation.z = Math.sin(a) * 0.25; }
+      add(G().cyl, '#c02a5a', 0.12, 0.12, 0.12, 0, 0, 0.05, br).rotation.x = Math.PI / 2;
+      fa.sparkle = true;
+      seat = { x: 0, y: 0.15, z: -0.1 }; seats = [seat, { x: 0, y: 0.15, z: -0.6 }];
+    } else {
+      const Dr = buildDragon(1.25, L.pick(['#3a9a5a', '#3a6ad8', '#a070e0', '#e8b030']), '#f8e8c0', '#c84a8a'); root.add(Dr.root); Dr.root.position.y = 2.4; fa.dragon = Dr; fa.legs = Dr.legs;
+      add(G().box, '#8a3a1a', 0.9, 0.18, 1.0, 0, 1.55, 0.3, Dr.body);
+      seat = { x: 0, y: 3.25, z: 0.35 }; seats = [seat, { x: 0, y: 3.25, z: -0.6 }];
+    }
+    root.traverse((o) => { if (o.isMesh) o.castShadow = true; });
+    root.userData.fairy = fa;
+    return { root, wheels, steer, seat, seats, glassZ: 0, color: '#ff9a30' };
+  };
+  // Bewegung der Märchen-Fahrzeuge: Beine laufen, Flügel schlagen, Teppich wellt sich, Besen funkelt
+  function updateFairyVehicles(dt, t) {
+    for (const v of E.vehicles) {
+      const fa = v.rig && v.rig.root.userData.fairy; if (!fa || Math.hypot(v.x - P.x, v.z - P.z) > 300) continue;
+      const sp = Math.abs(v.speed || 0), air = (v.alt || 0) > 0.6;
+      v.fPh = (v.fPh || 0) + dt * Math.min(14, 2 + sp * 0.45);
+      if (fa.legs.length && !fa.dragon) fa.legs.forEach((l, k) => { l.rotation.x = sp > 0.4 ? Math.sin(v.fPh + (k % 4 === 0 || k % 4 === 3 ? 0 : Math.PI)) * Math.min(0.7, 0.2 + sp * 0.03) : 0; });
+      if (fa.dragon) {
+        const D = fa.dragon; flap(D, air ? t * (sp > 20 ? 6 : 4) : t * 0.8, air ? 0.75 : 0.08, air ? undefined : -0.5);
+        D.legs.forEach((l, k) => { l.rotation.x = air ? -0.9 : sp > 0.4 ? Math.sin(v.fPh + (k % 3 ? Math.PI : 0)) * 0.6 : 0; });
+        D.front.rotation.x = air ? -0.15 : Math.sin(t * 1.2) * 0.05;
+        if (air && Math.random() < dt * 0.4 && L.keys && L.keys.Space && P.vehicle === v) { const hp = new T.Vector3(); D.head.getWorldPosition(hp); for (let k = 0; k < 14; k++) L.fx(k % 2 ? '#ffb030' : '#ff5020', hp.x + Math.sin(v.yaw) * 3, hp.y, hp.z + Math.cos(v.yaw) * 3, 2, 10, { basic: true, size: 0.8, life: 0.7 }); }
+      }
+      if (fa.carpet) { const a = fa.carpet.geo.attributes.position, b = fa.carpet.base; for (let i = 0; i < a.count; i++) a.array[i * 3 + 1] = b[i * 3 + 1] + Math.sin(t * 4 + b[i * 3 + 2] * 1.6) * (air ? 0.12 : 0.04); a.needsUpdate = true; }
+      if (fa.sparkle && air && Math.random() < dt * 25) L.fx(L.pick(['#ffe060', '#ff80d0', '#a0e0ff']), v.x - Math.sin(v.yaw) * 1.3, (v.alt || 0) + 0.9, v.z - Math.cos(v.yaw) * 1.3, 1, 0.6, { basic: true, size: 0.15, life: 0.9 });
+    }
+  }
+  // Wo die Fahrzeuge stehen
+  const VSPOTS = [['mf_kutsche', 'dorf', 30, -45, 0], ['mf_kutsche', 'schloss', -30, 40, 0], ['mf_einhorn', 'dorf', -50, -40, 0.5], ['mf_einhorn', 'dorf', -56, -36, 0.4], ['mf_einhorn', 'see', -170, 0, 1.2], ['mf_einhorn', 'fee', 15, 10, 2],
+    ['mf_teppich', 'dorf', 55, 20, -1], ['mf_teppich', 'platz', 20, 25, 0], ['mf_besen', 'lebkuchen', 12, 14, 0.3], ['mf_besen', 'dorf', -30, 50, 2.2], ['mf_drache', 'dorf', 90, 40, -0.6], ['mf_drache', 'hoehle', 120, 140, 0.8], ['mf_drache', 'eis', -90, 120, 2.5]];
+  function spawnFairyVehicles(g2) {
+    for (const [type, at, dx, dz, yaw] of VSPOTS) {
+      const p = LOC[at]; g2.spawnVehicle({ type, x: p.x + dx, z: p.z + dz, yaw });
+      const v = E.vehicles[E.vehicles.length - 1]; if (v && v.type === type) v.isl = FW;
+    }
+  }
+
   // ---------- Monster: friedlich ----------
   const KINDS = [['viktor', 12], ['daniel', 6], ['blockling', 6], ['capydaniel', 6], ['walross', 5], ['marsianer', 4], ['rollerviktor', 4], ['langer', 2], ['greifer', 2], ['rufer', 2]];
   function populate() {
@@ -507,6 +602,7 @@
       const [x, z] = spot(), m = g2.spawnMonster(k, x, z, k === 'viktor' ? L.pick(['grey', 'red', 'blue', 'lange']) : k === 'walross' && L.WALROSS_VARS ? L.pick(L.WALROSS_VARS) : undefined);
       m.isl = FW; if (k !== 'walross') L.tintRig(m.rig.root, FW.monTint, 0.35);
     }
+    if (g2.spawnVehicle) spawnFairyVehicles(g2);
   }
 
   // ---------- Tägliche Nebenquests ----------
@@ -781,6 +877,7 @@
     if (!FW.populated) populate();
     L.banner('🏰 DIE MÄRCHENWELT', 'Monster sind hier friedlich – außer du greifst sie an. Die 📜 Quest-Tafel im Dorf hat jeden Tag neue Abenteuer. Heimweg: 🍄 Feenkreis oder Pause-Menü.');
     setTimeout(() => { if (inF()) L.msg('💖 Irgendwo hier spaziert BEYZA herum – die riesige, liebe Riesin. Sag ihr Hallo!', 6000); }, 5000);
+    setTimeout(() => { if (inF()) L.msg('🦄 Märchen-Fahrzeuge: Kürbiskutsche, Einhörner, fliegende Teppiche, Hexenbesen und Reitdrachen (fliegen: E hoch, C runter).', 7000); }, 11000);
     L.music && L.music.set && L.music.set('calm');
   }
   function beamBtn(on) { const b = L.$ && L.$('pBeam'); if (!b) return; if (on) b.hidden = false; else if (!(L.inBack && L.inBack(P.x))) b.hidden = true; }
@@ -798,6 +895,7 @@
     const t = performance.now() / 1000;
     if (climb) updateClimb(dt);
     updateLife(dt, t);
+    updateFairyVehicles(dt, t);
     updateBeyza(dt);
     updateQuests(dt);
     // von der Welt gefallen → zurück ins Dorf
