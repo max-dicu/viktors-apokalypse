@@ -910,15 +910,21 @@
       cols[i * 3] = c.r; cols[i * 3 + 1] = c.g; cols[i * 3 + 2] = c.b;
     }
     geo.setAttribute('color', new T.BufferAttribute(cols, 3));
-    const cv = document.createElement('canvas'); cv.width = cv.height = 256;
-    const g = cv.getContext('2d'), id = g.createImageData(256, 256);
-    for (let i = 0; i < id.data.length; i += 4) {
-      const v = 190 + Math.random() * 65;
-      id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = 255;
+    // Boden: mehrere Rausch-Stufen (große Flecken, mittlere Büschel, feines Korn) und feine Halme
+    const GS = 512, cv = document.createElement('canvas'); cv.width = cv.height = GS;
+    const g = cv.getContext('2d'), id = g.createImageData(GS, GS);
+    const grid = (n) => { const a = new Float32Array((n + 1) * (n + 1)); for (let k = 0; k < a.length; k++) a[k] = Math.random(); for (let k = 0; k <= n; k++) { a[k * (n + 1) + n] = a[k * (n + 1)]; a[n * (n + 1) + k] = a[k]; } return a; };
+    const oct = [[8, 0.45], [32, 0.3], [128, 0.25]].map(([n, w]) => ({ n, w, a: grid(n) }));
+    const smp = (o, x, y) => { const fx = x / GS * o.n, fy = y / GS * o.n, ix = Math.floor(fx), iy = Math.floor(fy), tx = fx - ix, ty = fy - iy, N = o.n + 1, A = o.a; const sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty); return (A[iy * N + ix] * (1 - sx) + A[iy * N + ix + 1] * sx) * (1 - sy) + (A[(iy + 1) * N + ix] * (1 - sx) + A[(iy + 1) * N + ix + 1] * sx) * sy; };
+    for (let y = 0; y < GS; y++) for (let x = 0; x < GS; x++) {
+      let v = 0; for (const o of oct) v += smp(o, x, y) * o.w;
+      v = 175 + v * 70 + (Math.random() - 0.5) * 22;
+      const i = (y * GS + x) * 4; id.data[i] = id.data[i + 1] = id.data[i + 2] = Math.max(0, Math.min(255, v)); id.data[i + 3] = 255;
     }
     g.putImageData(id, 0, 0);
-    for (let i = 0; i < 500; i++) { g.fillStyle = `rgba(0,0,0,${Math.random() * 0.12})`; g.fillRect(Math.random() * 256, Math.random() * 256, 2 + Math.random() * 5, 2 + Math.random() * 5); }
-    const tex = new T.CanvasTexture(cv); tex.wrapS = tex.wrapT = T.RepeatWrapping; tex.repeat.set(300, 300);
+    for (let i = 0; i < 2600; i++) { const x = Math.random() * GS, y = Math.random() * GS, l = 3 + Math.random() * 6, a = -Math.PI / 2 + (Math.random() - 0.5) * 0.9; g.strokeStyle = Math.random() < 0.5 ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.16)'; g.lineWidth = 1; g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); g.stroke(); }
+    for (let i = 0; i < 260; i++) { g.fillStyle = `rgba(60,45,30,${(Math.random() * 0.12).toFixed(3)})`; g.beginPath(); g.ellipse(Math.random() * GS, Math.random() * GS, 2 + Math.random() * 7, 2 + Math.random() * 5, Math.random() * 3, 0, 6.3); g.fill(); }
+    const tex = new T.CanvasTexture(cv); tex.wrapS = tex.wrapT = T.RepeatWrapping; tex.repeat.set(220, 220); tex.anisotropy = 8;
     const m = new T.Mesh(geo, new T.MeshPhongMaterial({ map: tex, vertexColors: true, shininess: 0 }));
     m.receiveShadow = true;
     L.scene.add(m);
@@ -949,17 +955,37 @@
     });
   }
   // ---------- Fassaden ----------
+  // realistische Fassade (512 px): Beton mit Körnung und Regenspuren, Gesimse je Stockwerk,
+  // Fensterrahmen mit Sprossen, spiegelndes Glas, Fensterbänke, Vorhänge/Jalousien – nachts warm leuchtend
   function facade(cols, rows, lit) {
-    const c = document.createElement('canvas'); c.width = 128; c.height = 128;
+    const S = 512, c = document.createElement('canvas'); c.width = c.height = S;
     const g = c.getContext('2d');
-    g.fillStyle = lit ? '#000' : '#f2f2f2'; g.fillRect(0, 0, 128, 128);
-    const m = 8, cw = (128 - m * 2) / cols, ch = (128 - m * 2) / rows;
+    let seed = cols * 131 + rows * 17 + 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const m = 24, cw = (S - m * 2) / cols, ch = (S - m * 2) / rows;
+    if (!lit) {
+      g.fillStyle = '#ececec'; g.fillRect(0, 0, S, S);
+      for (let k = 0; k < 9000; k++) { const v = rnd(); g.fillStyle = v < 0.5 ? 'rgba(0,0,0,' + (rnd() * 0.07).toFixed(3) + ')' : 'rgba(255,255,255,' + (rnd() * 0.1).toFixed(3) + ')'; g.fillRect(rnd() * S, rnd() * S, 1 + rnd() * 2, 1 + rnd() * 2); }
+      for (let k = 0; k < 22; k++) { const x = rnd() * S, w = 2 + rnd() * 6, gr = g.createLinearGradient(0, 0, 0, S); gr.addColorStop(0, 'rgba(60,55,50,0)'); gr.addColorStop(rnd() * 0.5 + 0.3, 'rgba(60,55,50,' + (0.05 + rnd() * 0.07).toFixed(3) + ')'); gr.addColorStop(1, 'rgba(60,55,50,0)'); g.fillStyle = gr; g.fillRect(x, 0, w, S); }
+      for (let j = 0; j <= rows; j++) { const y = m + j * ch - 3; g.fillStyle = 'rgba(0,0,0,0.16)'; g.fillRect(0, y + 4, S, 3); g.fillStyle = 'rgba(255,255,255,0.35)'; g.fillRect(0, y, S, 3); }
+      g.fillStyle = 'rgba(0,0,0,0.18)'; g.fillRect(0, S - 10, S, 10);
+    } else { g.fillStyle = '#000'; g.fillRect(0, 0, S, S); }
     for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
-      const x = m + i * cw + cw * 0.18, y = m + j * ch + ch * 0.2, w = cw * 0.64, h = ch * 0.55;
-      if (lit) { if (Math.random() < 0.3) { g.fillStyle = Math.random() < 0.5 ? '#ffd27a' : '#ffe9b0'; g.fillRect(x, y, w, h); } }
-      else { g.fillStyle = '#3c4552'; g.fillRect(x, y, w, h); g.fillStyle = 'rgba(255,255,255,0.15)'; g.fillRect(x, y, w, h * 0.3); }
+      const x = m + i * cw + cw * 0.16, y = m + j * ch + ch * 0.18, w = cw * 0.68, h = ch * 0.58;
+      if (lit) {
+        if (rnd() < 0.3) { const gr = g.createLinearGradient(0, y, 0, y + h); const warm = rnd() < 0.5; gr.addColorStop(0, warm ? '#ffe0a0' : '#fff0c8'); gr.addColorStop(1, warm ? '#e8a050' : '#d8c090'); g.fillStyle = gr; g.fillRect(x, y, w, h); if (rnd() < 0.5) { g.fillStyle = 'rgba(80,40,20,0.55)'; g.fillRect(x, y, w * 0.3, h); } g.fillStyle = '#000'; g.fillRect(x + w / 2 - 1.5, y, 3, h); g.fillRect(x, y + h * 0.45, w, 3); }
+        continue;
+      }
+      g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(x - 3, y - 3, w + 8, h + 8);
+      g.fillStyle = '#7a7a7a'; g.fillRect(x - 4, y - 4, w + 8, h + 8);
+      const gr = g.createLinearGradient(x, y, x + w * 0.4, y + h); gr.addColorStop(0, '#9fb6c8'); gr.addColorStop(0.45, '#4a5a6a'); gr.addColorStop(1, '#1e2630'); g.fillStyle = gr; g.fillRect(x, y, w, h);
+      g.fillStyle = 'rgba(255,255,255,0.22)'; g.beginPath(); g.moveTo(x + w * 0.1, y + h); g.lineTo(x + w * 0.35, y); g.lineTo(x + w * 0.5, y); g.lineTo(x + w * 0.25, y + h); g.fill();
+      const r = rnd();
+      if (r < 0.22) { g.fillStyle = ['#c8b090', '#a85040', '#5a7a5a', '#d8d0c0'][Math.floor(rnd() * 4)]; g.fillRect(x, y, w * (0.25 + rnd() * 0.2), h); g.fillRect(x + w * (0.7 - rnd() * 0.15), y, w * 0.3, h); }
+      else if (r < 0.38) { g.fillStyle = 'rgba(220,220,215,0.85)'; for (let k = 0; k < h * (0.3 + rnd() * 0.6); k += 4) g.fillRect(x, y + k, w, 2.5); }
+      g.fillStyle = '#5a5a5a'; g.fillRect(x + w / 2 - 2, y, 4, h); g.fillRect(x, y + h * 0.45, w, 4);
+      g.fillStyle = '#d8d8d8'; g.fillRect(x - 6, y + h + 4, w + 12, 5); g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(x - 6, y + h + 9, w + 12, 4);
     }
-    return new T.CanvasTexture(c);
+    const t = new T.CanvasTexture(c); t.anisotropy = 4; return t;
   }
   function boxTopUV(geo) {
     const uv = geo.attributes.uv;
