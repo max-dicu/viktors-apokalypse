@@ -256,7 +256,7 @@ body.cinema #hud,body.cinema #touch,body.cinema #banner{visibility:hidden}`;
       for (const f of L.animated) f(t);
       L.music.update();
       L.setListener(camera);
-      renderer.render(scene, camera);
+      if (L.renderFrame) L.renderFrame(scene, camera); else renderer.render(scene, camera);
     } catch (e) {
       console.error(e);
     }

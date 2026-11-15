@@ -549,6 +549,7 @@
     ['npcMode', 'Andere Überlebende sind …', [['friedlich', 'friedlich'], ['gemischt', 'gemischt'], ['feindlich', 'feindlich']]],
     ['npcCount', 'Anzahl Überlebende (NPCs)', [[0, 'keine'], [8, '8'], [16, '16'], [24, '24'], [32, '32']]],
     ['bossMin', 'Pause zwischen den Bossen (sie bleiben je 5 Minuten)', [[5, '5 Minuten'], [10, '10 Minuten'], [15, '15 Minuten'], [20, '20 Minuten']]],
+    ['grafik', 'Grafik-Qualität', [['ultra', 'Ultra (Leuchten, scharf, beste Schatten)'], ['hoch', 'Hoch'], ['normal', 'Normal (schneller)']]],
     ['shadows', 'Schatten', [[true, 'An'], [false, 'Aus (schneller)']]],
     ['view', 'Sichtweite', [[400, 'Kurz (schneller)'], [700, 'Mittel'], [1000, 'Weit']]]
   ];

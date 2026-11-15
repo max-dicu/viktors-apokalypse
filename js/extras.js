@@ -190,13 +190,16 @@
     L.scene.add(rig.root); guard = { rig, cape, ph: 0 };
     // Wappen-Signal: Lichtkegel vom Dach in den Himmel, Wappen auf den Wolken (eigener Entwurf: Turm im Schild)
     const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
-    g.fillStyle = '#ffe070'; g.beginPath(); g.ellipse(128, 128, 124, 90, 0, 0, 6.28); g.fill();
-    g.fillStyle = '#141414'; g.beginPath(); g.moveTo(128, 50); g.lineTo(180, 70); g.lineTo(176, 140); g.lineTo(128, 200); g.lineTo(80, 140); g.lineTo(76, 70); g.closePath(); g.fill();
-    g.fillStyle = '#ffe070'; g.fillRect(118, 80, 20, 80); g.fillRect(106, 74, 44, 12); g.beginPath(); g.moveTo(108, 160); g.lineTo(148, 160); g.lineTo(128, 182); g.fill();
-    const emblem = new T.Mesh(new T.PlaneGeometry(90, 90), new T.MeshBasicMaterial({ map: new T.CanvasTexture(c), transparent: true, opacity: 0.85, blending: T.AdditiveBlending, depthWrite: false, fog: false, side: T.DoubleSide }));
-    const sc = document.createElement('canvas'); sc.width = 16; sc.height = 256; const sg2 = sc.getContext('2d'); for (let k = 0; k < 16; k++) { sg2.fillStyle = k % 2 ? '#111111' : '#ffffff'; sg2.fillRect(0, k * 16, 16, 16); }
-    const stripe = new T.CanvasTexture(sc); stripe.wrapS = stripe.wrapT = T.RepeatWrapping; stripe.repeat.set(1, 3);
-    const beam = new T.Mesh(new T.CylinderGeometry(22, 1.2, 300, 20, 1, true), new T.MeshBasicMaterial({ map: stripe, transparent: true, opacity: 0.45, depthWrite: false, fog: false, side: T.DoubleSide }));
+    // weißes Fledermaus-Zeichen (selbst gezeichnet) mit weißem Ring
+    g.strokeStyle = '#ffffff'; g.lineWidth = 9; g.beginPath(); g.ellipse(128, 128, 118, 84, 0, 0, 6.28); g.stroke();
+    g.fillStyle = '#ffffff'; g.beginPath(); g.moveTo(128, 92);
+    g.lineTo(138, 70); g.lineTo(142, 96); g.quadraticCurveTo(176, 74, 222, 92); g.quadraticCurveTo(204, 112, 210, 140); g.quadraticCurveTo(190, 126, 172, 140); g.quadraticCurveTo(158, 130, 146, 150);
+    g.lineTo(128, 176); g.lineTo(110, 150); g.quadraticCurveTo(98, 130, 84, 140); g.quadraticCurveTo(66, 126, 46, 140); g.quadraticCurveTo(52, 112, 34, 92); g.quadraticCurveTo(80, 74, 114, 96); g.lineTo(118, 70); g.closePath(); g.fill();
+    const emblem = new T.Mesh(new T.PlaneGeometry(150, 150), new T.MeshBasicMaterial({ map: new T.CanvasTexture(c), transparent: true, opacity: 0.95, depthWrite: false, fog: false, side: T.DoubleSide }));
+    // schwarzer Strahl: unten dicht, oben ausgefranst
+    const sc = document.createElement('canvas'); sc.width = 16; sc.height = 256; const sg2 = sc.getContext('2d'); const gr = sg2.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, 'rgba(0,0,0,0.05)'); gr.addColorStop(1, 'rgba(0,0,0,0.85)'); sg2.fillStyle = gr; sg2.fillRect(0, 0, 16, 256);
+    const stripe = new T.CanvasTexture(sc);
+    const beam = new T.Mesh(new T.CylinderGeometry(22, 1.2, 300, 20, 1, true), new T.MeshBasicMaterial({ map: stripe, color: 0x000000, transparent: true, opacity: 0.8, depthWrite: false, fog: false, side: T.DoubleSide }));
     const sg = new T.Group(); sg.add(beam); beam.position.y = 150; sg.add(emblem); emblem.position.y = 300; emblem.rotation.x = -Math.PI / 2 + 0.5;
     sg.position.set(L.TOWER.x, L.TOWER.h + 2, L.TOWER.z); sg.rotation.set(-0.35, 0.6, 0); L.scene.add(sg); signal = sg;
   }
@@ -205,8 +208,9 @@
     if (!guard) return;
     const up = L.towerSafe ? L.towerSafe() : true;
     guard.rig.root.visible = up && !L.inDim(P.x);
-    // Signal: wenn ein Boss da ist oder es Nacht ist
-    signal.visible = up && !L.inDim(P.x) && !(L.onIsl && L.onIsl(P.x, P.z));
+    // Signal: nur nachts UND nur wenn ein Boss da ist (tagsüber leuchtet der Turm nur rot)
+    const bossNow = !!((L.boss && !L.boss.dead) || L.wboss), night = !!(L.env && L.env.day < 0.4);
+    signal.visible = up && bossNow && night && !L.inDim(P.x) && !(L.onIsl && L.onIsl(P.x, P.z));
     if (signal.visible) signal.rotation.y = 0.6 + Math.sin(performance.now() / 4000) * 0.15;
     guard.ph += dt;
     const near = Math.hypot(P.x - guard.rig.root.position.x, P.z - guard.rig.root.position.z) < 25 && Math.abs((P.y || 0) - L.TOWER.h) < 3;
