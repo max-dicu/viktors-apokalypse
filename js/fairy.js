@@ -198,6 +198,39 @@
     return rig;
   }
 
+  // Der Prinz: minimal größer als BEYZA, mittelbraune Locken mit blonden Strähnen, königsblaue Uniform mit Gold
+  const PR_S = BEY_S * 1.05;
+  function buildPrince() {
+    const rig = L.buildHuman(Object.assign({}, L.DEFAULT_CHAR, { name: 'Prinz', skin: '#e6b892', hair: 'kurzlocken', hairColor: '#6e4426', eyes: '#3a6a3a', brows: 'normal', mouth: 'laecheln', nose: 'normal', beard: 'stoppel', glasses: 'keine', hat: 'keine', top: 'anzug', topColor: '#1e3a8a', pants: 'anzughose', pantsColor: '#f4f0e8', shoeType: 'stiefel', shoes: '#2a1a10', build: 'kraeftig', height: 'mittel' }), true);
+    const gold = new T.MeshStandardMaterial({ color: 0xf0c850, metalness: 0.85, roughness: 0.3, emissive: 0x3a2800 });
+    const P3 = (geo, m, sx, sy, sz, x, y, z, par) => { const o = new T.Mesh(geo, typeof m === 'string' ? L.mat(m) : m); o.scale.set(sx, sy, sz); o.position.set(x, y, z); o.castShadow = true; par.add(o); return o; };
+    // Locken: mittelbraun, jede dritte Strähne blond
+    const BR = ['#6e4426', '#7a4c2a', '#5e3a20'], BL = ['#d8b060', '#e8c878'];
+    for (let st = 0; st < 19; st++) {
+      const a = -2.25 + st * 0.25, side = Math.abs(a) > 1.5, n = side ? 3 : 5, blond = st % 3 === 1;
+      for (let k = 0; k < n; k++) {
+        const y = 0.31 - k * 0.055, rr = 0.145 + Math.sin(k * 1.5 + st) * 0.015, aw = a + Math.cos(k * 1.5 + st) * 0.07, rad = 0.036 + (k % 2) * 0.006;
+        P3(G().sph, blond ? BL[k % 2] : BR[(st + k) % 3], rad, rad, rad, Math.sin(aw) * rr, y, -Math.cos(aw) * rr * (side ? 0.85 : 1), rig.head);
+      }
+    }
+    for (let k = 0; k < 16; k++) { const a = k / 16 * 6.283, r = k % 2 ? 0.07 : 0.12; P3(G().sph, k % 4 === 1 ? BL[0] : BR[k % 3], 0.045, 0.04, 0.045, Math.sin(a) * r, 0.33, Math.cos(a) * r - 0.01, rig.head); }
+    for (let k = 0; k < 5; k++) P3(G().sph, k === 2 ? BL[1] : BR[k % 3], 0.035, 0.03, 0.03, -0.09 + k * 0.045, 0.3, 0.12, rig.head);
+    // schmales goldenes Diadem
+    P3(new T.TorusGeometry(0.135, 0.008, 6, 24), gold, 1, 1, 1, 0, 0.29, -0.005, rig.head).rotation.x = Math.PI / 2;
+    P3(G().cone, gold, 0.018, 0.04, 0.012, 0, 0.32, 0.13, rig.head); P3(G().sph, new T.MeshBasicMaterial({ color: 0x40a0ff }), 0.012, 0.012, 0.012, 0, 0.31, 0.142, rig.head);
+    // Uniform: goldene Schulterstücke, Knöpfe, rote Schärpe, Gürtel, Umhang
+    for (const sd of [-1, 1]) { P3(G().box, gold, 0.1, 0.03, 0.12, sd * 0.2, 0.6, 0, rig.torso); for (let k = 0; k < 4; k++) P3(G().sph, gold, 0.012, 0.012, 0.012, sd * 0.012 + 0.03 * sd, 0.5 - k * 0.09, 0.115, rig.torso); }
+    const sash = P3(G().box, '#c02a3a', 0.07, 0.62, 0.02, 0, 0.32, 0.12, rig.torso); sash.rotation.z = 0.6;
+    P3(G().box, '#2a1a10', 0.44, 0.05, 0.25, 0, 0.0, 0, rig.torso); P3(G().box, gold, 0.06, 0.05, 0.02, 0, 0.0, 0.13, rig.torso);
+    const cape = P3(G().box, '#8a1a2a', 0.5, 0.95, 0.02, 0, 0.1, -0.15, rig.torso); cape.rotation.x = 0.12;
+    P3(G().box, gold, 0.5, 0.03, 0.025, 0, 0.58, -0.14, rig.torso);
+    rig.cape = cape;
+    rig.root.scale.setScalar(PR_S);
+    rig.root.traverse((o) => { if (o.isMesh) o.frustumCulled = false; });
+    const tag = label('🤴 PRINZ', '#cfe0ff', 3.2); tag.position.set(0, 2.3, 0); tag.scale.multiplyScalar(1 / PR_S * 3.2); rig.root.add(tag);
+    return rig;
+  }
+
   // ---------- Die Welt bauen ----------
   function build() {
     g = new T.Group(); L.scene.add(g);
@@ -429,6 +462,7 @@
     W0.unis = []; for (let k = 0; k < 8; k++) { const U = buildUnicorn(); const a = R() * 6.283, d = 300 + R() * 900; U.x = FX + Math.sin(a) * d; U.z = FZ + Math.cos(a) * d; U.tx = U.x; U.tz = U.z; U.ph = R() * 6; U.wait = R() * 4; U.id = k; g.add(U.root); W0.unis.push(U); }
     // ---- BEYZA ----
     W0.bey = buildBeyza(); g.add(W0.bey.root);
+    W0.prince = buildPrince(); g.add(W0.prince.root);
     g.traverse((o) => { if (o.isMesh && o.material && o.material.map === undefined) { /* nichts */ } });
     built = W0;
   }
@@ -438,23 +472,39 @@
   const beyAng = (t) => (t * BSPD / BR) % 6.283;
   const beyPos = (t) => { const a = beyAng(t), w = BR + Math.sin(a * 3) * 90; return { x: FX + Math.sin(a) * w, z: FZ + Math.cos(a) * w }; };
   let beyPh = 0, beyStepSide = 0, beyTalkT = 0;
-  const BEY_LINES = ['„Hallo, kleiner Mensch! Ist es nicht wunderschön hier?“', '„Pass auf meine Füße auf – ich will niemanden zertreten!“', '„Ich bin BEYZA. Meine Freunde nennen mich BEYY.“', '„Hast du schon den Wolkenpalast gesehen? Ich kann fast hineinschauen!“', '„Die Drachen sind meine Freunde. Der rote schläft am liebsten.“', '„Ich mag Einhörner. Sie kitzeln an den Knöcheln.“', '„Schau mal an der Quest-Tafel im Dorf vorbei – da gibt es jeden Tag neue Abenteuer.“'];
+  const BEY_LINES = ['„Hallo, kleiner Mensch! Ist es nicht wunderschön hier?“', '„Pass auf meine Füße auf – ich will niemanden zertreten!“', '„Ich bin BEYZA. Meine Freunde nennen mich BEYY.“', '„Hast du schon den Wolkenpalast gesehen? Ich kann fast hineinschauen!“', '„Die Drachen sind meine Freunde. Der rote schläft am liebsten.“', '„Das ist mein Prinz. Wir gehen jeden Tag Hand in Hand spazieren.“', '„Ich mag Einhörner. Sie kitzeln an den Knöcheln.“', '„Schau mal an der Quest-Tafel im Dorf vorbei – da gibt es jeden Tag neue Abenteuer.“'];
   function updateBeyza(dt) {
     const B = built.bey, now = Date.now() / 1000, p = beyPos(now), p2 = beyPos(now + 1), yaw = Math.atan2(p2.x - p.x, p2.z - p.z);
     B.root.position.set(p.x, 0, p.z); B.root.rotation.y = yaw;
     beyPh += dt * 1.15; L.animHuman(B, { mode: 'walk', phase: beyPh, speed: 1 });
-    const d = Math.hypot(P.x - p.x, P.z - p.z);
+    // Prinz läuft an ihrer linken Seite (lokal +x), beide halten sich an der Hand
+    const PRc = built.prince, rx = Math.cos(yaw), rz = -Math.sin(yaw), HA = 0.32, GAP = 0.24 * BEY_S + 0.27 * PR_S + 0.7 * (BEY_S + PR_S) * Math.sin(HA);
+    const px2 = p.x + rx * GAP, pz2 = p.z + rz * GAP;
+    PRc.root.position.set(px2, 0, pz2); PRc.root.rotation.y = yaw;
+    L.animHuman(PRc, { mode: 'walk', phase: beyPh, speed: 1 });
+    const sw = Math.sin(beyPh) * 0.12;
+    { const a = B.arms[1]; a.arm.rotation.set(-0.12 + sw, 0, HA); a.elbow.rotation.x = -0.12; }
+    { const a = PRc.arms[0]; a.arm.rotation.set(-0.12 + sw, 0, -HA); a.elbow.rotation.x = -0.12; }
+    if (PRc.cape) PRc.cape.rotation.x = 0.15 + Math.abs(Math.sin(beyPh)) * 0.08;
+    // ab und zu schauen sie sich verliebt an
+    const look = Math.max(0, Math.sin(now * 0.25)) ** 3;
+    B.head.rotation.y = look * 0.6; PRc.head.rotation.y = -look * 0.6;
+    const d = Math.hypot(P.x - p.x, P.z - p.z), dPr = Math.hypot(P.x - px2, P.z - pz2);
     // winkt, wenn du in der Nähe bist, und schaut dich an
-    if (d < 120) { const want = Math.atan2(P.x - p.x, P.z - p.z) - yaw; B.head.rotation.y = L.clamp(Math.atan2(Math.sin(want), Math.cos(want)), -0.8, 0.8); B.head.rotation.x = -L.clamp((80 - d) / 200, 0, 0.35) * -1; const a = B.arms[1] || B.arms[0]; if (a) { a.arm.rotation.x = -2.6 + Math.sin(now * 3) * 0.25; a.arm.rotation.z = -0.5 + Math.sin(now * 4) * 0.25; a.elbow.rotation.x = -0.4; } }
+    if (d < 120) { const want = Math.atan2(P.x - p.x, P.z - p.z) - yaw; B.head.rotation.y = L.clamp(Math.atan2(Math.sin(want), Math.cos(want)), -0.8, 0.8); B.head.rotation.x = -L.clamp((80 - d) / 200, 0, 0.35) * -1; const a = B.arms[0]; if (a) { a.arm.rotation.x = -2.6 + Math.sin(now * 3) * 0.25; a.arm.rotation.z = -0.5 + Math.sin(now * 4) * 0.25; a.elbow.rotation.x = -0.4; } }
     // Schritte: sanftes Beben
     const side = Math.sin(beyPh * 2) > 0 ? 1 : -1;
     if (side !== beyStepSide) { beyStepSide = side; if (d < 160) { L.shake = Math.max(L.shake, 0.25 * (1 - d / 160)); L.snd.stomp && L.snd.stomp({ x: p.x, y: 0, z: p.z }); } }
     // Füße schieben dich sanft zur Seite (keine Verletzung)
     if (d < 9 && !P.vehicle && (P.y || 0) < 6) { const k = (9 - d) / 9; P.x += (P.x - p.x) / (d || 1) * k * 0.6; P.z += (P.z - p.z) / (d || 1) * k * 0.6; }
+    if (dPr < 9 && !P.vehicle && (P.y || 0) < 6) { const k = (9 - dPr) / 9; P.x += (P.x - px2) / (dPr || 1) * k * 0.6; P.z += (P.z - pz2) / (dPr || 1) * k * 0.6; }
+    if (dPr < 120 && look < 0.2) { const want = Math.atan2(P.x - px2, P.z - pz2) - yaw; PRc.head.rotation.y = L.clamp(Math.atan2(Math.sin(want), Math.cos(want)), -0.8, 0.8); }
     beyTalkT -= dt;
     if (d < 60 && beyTalkT <= 0) { beyTalkT = 45; L.msg('💖 BEYZA: ' + BEY_LINES[(Math.random() * BEY_LINES.length) | 0], 6000); }
     return d;
   }
+  const PR_LINES = ['„Seid gegrüßt, Reisender! Ist meine BEYZA nicht die Schönste im ganzen Märchenland?“', '„Ich lasse ihre Hand nie los – nicht einmal, wenn die Drachen über uns fliegen.“', '„Wir spazieren jeden Tag um das ganze Reich. Kommt doch ein Stück mit!“', '„Habt Ihr schon die Quest-Tafel im Dorf gesehen? Das Königreich braucht mutige Helden.“', '„Vorsicht mit unseren Füßen – wir sind ein bisschen groß geraten.“'];
+  const nearPrince = () => built && Math.hypot(P.x - built.prince.root.position.x, P.z - built.prince.root.position.z) < 40;
   const nearBeyza = () => built && Math.hypot(P.x - built.bey.root.position.x, P.z - built.bey.root.position.z) < 40;
 
   // ---------- Tiere und Leben ----------
@@ -823,7 +873,8 @@
     if (y < 3 && Math.hypot(P.x - STALK.x, P.z - STALK.z) < 7) return { k: 'stalkUp', t: 'E: 🌱 Die Riesenbohnenranke hochklettern' };
     if (y > 150 && Math.hypot(P.x - STALK.x, P.z - STALK.z) < 8) return { k: 'stalkDown', t: 'E: 🌱 Die Ranke wieder runterklettern' };
     if (Math.hypot(P.x - LOC.baby.x, P.z - LOC.baby.z) < 5) return { k: 'baby', t: 'E: 🐲 Funki streicheln / füttern' };
-    if (nearBeyza()) return { k: 'bey', t: 'E: 💖 Mit BEYZA reden' };
+    if (nearBeyza() && !(nearPrince() && Math.hypot(P.x - built.prince.root.position.x, P.z - built.prince.root.position.z) < Math.hypot(P.x - built.bey.root.position.x, P.z - built.bey.root.position.z))) return { k: 'bey', t: 'E: 💖 Mit BEYZA reden' };
+    if (nearPrince()) return { k: 'prinz', t: 'E: 🤴 Mit dem Prinzen reden' };
     if (built.fairy && Math.hypot(P.x - LOC.fee.x, P.z - LOC.fee.z) < 5) return { k: 'fee', t: 'E: 🧚 Mit Fee Lumina reden' };
     for (const U of built.unis) if (Math.hypot(P.x - U.x, P.z - U.z) < 3.5) return { k: 'uni', u: U, t: 'E: 🦄 Einhorn streicheln' };
     return null;
@@ -848,7 +899,8 @@
       L.msg('💖 BEYZA: ' + BEY_LINES[(Math.random() * BEY_LINES.length) | 0], 6000);
       for (const [q, st] of act('beyza')) progress(q, st, 1);
       const gd = today(); if (L.save.beyGift !== gd) { L.save.beyGift = gd; persistQ(); setTimeout(() => { if (L.gotBossCoins) L.gotBossCoins(150, 'BEYZAS Geschenk des Tages'); }, 1200); }
-    } else if (n.k === 'fee') L.msg('🧚 Fee Lumina: „Im Zauberwald wachsen Zauberpilze, am Spiegelsee die Mondblumen. Und wer die Ranke hochklettert, findet Sternenstaub!“', 7000);
+    } else if (n.k === 'prinz') { L.msg('🤴 Prinz: ' + PR_LINES[(Math.random() * PR_LINES.length) | 0], 6000); for (const [q, st] of act('beyza')) progress(q, st, 1); }
+    else if (n.k === 'fee') L.msg('🧚 Fee Lumina: „Im Zauberwald wachsen Zauberpilze, am Spiegelsee die Mondblumen. Und wer die Ranke hochklettert, findet Sternenstaub!“', 7000);
     else if (n.k === 'uni') {
       L.msg('🦄 Das Einhorn schnaubt glücklich und funkelt in allen Regenbogenfarben!', 2500);
       for (let k = 0; k < 14; k++) L.fx(['#ff5a8a', '#ffe04a', '#5ab8ff', '#a070ff'][k % 4], n.u.x, 2.5, n.u.z, 1, 3, { basic: true, size: 0.2, life: 1 });
@@ -905,7 +957,7 @@
   L.fairyText = function () {
     if (!built) return '💖 BEYZA spaziert durch die Märchenwelt';
     const d = Math.hypot(P.x - built.bey.root.position.x, P.z - built.bey.root.position.z);
-    return '💖 BEYZA (BEYY) – friedliche Riesin · ' + (d > 1000 ? (d / 1000).toFixed(1) + ' km' : Math.round(d) + ' m') + ' entfernt';
+    return '💖 BEYZA & 🤴 ihr Prinz – Hand in Hand · ' + (d > 1000 ? (d / 1000).toFixed(1) + ' km' : Math.round(d) + ' m') + ' entfernt';
   };
   // Licht und Himmel
   const oue = L.updateEnv, C1 = new T.Color(), C2 = new T.Color();
