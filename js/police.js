@@ -193,11 +193,13 @@
   let caught = null;
   L.policeCaught = function () {
     if (caught || !P.alive || P.gone) return;
-    caught = { t: 0 };
-    L.banner('🚔 FESTGENOMMEN!', 'Die Polizei hat dich geschnappt …');
+    const joy = !!(P.vehicle && P.vehicle.t && P.vehicle.t.scooter);
+    caught = { t: 0, joy };
+    if (joy) L.banner('🛴 GEFANGEN WEGEN JOYOR QUALITY', 'Die Polizei hat dich auf dem E-Roller geschnappt – JOYOR QUALITY!');
+    else L.banner('🚔 FESTGENOMMEN!', 'Die Polizei hat dich geschnappt …');
     for (let k = 0; k < 6; k++) setTimeout(() => L.tn && L.tn({ f: k % 2 ? 700 : 960, dur: 0.38, type: 'sawtooth', vol: 0.06 }), k * 420);
     const cx = P.x, cz = P.z;
-    L.startCine('🚔 FESTGENOMMEN', 4.5, (t) => { const ang = t * 0.8, d = 16 - t * 1.6; return { x: cx + Math.sin(ang) * d, y: 3 + t * 1.3, z: cz + Math.cos(ang) * d, lx: cx, ly: 1, lz: cz }; });
+    L.startCine(joy ? '🛴 GEFANGEN WEGEN JOYOR QUALITY' : '🚔 FESTGENOMMEN', 4.5, (t) => { const ang = t * 0.8, d = 16 - t * 1.6; return { x: cx + Math.sin(ang) * d, y: 3 + t * 1.3, z: cz + Math.cos(ang) * d, lx: cx, ly: 1, lz: cz }; });
   };
   // Nach dem Wiederbeleben: woanders aufwachen, alle Sachen weg (Tresor bleibt)
   L.policeRelease = function () {
@@ -241,9 +243,9 @@
     if (caught) {
       caught.t += dt;
       if (caught.t > 4.6 || (!L.cine && caught.t > 0.6)) {
-        caught = null; P.caught = true;
+        const joy = caught.joy; caught = null; P.caught = true;
         if (P.vehicle && L._leaveVehicle) L._leaveVehicle(true);
-        L._killPlayer('Von der Polizei geschnappt');
+        L._killPlayer(joy ? 'Gefangen wegen JOYOR QUALITY' : 'Von der Polizei geschnappt');
       }
     }
   };

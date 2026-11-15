@@ -132,7 +132,8 @@
     const I = { B, g, boxes: [], parts: [], conts: [], loose: [], items: [] };
     B.state = B.state || { opened: {}, taken: {} };
     const wallMesh = (x1, z1, x2, z2, y0, y1, mat) => { const m = new T.Mesh(L.GEO.boxB, mat || matWall); m.scale.set(x2 - x1, y1 - y0, z2 - z1); m.position.set((x1 + x2) / 2, y0, (z1 + z2) / 2); g.add(m); return m; };
-    const wallBox = (x1, z1, x2, z2, y0, y1) => { wallMesh(x1, z1, x2, z2, y0, y1); I.boxes.push(L.addBoxY(x1, z1, x2, z2, y0, y1, 'building')); };
+    // sichtbare Wand minimal nach innen/unter das Dach setzen, sonst liegt sie genau auf der Fassade und flackert (Streifen, halbe Wände)
+    const IN = 0.05, wallBox = (x1, z1, x2, z2, y0, y1) => { const vx1 = Math.abs(x1 - X1) < 1e-6 ? x1 + IN : x1, vx2 = Math.abs(x2 - X2) < 1e-6 ? x2 - IN : x2, vz1 = Math.abs(z1 - Z1) < 1e-6 ? z1 + IN : z1, vz2 = Math.abs(z2 - Z2) < 1e-6 ? z2 - IN : z2, vy1 = Math.abs(y1 - B.h) < 1e-6 ? y1 - IN : y1; wallMesh(vx1, vz1, vx2, vz2, y0, vy1); I.boxes.push(L.addBoxY(x1, z1, x2, z2, y0, y1, 'building')); };
     const X1 = B.x - B.w / 2, X2 = B.x + B.w / 2, Z1 = B.z - B.d / 2, Z2 = B.z + B.d / 2;
     if (B.tower) {
       // Innenhülle des Turms (von außen nicht zu sehen, von innen echte Wände mit Fenstern)
