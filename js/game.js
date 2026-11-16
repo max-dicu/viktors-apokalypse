@@ -3231,6 +3231,7 @@
     if (L.updateFairy) L.updateFairy(dt);
     if (L.updateKaiju) L.updateKaiju(dt);
     if (L.updateFairyCastle) L.updateFairyCastle(dt);
+    if (L.updateWalrusRide) L.updateWalrusRide(dt);
     if (L.updateHeroes) L.updateHeroes(dt);
     if (L.updateTitan) L.updateTitan(dt);
     if (L.updateTitanArmor) L.updateTitanArmor(dt);

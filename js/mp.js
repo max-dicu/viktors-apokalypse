@@ -296,6 +296,9 @@
           break;
         }
         L.hurtPlayer(m.dmg, 'Von ' + String(m.by).slice(0, 18) + ' getroffen'); break;
+      case 'vadd': if (L.vaddRemote) L.vaddRemote(m); break;
+      case 'tame': if (host && L.tameRemote) L.tameRemote(m, from); break;
+      case 'tamed': if (L.tamedReply) L.tamedReply(m); break;
       case 'dmg':
         if (host && R) { const e = m.id === 'boss' ? L.boss : L.byId.get(m.id); if (e && !e.dead) L.damageEnt(e, m.dmg, R.x, R.z, R); }
         break;
