@@ -21,7 +21,7 @@
     { name: 'Die Elektrostation', wall: 'brick', wc: '#7a4a38', floor: 'concrete', fc: '#4a4440', ceil: 'concrete', cc: '#3a3634', light: '#d0e0ff', fog: '#1e2024', fogFar: 35, dens: 0.5, H: 3.4, lightP: 0.3, flick: 0.35, pill: 0.05, extra: 'machines', hemi: 0.6 },
     { name: 'Das leere Büro', wall: 'plain', wc: '#d8d8d0', floor: 'carpet', fc: '#5a6a7a', ceil: 'tiles', cc: '#e8e8e0', light: '#ffffff', fog: '#9aa0a4', fogFar: 60, dens: 0.3, H: 3, lightP: 0.6, flick: 0.04, pill: 0.02, extra: 'desks', hemi: 1.05 },
     { name: 'Das Hotel', wall: 'wood', wc: '#6a4228', floor: 'carpet', fc: '#7a1a1a', ceil: 'plain', cc: '#3a2a20', light: '#ffc870', fog: '#1a100a', fogFar: 35, dens: 0.55, H: 3.2, lightP: 0.35, flick: 0.1, pill: 0, hemi: 0.65 },
-    { name: 'Lichter aus', wall: 'wallpaper', wc: '#4a4630', floor: 'carpet', fc: '#2a281a', ceil: 'tiles', cc: '#2a2a24', light: '#806a40', fog: '#000000', fogFar: 18, dens: 0.45, H: 3.2, lightP: 0.05, flick: 0.6, pill: 0, hemi: 0.14, dark: true },
+    { name: 'Lichter aus', wall: 'wallpaper', wc: '#4a4630', floor: 'carpet', fc: '#2a281a', ceil: 'tiles', cc: '#2a2a24', light: '#806a40', fog: '#000000', fogFar: 18, dens: 0.45, H: 3.2, lightP: 0.05, flick: 0.35, pill: 0, hemi: 0.14, dark: true },
     { name: 'Die Poolräume', wall: 'pool', wc: '#e8f2f4', floor: 'pool', fc: '#d8eef2', ceil: 'pool', cc: '#f0f6f8', light: '#ffffff', fog: '#cfe6ee', fogFar: 70, dens: 0.2, H: 4.5, lightP: 0.4, flick: 0, pill: 0.2, extra: 'water', hemi: 1.2 },
     { name: 'Die roten Räume', wall: 'plain', wc: '#8a1a1a', floor: 'carpet', fc: '#4a0a0a', ceil: 'plain', cc: '#3a0808', light: '#ff3030', fog: '#2a0404', fogFar: 35, dens: 0.45, H: 3.2, lightP: 0.35, flick: 0.2, pill: 0, hemi: 0.6 },
     { name: 'Die endlose Halle', wall: 'concrete', wc: '#bab4a4', floor: 'tilesF', fc: '#a8a290', ceil: 'tiles', cc: '#cfc9b8', light: '#fff4d8', fog: '#7a745e', fogFar: 80, dens: 0.05, H: 6, lightP: 0.5, flick: 0.05, pill: 0.35, hemi: 0.95 },
@@ -43,7 +43,7 @@
       d.dens = L.clamp(base.dens + j(1) * 0.2, 0.03, 0.65);
       d.H = Math.max(2.6, base.H + j(2) * 1.2);
       d.wc = shade(base.wc, j(3)); d.fc = shade(base.fc, j(4));
-      d.flick = Math.min(0.75, base.flick + n / 600);
+      d.flick = Math.min(0.35, base.flick + n / 1500);
       d.fogFar = Math.max(16, base.fogFar * (1 - Math.min(0.6, n / 1200)));
       d.hemi = base.hemi * Math.max(0.25, 1 - n / 1200);
     }
@@ -388,7 +388,7 @@
     const t = performance.now() / 1000;
     for (const c of chunks.values()) {
       if (!c.lm) continue; let ch = false;
-      c.lights.forEach((q, i) => { if (!q.fl) return; const on = Math.sin(t * 7 + q.ph) + Math.sin(t * 23 + q.ph * 3) > (cur.n > 30 ? 0.2 : 0.9) || Math.random() < 0.02 ? 0.12 : 1; tmpC.set(cur.light).multiplyScalar(on); c.lm.instanceColor.setXYZ(i, on, on, on); ch = true; });
+      c.lights.forEach((q, i) => { if (!q.fl) return; const on = (Math.sin(t * 5 + q.ph) + Math.sin(t * 17 + q.ph * 3) > (cur.n > 30 ? 1.55 : 1.75) || Math.random() < 0.004) ? 0.5 : 1; tmpC.set(cur.light).multiplyScalar(on); c.lm.instanceColor.setXYZ(i, on, on, on); ch = true; });
       if (ch) c.lm.instanceColor.needsUpdate = true;
       for (const d of c.doors) if (d.opening || d.hinges) { const want = d.opening ? -1.3 : 0; for (const h of d.hinges) h.rotation.y += (want - h.rotation.y) * Math.min(1, dt * 6); }
       for (const q of c.glitches) { q.m.material.color.setHSL(Math.random(), 1, 0.5); q.m.material.opacity = 0.4 + Math.random() * 0.6; q.m.position.y = (Math.random() - 0.5) * 0.15; if (!trans && P.alive && Math.hypot(P.x - q.x, P.z - q.z) < 1.4) { let n = L.clamp(cur.n + Math.floor(Math.random() * 25) - 18, 0, NLEV - 1); if (n === cur.n) n = Math.max(0, n - 3); goLevel(n, 'glitch'); } }
@@ -406,7 +406,7 @@
     hum(on && !L.paused);
     if (!on) { pl.intensity = 0; return; }
     const E = L.env, D = cur, t = performance.now() / 1000;
-    const flick = (flickNear && Math.random() < 0.35) ? 0.25 : D.flick > 0.2 && Math.sin(t * 13) + Math.sin(t * 37) > 1.75 ? 0.6 : 1;
+    const flick = (flickNear && Math.random() < 0.12) ? 0.6 : D.flick > 0.2 && Math.sin(t * 9) + Math.sin(t * 29) > 1.85 ? 0.82 : 1;
     L.scene.background.set(D.fog); L.scene.fog.color.set(D.fog); L.scene.fog.near = 1.5; L.scene.fog.far = D.fogFar;
     if (E.stars) E.stars.material.opacity = 0; if (E.sunDisc) E.sunDisc.material.opacity = 0; if (E.moon) E.moon.material.opacity = 0;
     if (E.milky) E.milky.material.opacity = 0; if (E.planets) E.planets.visible = false; if (E.rainMesh) E.rainMesh.visible = false;
