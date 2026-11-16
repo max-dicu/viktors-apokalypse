@@ -154,7 +154,7 @@
     $('tBelt').hidden = !inV || P.vehicle.t.kind !== 'car';
     $('tTele').hidden = !inV || !P.vehicle.t.teleport || P.seat > 0;
     $('tWheel').hidden = !inV || !P.vehicle.t.wheelie || P.seat > 0;
-    $('tFly').hidden = inV || !(P.rig && P.rig.app && P.rig.app.special === 'waechter' && L.waechterToken && L.waechterToken());
+    $('tFly').hidden = inV || !(L.suitOn && L.suitOn());
     $('tCust').hidden = !(L.wsHint && L.wsHint());
     $('tDown').hidden = !inV || !(P.vehicle.t.fly || P.vehicle.t.plane || P.vehicle.t.sub) || P.seat > 0;
     $('tUp').hidden = !inV || !(P.vehicle.t.fly || P.vehicle.t.plane || P.vehicle.t.sub || P.vehicle.t.jetFly) || P.seat > 0;

@@ -560,7 +560,8 @@
   function selType() { const it = selItem(); return it ? it.type : null; }
   L.selType = selType;
   // 🛡️ Der Wächter-Anzug (nur mit freigeschaltetem Skin): unverwundbar, fliegt, teleportiert, Donneraxt
-  L.suitOn = () => !!(P.rig && P.rig.app && P.rig.app.special === 'waechter' && L.waechterToken && L.waechterToken());
+  // Admin-Rechte: Wächter und Prinzessin Beyza (beide nur mit gültigem Code)
+  L.suitOn = () => !!(P.rig && P.rig.app && ((P.rig.app.special === 'waechter' && L.waechterToken && L.waechterToken()) || (P.rig.app.special === 'h_beyza' && L.heroToken && L.heroToken('beyza'))));
   L.bearOn = () => !!(P.rig && P.rig.app && P.rig.app.special === 'baer' && L.baerToken && L.baerToken());
   L.titanOn = () => !!(P.rig && P.rig.app && P.rig.app.special === 'titan' && L.titanToken && L.titanToken());
   function freeSpot(x, z, y) { return !L.queryBoxes(x, z, 0.7).some((b) => (b.y0 || 0) <= (y || 0) + 1.6 && b.h > (y || 0)); }
