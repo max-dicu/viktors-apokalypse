@@ -1,6 +1,6 @@
 'use strict';
 // Der Mond: Mit der Rakete von der Heimatinsel hinfliegen. Weltall mit Erde, schwarzen Löchern, Wurmloch, Planeten, Nebeln.
-// Aliens, Mondfahrzeuge – und BERNHARD DER VERSCHLUCKER: frisst die Erde und dann den Mond. Einziger sicherer Ort: der Burger.
+// Aliens, Mondfahrzeuge – und BERNHARD AKA DER MASSIVE ZERSTÖRER: frisst die Erde und dann den Mond. Einziger sicherer Ort: der Burger.
 (function () {
   const L = window.L, T = THREE, P = L.player;
   const G = () => L.GEO;
@@ -229,7 +229,7 @@
     }
   }
 
-  // ---------- BERNHARD DER VERSCHLUCKER (eigener Entwurf) ----------
+  // ---------- BERNHARD AKA DER MASSIVE ZERSTÖRER (eigener Entwurf) ----------
   // Kilometergroß, Oberkörper frei, fleckige verschwitzte Haut, Speckrollen, Haare, Adern, Sabber.
   // Ablauf: frisst die Erde (Kurzfilm) → fliegt her → JAGT DICH 10 MINUTEN (beißt immer wieder zu) → frisst den Mond → zieht weiter.
   let bern = null, bTimer = 45, bWarned = false;
@@ -347,8 +347,8 @@
     bern.phase = 'cine'; bern.t = 0; bern.g.visible = true; bern.frags = []; bern.hp = BERN_HP;
     const E0 = I.earth.position;
     bern.g.position.set(E0.x - 30000, E0.y + 9000, E0.z - 14000); bern.g.rotation.set(0, 0, 0); bern.g.scale.setScalar(1);
-    L.banner('😈 BERNHARD DER VERSCHLUCKER', 'Er frisst ganze Welten … zuerst die Erde. Dann jagt er DICH.');
-    L.startCine('😈 BERNHARD DER VERSCHLUCKER', 9, (t) => {
+    L.banner('😈 BERNHARD AKA DER MASSIVE ZERSTÖRER', 'Er frisst ganze Welten … zuerst die Erde. Dann jagt er DICH.');
+    L.startCine('😈 BERNHARD AKA DER MASSIVE ZERSTÖRER', 9, (t) => {
       const Ep = I.earth.position, b = bern.g.position;
       if (t < 5.5) return { x: Ep.x + 16000, y: Ep.y + 3000, z: Ep.z + 16000, lx: (Ep.x + b.x) / 2, ly: (Ep.y + b.y) / 2, lz: (Ep.z + b.z) / 2 };
       return { x: MOON.x + 80, y: 30, z: MOON.z + 80, lx: b.x, ly: b.y + 2000, lz: b.z };
@@ -661,7 +661,7 @@
     if (ph === 'hunt' || ph === 'rise') return '😈 BERNHARD jagt dich – noch ' + L.fmt(Math.max(0, bern.huntT)) + ' · nur der 🍔 Burger ist sicher';
     if (ph === 'final') return '😱 BERNHARD FRISST DEN MOND! In den 🍔 Burger! (' + Math.max(0, Math.ceil(12 - bern.t)) + ' s)';
     if (ph === 'iva') return '👹 MAMA IVA FRISST BERNHARD';
-    if (ph === 'cine' || ph === 'approach' || ph === 'eat' || ph === 'leave') return '😈 BERNHARD DER VERSCHLUCKER';
+    if (ph === 'cine' || ph === 'approach' || ph === 'eat' || ph === 'leave') return '😈 BERNHARD AKA DER MASSIVE ZERSTÖRER';
     return '🍔 Bernhard kommt in ' + L.fmt(Math.max(0, bTimer));
   };
   L.moonNav = () => (L.inMoon(P.x) && bern && ['hunt', 'aim', 'chomp', 'rise', 'final', 'approach'].includes(bern.phase) && !L.inBurger(P.x, P.z) ? BURGER : null);

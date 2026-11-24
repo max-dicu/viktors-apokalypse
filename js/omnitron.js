@@ -28,7 +28,11 @@
     const head = new T.Group(); head.position.y = 8.3; body.add(head);
     P3(G.box, mt, 0.95, 1.05, 0.9, 0, 0.4, 0, head); P3(G.cone, dk, 0.25, 0.8, 0.12, -0.32, 1.05, -0.1, head).rotation.z = 0.4; P3(G.cone, dk, 0.25, 0.8, 0.12, 0.32, 1.05, -0.1, head).rotation.z = -0.4;
     for (const s of [-1, 1]) P3(G.box, glow(0xff2020), 0.26, 0.07, 0.05, s * 0.22, 0.5, 0.46, head);
-    P3(G.box, dk, 0.5, 0.06, 0.05, 0, 0.18, 0.46, head);
+    P3(G.box, glow(0xff3020), 0.42, 0.05, 0.04, 0, 0.2, 0.47, head); for (let k = 0; k < 5; k++) P3(G.box, glow(0xff3020), 0.025, 0.12, 0.04, -0.16 + k * 0.08, 0.2, 0.47, head);
+    STONES.forEach((c, k) => P3(new T.OctahedronGeometry(0.05), glow(c), 1, 1.3, 0.8, -0.3 + k * 0.12, 0.82, 0.44, head));
+    P3(G.box, mt, 1.05, 0.12, 0.95, 0, 0.92, 0, head); P3(G.cone, mt, 0.3, 0.5, 0.2, 0, -0.12, 0.38, head).rotation.x = Math.PI;
+    for (let k = 0; k < 4; k++) { P3(G.box, glow(0xa040ff), 0.05, 2.2, 0.04, -0.9 + k * 0.6, 6.3, 0.72); }
+    for (const s2 of [-1, 1]) { P3(G.box, glow(0xa040ff), 0.04, 0.5, 0.04, s2 * 1.85, 7.6, 0.72); P3(G.cone, dk, 0.25, 0.9, 0.25, s2 * 1.85, 8.3, 0); }
     const aura = new T.PointLight(0xa060ff, 3, 400, 2); aura.position.set(0, 6.5 * SC, 20); root.add(aura);
     root.traverse((o) => { if (o.isMesh) o.frustumCulled = false; });
     L.scene.add(root);
@@ -43,7 +47,8 @@
     if (O) return;
     const A = (L._players ? L._players() : [P]).find((p) => L.worldOf && L.worldOf(p.x, p.z) === 'home') || { x: 0, z: 0 };
     const a = Math.random() * 6.283, x = L.clamp(A.x + Math.sin(a) * 500, -1300, 1300), z = L.clamp(A.z + Math.cos(a) * 500, -1300, 1300);
-    O = { kind: 'omni', key: 'omni', rig: build(), x, z, yaw: 0, hp: HP, life: LIFE, cd: 6, atk: null, atkT: 0, ph: 0, dead: false, deadT: 0, hitR: 260, bigR: 22, hy: 70, y: 0, rise: 0 };
+    const np = Math.max(1, (L._players ? L._players() : [P]).length), MX = HP * (1 + 0.75 * (np - 1));
+    O = { kind: 'omni', key: 'omni', rig: build(), x, z, yaw: 0, hp: MX, max: MX, life: LIFE, cd: 6, atk: null, atkT: 0, ph: 0, dead: false, deadT: 0, hitR: 260, bigR: 22, hy: 70, y: 0, rise: 0 };
     L.omni = O;
     O.rift = new T.Mesh(new T.TorusGeometry(90, 14, 10, 48), new T.MeshBasicMaterial({ color: 0xa040ff, transparent: true, opacity: 0.9, blending: T.AdditiveBlending, depthWrite: false, fog: false })); O.rift.rotation.x = Math.PI / 2; O.rift.position.set(x, 720, z); L.scene.add(O.rift);
     O.rig.gems.forEach((g) => g.scale.setScalar(0.01));
@@ -61,7 +66,7 @@
     O.hp -= g ? dmg * 1.5 : dmg * 0.002;
     if (!g && src === P && performance.now() > hurtMsgT) { hurtMsgT = performance.now() + 6000; L.msg('♾️ Das kratzt ihn kaum – nur der 🧤 Ewigkeitshandschuh hilft!', 3000); }
     L.fx(g ? '#c080ff' : '#ffd060', O.x, 60 + Math.random() * 60, O.z, 10, 10, { basic: true, size: 1.5, life: 0.6 });
-    if (L.showBossHp) L.showBossHp('♾️ INFINITY-OMNITRON', Math.max(0, O.hp), HP);
+    if (L.showBossHp) L.showBossHp('♾️ INFINITY-OMNITRON', Math.max(0, O.hp), O.max);
     if (O.hp <= 0) die(src);
   };
   function die(src) {

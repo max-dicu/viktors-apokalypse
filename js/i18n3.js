@@ -191,7 +191,7 @@ DIE WAHRE CAROLINA IST BESIEGT|THE TRUE CAROLINA IS DEFEATED|ADEVĂRATA CAROLINA
 HIER LEBT DIE WAHRE CAROLINA|THE TRUE CAROLINA LIVES HERE|AICI TRĂIEȘTE ADEVĂRATA CAROLINA
 Bonus: Du startest einmalig sicher im Turm – MAMA IVA ist nur noch 30 Sekunden da!|Bonus: you start safely in the tower once – MAMA IVA is only here for 30 more seconds!|Bonus: începi o dată în siguranță în turn – MAMA IVA mai e doar 30 de secunde!
 Turm = sicher (aber leise sein!). Tipp: Sprinte weg und duck dich dann (C) – so verlieren die Monster deine Spur.|Tower = safe (but stay quiet!). Tip: sprint away, then crouch (C) – the monsters lose your trail.|Turn = sigur (dar fii liniștit!). Sfat: fugi, apoi ghemuiește-te (C) – monștrii îți pierd urma.
-BERNHARD DER VERSCHLUCKER|BERNHARD THE SWALLOWER|BERNHARD ÎNGHIȚITORUL
+BERNHARD AKA DER MASSIVE ZERSTÖRER|BERNHARD AKA THE MASSIVE DESTROYER|BERNHARD AKA DISTRUGĂTORUL MASIV
 Bernhard hat DICH entdeckt! Er jagt dich jetzt 5 Minuten – nur der 🍔 Burger ist sicher!|Bernhard spotted YOU! He hunts you for 5 minutes – only the 🍔 burger is safe!|Bernhard TE-A văzut! Te vânează 5 minute – doar 🍔 burgerul e sigur!
 Bernhard hämmert wütend auf den Burger – aber er kommt nicht rein!|Bernhard pounds the burger in rage – but he can't get in!|Bernhard lovește furios burgerul – dar nu poate intra!
 Der Koloss beruhigt sich und schrumpft wieder.|The colossus calms down and shrinks again.|Colosul se calmează și se micșorează.

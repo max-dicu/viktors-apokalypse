@@ -40,7 +40,7 @@
   css.textContent = `#langPick,#introV{position:fixed;inset:0;z-index:200;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:Arial,sans-serif}
   #langPick h1{font:900 clamp(22px,5vw,40px) Arial;margin:0 0 24px;letter-spacing:2px}#langPick button{font:800 22px Arial;width:min(320px,80vw);padding:14px;margin:8px;border-radius:14px;border:2px solid #e8c040;background:#15131c;color:#fff;cursor:pointer}
   #langPick button:hover{background:#2a2410}#introV .a{font:600 clamp(16px,3vw,26px) Georgia,serif;letter-spacing:8px;opacity:0;transition:opacity 1.2s;color:#d8d0b8}
-  #introV .b{font:900 clamp(34px,8vw,92px) Impact,'Arial Black',sans-serif;letter-spacing:4px;opacity:0;transform:scale(1.25);transition:opacity 1.2s,transform 3s ease-out;text-align:center;color:#e8e2cc;text-shadow:0 0 30px rgba(200,40,40,.6)}
+  #introV .b{font:900 clamp(34px,8vw,92px) Impact,'Arial Black',sans-serif;letter-spacing:4px;opacity:0;transform:scale(1.25);transition:opacity 1.6s,transform 5s ease-out;text-align:center;color:#e8e2cc;text-shadow:0 0 30px rgba(200,40,40,.6)}
   #introV .c{font:italic 700 clamp(14px,3vw,26px) Georgia,serif;letter-spacing:5px;opacity:0;transition:opacity 1.4s;color:#c8a0ff;margin-top:8px}#introV small{position:absolute;bottom:16px;opacity:.5;font-size:12px}`;
   document.head.appendChild(css);
   function sound() {
@@ -58,8 +58,8 @@
     document.body.appendChild(v); sound();
     const [a, b, c] = v.children; let fin = false;
     const end = () => { if (fin) return; fin = true; v.style.transition = 'opacity .8s'; v.style.opacity = '0'; setTimeout(() => { v.remove(); done(); }, 800); };
-    setTimeout(() => { a.style.opacity = '1'; }, 200); setTimeout(() => { a.style.opacity = '0'; }, 2400);
-    setTimeout(() => { b.style.opacity = '1'; b.style.transform = 'scale(1)'; }, 3000); setTimeout(() => { c.style.opacity = '1'; }, 3900); setTimeout(end, 7400);
+    setTimeout(() => { a.style.opacity = '1'; }, 300); setTimeout(() => { a.style.opacity = '0'; }, 4200);
+    setTimeout(() => { b.style.opacity = '1'; b.style.transform = 'scale(1)'; }, 5000); setTimeout(() => { c.style.opacity = '1'; }, 6600); setTimeout(end, 11500);
     v.addEventListener('pointerdown', end);
   }
   function pick() {
