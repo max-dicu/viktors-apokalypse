@@ -10,8 +10,10 @@
   const cs = document.createElement('style'); cs.textContent = '.dmgN{position:absolute;font:900 22px Impact,"Arial Black",sans-serif;color:#fff;text-shadow:0 0 4px #000,2px 2px 0 #000;transform:translate(-50%,-50%);white-space:nowrap}.dmgN.big{font-size:34px;color:#ffd040}.dmgN.combo{font-size:28px;color:#ff60a0}body.cinema .dmgN{display:none}'; document.head.appendChild(cs);
   const V = new T.Vector3();
   function num(text, x, y, z, cls) { const d = document.createElement('div'); d.className = 'dmgN ' + (cls || ''); d.textContent = text; wrap.appendChild(d); nums.push({ d, x, y, z, t: 0, vx: (Math.random() - 0.5) * 40 }); if (nums.length > 40) { const o = nums.shift(); o.d.remove(); } }
+  let starTex = null;
+  function star() { if (starTex) return starTex; const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'); const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.25, 'rgba(255,255,220,.8)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 3; for (let k = 0; k < 8; k++) { const a = k / 8 * 6.283; g.beginPath(); g.moveTo(32 + Math.cos(a) * 6, 32 + Math.sin(a) * 6); g.lineTo(32 + Math.cos(a) * 30, 32 + Math.sin(a) * 30); g.stroke(); } starTex = new T.CanvasTexture(c); return starTex; }
   function impact(x, y, z, big) {
-    const s = new T.Sprite(new T.SpriteMaterial({ color: big ? 0xfff0c0 : 0xffffff, transparent: true, blending: T.AdditiveBlending, depthWrite: false, fog: false }));
+    const s = new T.Sprite(new T.SpriteMaterial({ map: star(), color: big ? 0xfff0c0 : 0xffffff, transparent: true, blending: T.AdditiveBlending, depthWrite: false, fog: false }));
     s.position.set(x, y, z); s.scale.setScalar(big ? 3.2 : 1.6); L.scene.add(s); let k = 1;
     const iv = setInterval(() => { k -= 0.2; s.material.opacity = Math.max(0, k); s.scale.multiplyScalar(1.18); if (k <= 0) { clearInterval(iv); L.scene.remove(s); s.material.dispose(); } }, 30);
     L.fx(big ? '#ffd060' : '#ffffff', x, y, z, big ? 18 : 8, big ? 12 : 7, { basic: true, size: big ? 0.25 : 0.15, life: 0.35 });
