@@ -39,6 +39,7 @@
       <button id="tHorn" data-k="KeyH" title="Hupe">📯</button>
       <button id="tExit" data-k="KeyF" title="Aussteigen">🚪</button>
     </div>
+    <div class="tgrp" id="tAdm" hidden style="position:absolute;left:12px;top:34%;display:flex;flex-direction:column;gap:8px"><button id="tFly2" data-k="KeyV" title="Fliegen an/aus">🦸</button><button id="tUp2" data-k="Space" title="Hoch">⬆️</button><button id="tDn2" data-k="KeyC" title="Runter">⬇️</button><button id="tTp2" data-k="KeyT" title="Teleport">🌀</button></div>
     <div id="rotateHint">📱 ↻<br>Bitte das Handy quer halten</div>`;
   document.body.appendChild(root);
 
@@ -154,7 +155,8 @@
     $('tBelt').hidden = !inV || P.vehicle.t.kind !== 'car';
     $('tTele').hidden = !inV || !P.vehicle.t.teleport || P.seat > 0;
     $('tWheel').hidden = !inV || !P.vehicle.t.wheelie || P.seat > 0;
-    $('tFly').hidden = inV || !(L.suitOn && L.suitOn());
+    $('tFly').hidden = true;
+    { const suit = !!(L.suitOn && L.suitOn()), adm = !inV && (suit || !!(L.titanOn && L.titanOn()) || !!(L.heroFly && L.heroFly())); $('tTp2').hidden = !suit; $('tAdm').hidden = !adm; $('tAdm').style.display = adm ? 'flex' : 'none'; $('tUp2').hidden = !P.flying; $('tDn2').hidden = !P.flying; }
     $('tCust').hidden = !(L.wsHint && L.wsHint());
     $('tDown').hidden = !inV || !(P.vehicle.t.fly || P.vehicle.t.plane || P.vehicle.t.sub) || P.seat > 0;
     $('tUp').hidden = !inV || !(P.vehicle.t.fly || P.vehicle.t.plane || P.vehicle.t.sub || P.vehicle.t.jetFly) || P.seat > 0;

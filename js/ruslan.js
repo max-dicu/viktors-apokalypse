@@ -149,7 +149,7 @@
   function cleanupModels() { if (B.rig) L.scene.remove(B.rig.root); if (B.bag) L.scene.remove(B.bag.g); B.rig = null; B.bag = null; ent.rig.root = null; if (B.shield) { L.scene.remove(B.shield); B.shield = null; } if (B.iva) { L.scene.remove(B.iva.root); B.iva = null; } for (const f of B.fx) L.scene.remove(f.m); B.fx.length = 0; }
   function startIntro() {
     cleanupModels();
-    B.rig = buildRuslan(); B.rig.root.scale.setScalar(5); L.scene.add(B.rig.root);
+    B.rig = buildRuslan(); B.rig.root.scale.setScalar(12); L.scene.add(B.rig.root);
     const a = Math.atan2(P.x - CENTER.x, P.z - CENTER.z); B.x = CENTER.x; B.z = CENTER.z; B.yaw = a;
     B.rig.root.position.set(B.x, 0, B.z); B.rig.root.rotation.y = a;
     B.bag = buildBagger(); B.bag.g.position.set(B.x - Math.sin(a) * 60, -60, B.z - Math.cos(a) * 60); B.bag.g.rotation.y = a; L.scene.add(B.bag.g); ent.rig.root = B.bag.g;
@@ -165,12 +165,17 @@
   function updIntro(dt) {
     const t = B.t, R = B.rig, a = B.yaw, fx = Math.sin(a), fz = Math.cos(a);
     L.animHuman(R, { mode: 'walk', phase: 0, speed: 0 });
+    // Umhang weht immer, beim Sprung stark
+    if (R.cape) R.cape.rotation.x = 0.3 + Math.abs(Math.sin(t * 7)) * 0.3 + Math.sin(t * 13) * 0.08 + (t > 8 ? 0.9 : 0);
+    R.torso.rotation.y = t < 0.5 ? -0.7 * (t / 0.5) : t < 0.8 ? -0.7 + (t - 0.5) / 0.3 * 1.1 : t < 2.8 ? 0.4 * (1 - (t - 0.8) / 2) : 0;
     // 0–2,8 s: Schild in deine Richtung werfen und zurückfangen
     if (t < 2.8) {
-      const u = t / 2.8, d = Math.sin(u * Math.PI) * 70, hand = new T.Vector3(); R.arms[1].elbow.getWorldPosition(hand);
+      const u = t / 2.8, d = Math.sin(u * Math.PI) * 110, hand = new T.Vector3(); R.arms[1].elbow.getWorldPosition(hand);
       if (t > 0.5) { rigShield(true); B.shield.position.set(hand.x + fx * d + Math.cos(a) * Math.sin(u * 6.28) * 8, hand.y + Math.sin(u * Math.PI) * 4, hand.z + fz * d - Math.sin(a) * Math.sin(u * 6.28) * 8); B.shield.rotation.set(Math.PI / 2, t * 18, 0); }
-      R.arms[1].arm.rotation.x = t < 0.5 ? -0.5 - t * 3 : -1.6; R.arms[1].arm.rotation.z = 0.6;
-      Object.assign(B.cam, { x: B.x + fx * 90 + Math.cos(a) * 25, y: 14, z: B.z + fz * 90 - Math.sin(a) * 25, lx: B.x + fx * 30, ly: 12, lz: B.z + fz * 30 });
+      R.arms[1].arm.rotation.x = t < 0.5 ? 0.6 + t * 1.6 : t < 0.8 ? 1.4 - (t - 0.5) / 0.3 * 3 : t < 2.5 ? -1.6 : -1.6 + (t - 2.5) * 2; R.arms[1].arm.rotation.z = t < 0.5 ? -0.3 : 0.6;
+      if (t > 0.5 && B.shield) { for (let k = 0; k < 2; k++) L.fx(k ? '#ffffff' : '#3a6aff', B.shield.position.x, B.shield.position.y, B.shield.position.z, 1, 1, { basic: true, size: 0.9, life: 0.5 }); }
+      if (t > 2.6 && t - dt <= 2.6) { L.shake = Math.max(L.shake, 0.8); L.snd.stomp && L.snd.stomp({ x: B.x, y: 20, z: B.z }); }
+      Object.assign(B.cam, { x: B.x + fx * 140 + Math.cos(a) * 45, y: 26, z: B.z + fz * 140 - Math.sin(a) * 45, lx: B.shield && t > 0.5 ? B.shield.position.x : B.x, ly: 22, lz: B.shield && t > 0.5 ? B.shield.position.z : B.z });
       if (t > 0.5 && t - dt <= 0.5) L.nz && L.nz({ dur: 1, f: 2000, fTo: 600, type: 'bandpass', vol: 0.3 });
       return;
     }
@@ -183,8 +188,8 @@
     B.bag.boom.rotation.x = -0.35 + Math.sin(t) * 0.1;
     Object.assign(B.cam, { x: B.x + fx * 130 + Math.cos(a) * 60, y: 30 + u * 25, z: B.z + fz * 130 - Math.sin(a) * 60, lx: bg.position.x, ly: 20 + u * 25, lz: bg.position.z });
     // 8–9,5 s: Ruslan springt hinauf
-    if (t > 8) { const k = ease((t - 8) / 1.2); R.root.position.set(L.lerp(B.x, bg.position.x, k), L.lerp(0, TOP + Math.sin(k * Math.PI) * 15, k), L.lerp(B.z, bg.position.z, k)); }
-    if (t > 9.5 || (!L.cine && t > 0.3)) { if (L.cine && L.endCine) L.endCine(); B.state = 'hunt'; B.t = 0; B.x = bg.position.x; B.z = bg.position.z; B.bag.g.position.y = 0; L.banner('🚜 RUSLAN JAGT DICH – 5 MINUTEN', 'Rette dich ins blau-weiße Häuschen (🛡️ Zuflucht)!'); }
+    if (t > 8) { const k = ease((t - 8) / 1.2); R.root.scale.setScalar(L.lerp(12, 5, k)); R.root.position.set(L.lerp(B.x, bg.position.x, k), L.lerp(0, TOP + Math.sin(k * Math.PI) * 15, k), L.lerp(B.z, bg.position.z, k)); }
+    if (t > 9.5 || (!L.cine && t > 0.3)) { if (L.cine && L.endCine) L.endCine(); B.state = 'hunt'; B.t = 0; R.root.scale.setScalar(5); B.x = bg.position.x; B.z = bg.position.z; B.bag.g.position.y = 0; L.banner('🚜 RUSLAN JAGT DICH – 5 MINUTEN', 'Rette dich ins blau-weiße Häuschen (🛡️ Zuflucht)!'); }
   }
   function hurt(dmg, why, kx, kz) { if (!P.alive || inSafe(P.x, P.z)) return; L.hurtPlayer(dmg, why); if (kx !== undefined) { P.vx = kx; P.vz = kz; P.vy = 7; P.air = true; P.knockT = 0.6; } L.shake = Math.max(L.shake, 0.7); }
   function telegraph(x, z, r, dur, cb) { const m = new T.Mesh(new T.RingGeometry(r * 0.85, r, 40).rotateX(-Math.PI / 2), basic(0xff2020, { transparent: true, opacity: 0.8, side: T.DoubleSide, depthWrite: false })); m.position.set(x, 0.1, z); L.scene.add(m); B.fx.push({ m, t: 0, dur, cb, kind: 'tele' }); }
