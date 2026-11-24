@@ -320,12 +320,16 @@
     { id: 'snap', name: '✨ Schnipp (alle Steine)', col: 0xffffff, css: '#ffffff', cd: 120 }
   ];
   function gauntletModel() {
-    const g = new T.Group(), gold = new T.MeshStandardMaterial({ color: 0xe0b040, metalness: 0.8, roughness: 0.3, emissive: 0x3a2400 });
-    const hand = new T.Mesh(L.GEO.box, gold); hand.scale.set(0.16, 0.2, 0.08); g.add(hand);
-    for (let k = 0; k < 4; k++) { const f = new T.Mesh(L.GEO.box, gold); f.scale.set(0.035, 0.12, 0.04); f.position.set(-0.06 + k * 0.04, 0.15, 0); g.add(f); }
-    const th = new T.Mesh(L.GEO.box, gold); th.scale.set(0.035, 0.09, 0.04); th.position.set(0.1, 0.04, 0); th.rotation.z = -0.6; g.add(th);
-    const cuff = new T.Mesh(L.GEO.cyl, gold); cuff.scale.set(0.1, 0.12, 0.07); cuff.position.y = -0.15; g.add(cuff);
-    STONES.slice(0, 6).forEach((s, k) => { const m = new T.Mesh(L.GEO.sph, basic(s.col)); m.scale.setScalar(k === 5 ? 0.035 : 0.018); m.position.set(k === 5 ? 0 : -0.06 + k * 0.04, k === 5 ? -0.02 : 0.2, 0.045); g.add(m); });
+    const g = new T.Group(), gold = new T.MeshStandardMaterial({ color: 0xe8b848, metalness: 0.95, roughness: 0.22, emissive: 0x3a2400, emissiveIntensity: 0.4 }), dk = new T.MeshStandardMaterial({ color: 0x8a6420, metalness: 0.9, roughness: 0.35 });
+    const B = (geo, m, sx, sy, sz, x, y, z, rx, rz) => { const o = new T.Mesh(geo, m); o.scale.set(sx, sy, sz); o.position.set(x, y, z); if (rx) o.rotation.x = rx; if (rz) o.rotation.z = rz; g.add(o); return o; };
+    B(L.GEO.box, gold, 0.17, 0.2, 0.085, 0, 0, 0); B(L.GEO.box, dk, 0.15, 0.03, 0.09, 0, 0.06, 0.005); B(L.GEO.box, dk, 0.15, 0.03, 0.09, 0, -0.06, 0.005);
+    for (let k = 0; k < 4; k++) { const x = -0.06 + k * 0.04; for (let j = 0; j < 3; j++) { B(L.GEO.box, j % 2 ? dk : gold, 0.034, 0.045, 0.042, x, 0.125 + j * 0.045, 0.01 * j, -0.12 * j); } B(L.GEO.sph, gold, 0.022, 0.018, 0.022, x, 0.105, 0.03); }
+    B(L.GEO.box, gold, 0.036, 0.06, 0.042, 0.1, 0.03, 0.01, 0, -0.6); B(L.GEO.box, gold, 0.034, 0.05, 0.04, 0.125, 0.075, 0.015, 0, -0.9);
+    B(L.GEO.cyl, gold, 0.105, 0.14, 0.075, 0, -0.16, 0); for (let k = 0; k < 3; k++) B(new T.TorusGeometry(0.1, 0.008, 6, 24), dk, 1, 1, 0.72, 0, -0.11 - k * 0.04, 0, Math.PI / 2);
+    STONES.slice(0, 6).forEach((st, k) => { const big = k === 5, x = big ? 0 : -0.06 + k * 0.04, y = big ? -0.02 : 0.11, z = 0.05;
+      B(new T.TorusGeometry(big ? 0.03 : 0.016, 0.005, 6, 16), dk, 1, 1, 1, x, y, z - 0.004);
+      B(new T.OctahedronGeometry(big ? 0.028 : 0.015), basic(st.col), 1, 1.25, 0.8, x, y, z);
+      B(L.GEO.sph, basic(st.col, { transparent: true, opacity: 0.35, blending: T.AdditiveBlending, depthWrite: false }), big ? 0.05 : 0.028, big ? 0.05 : 0.028, 0.02, x, y, z + 0.004); });
     return g;
   }
   L.ITEMS.ewigkeitshandschuh = { name: 'Ewigkeitshandschuh', slot: 'waffe', icon: '🧤', dmg: 0, rate: 0.6, noise: 60, range: 250, ammo: null, mag: 1, spread: 0, energy: true, gauntlet: true };
@@ -369,6 +373,10 @@
   const fxs = [];
   function beamFx(a, b, col, w, dur) { const len = a.distanceTo(b), m = new T.Mesh(new T.CylinderGeometry(w, w, len, 10, 1, true), basic(col, { transparent: true, opacity: 0.9, blending: T.AdditiveBlending, depthWrite: false })); m.position.copy(a).lerp(b, 0.5); m.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), b.clone().sub(a).normalize()); L.scene.add(m); fxs.push({ m, t: 0, dur }); }
   function ringFx(x, y, z, col, r, dur) { const m = new T.Mesh(new T.TorusGeometry(1, 0.1, 6, 48), basic(col, { transparent: true, opacity: 0.9, blending: T.AdditiveBlending, depthWrite: false })); m.rotation.x = Math.PI / 2; m.position.set(x, y, z); L.scene.add(m); fxs.push({ m, t: 0, dur, grow: r }); }
+  function shock(x, y, z, col, r, dur) { const m = new T.Mesh(L.GEO.sph, basic(col, { transparent: true, opacity: 0.55, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide })); m.position.set(x, y, z); L.scene.add(m); let t = 0; const iv = setInterval(() => { t += 0.03; const u = t / dur; m.scale.setScalar(0.5 + u * r); m.material.opacity = 0.55 * (1 - u); if (u >= 1) { clearInterval(iv); L.scene.remove(m); } }, 30); L.shake = Math.max(L.shake, 1); }
+  function flashScr(c, a) { const f = L.backFade; if (!f) return; f.style.background = c; f.style.opacity = String(a); setTimeout(() => { f.style.opacity = '0'; }, 160); }
+  function portalFx(x, y, z, col) { for (let k = 0; k < 4; k++) setTimeout(() => ringFx(x, y + 0.3 + k * 0.6, z, col, 2.5 - k * 0.3, 0.7), k * 70); for (let k = 0; k < 16; k++) L.fx('#80c0ff', x + L.rand(-1.5, 1.5), y + L.rand(0, 3), z + L.rand(-1.5, 1.5), 1, 2, { basic: true, size: 0.15, life: 0.8 }); }
+  function timeRings(col) { const gs = [0, 1, 2].map((k) => { const m = new T.Mesh(new T.TorusGeometry(2 + k * 1.2, 0.06, 6, 48), basic(col, { transparent: true, opacity: 0.8, blending: T.AdditiveBlending, depthWrite: false })); L.scene.add(m); return m; }); let t = 0; const iv = setInterval(() => { t += 0.03; gs.forEach((m, k) => { m.position.set(P.x, (P.y || 0) + 1.3, P.z); m.rotation.set(t * (k + 1), t * (2 - k), 0); m.material.opacity = 0.8 * Math.max(0, 1 - t / 2.2); }); if (t > 2.2) { clearInterval(iv); gs.forEach((m) => L.scene.remove(m)); } }, 30); }
   const dmg = (e, n) => { if (isRemote(e)) { toPlayer(e, { e: 'dmg', d: Math.min(95, n / 6) }); return; } L._gauntletFiring = true; try { L.damageEnt(e, n, P.x, P.z, P); } finally { L._gauntletFiring = false; } };
   const mind = new Set(), warped = new Set(), frozen = new Set();
   function warp(e, art, dur) {
@@ -448,8 +456,9 @@
         const h = L.rayHit(o, dir, 250, P.camDist + 0.3), end = o.clone().addScaledVector(dir, h.t);
         beamFx(hp, end, S.col, 0.7, 0.5); L.env.bolt = 0.6; L.shake = Math.max(L.shake, 0.6);
         const kp = [0.5, 1, 1.8][CFG.kraft - 1] || 1;
-        if (h.ent && allowed(h.ent)) dmg(h.ent, 900 * kp);
-        for (const e of tgts()) if (e !== h.ent && Math.hypot(e.x - end.x, e.z - end.z) < 10 * kp + (e.bigR || 0)) dmg(e, 400 * kp);
+        if (h.ent && allowed(h.ent)) dmg(h.ent, 2500 * kp);
+        for (const e of tgts()) if (e !== h.ent && Math.hypot(e.x - end.x, e.z - end.z) < 18 * kp + (e.bigR || 0)) dmg(e, 1100 * kp);
+        shock(end.x, end.y, end.z, S.col, 18 * kp, 0.7); flashScr('#e0b0ff', 0.5);
         L.fx('#d080ff', end.x, end.y, end.z, 40, 12, { basic: true, size: 0.6, life: 0.8 }); L.snd.explosion && L.snd.explosion({ x: end.x, y: end.y, z: end.z });
         break;
       }
@@ -464,7 +473,7 @@
           L.msg('🔵 Raum-Stein: ' + n + ' weggeschleudert.', 2000); break;
         }
         const h = L.rayHit(o, dir, 300, P.camDist + 0.3), end = o.clone().addScaledVector(dir, Math.max(2, h.t - 1.5));
-        ringFx(P.x, y + 1, P.z, S.col, 3, 0.6); P.x = end.x; P.z = end.z; P.y = Math.max(0, end.y - 1); P.vx = P.vz = P.vy = 0; P.air = true; ringFx(P.x, P.y + 1, P.z, S.col, 3, 0.6);
+        portalFx(P.x, y, P.z, S.col); portalFx(end.x, Math.max(0, end.y - 1), end.z, S.col); ringFx(P.x, y + 1, P.z, S.col, 3, 0.6); P.x = end.x; P.z = end.z; P.y = Math.max(0, end.y - 1); P.vx = P.vz = P.vy = 0; P.air = true; ringFx(P.x, P.y + 1, P.z, S.col, 3, 0.6);
         L.snd.teleport && L.snd.teleport({ x: P.x, y: P.y, z: P.z }); break;
       }
       case 'real': {
@@ -472,7 +481,7 @@
         ringFx(end.x, Math.max(0.3, end.y), end.z, S.col, 15, 0.9);
         let n = 0;
         for (const e of tgts()) {
-          if (e.dead || Math.hypot(e.x - end.x, e.z - end.z) > 15 + (e.bigR || 0)) continue; n++;
+          if (e.dead || Math.hypot(e.x - end.x, e.z - end.z) > 15 + (e.bigR || 0)) continue; n++; beamFx(hp, new T.Vector3(e.x, 1.4, e.z), S.col, 0.12, 0.7);
           if (isRemote(e)) { toPlayer(e, { e: CFG.realArt === 'blasen' ? 'dmg' : 'shrink', d: CFG.realArt === 'blasen' ? 60 : CFG.realDauer }); continue; }
           if (!MK()[e.kind]) { dmg(e, 600); continue; }
           if (CFG.realArt === 'blasen') { dmg(e, 1e9); for (let k = 0; k < 6; k++) L.fx(k % 2 ? '#ff4060' : '#ffd0e0', e.x, 1 + k * 0.4, e.z, 3, 3, { basic: true, size: 0.35, life: 1.4, g: -2 }); }
@@ -483,12 +492,12 @@
       }
       case 'seele': {
         let n = 0; for (const e of tgts()) { if (Math.hypot(e.x - P.x, e.z - P.z) > 25 + (e.bigR || 0)) continue; dmg(e, 150); n++; beamFx(new T.Vector3(e.x, 1.4, e.z), hp, S.col, 0.08, 0.6); }
-        P.hp = Math.min(100, P.hp + 30 + n * 10); ringFx(P.x, y + 1, P.z, S.col, 25, 0.8); L.msg('🟠 Seelen-Stein: ' + n + ' Seelen entzogen – du bist geheilt.', 2000); break;
+        P.hp = Math.min(100, P.hp + 60 + n * 15); ringFx(P.x, y + 1, P.z, S.col, 25, 0.8); L.msg('🟠 Seelen-Stein: ' + n + ' Seelen entzogen – du bist geheilt.', 2000); break;
       }
       case 'zeit': {
         const dur = CFG.zeit; let n = 0;
         for (const e of tgts()) { if (e.dead || Math.hypot(e.x - P.x, e.z - P.z) > 60) continue; if (isRemote(e)) { toPlayer(e, { e: 'freeze', d: dur }); n++; } else if (MK()[e.kind]) { e.stunT = Math.max(e.stunT || 0, dur); e.frozenT = dur; e.frzPos = { x: e.x, z: e.z }; frozen.add(e); n++; } }
-        for (let k = 0; k < 3; k++) setTimeout(() => ringFx(P.x, y + 1 + k, P.z, S.col, 60, 1.2), k * 200);
+        for (let k = 0; k < 3; k++) setTimeout(() => ringFx(P.x, y + 1 + k, P.z, S.col, 60, 1.2), k * 200); timeRings(S.col);
         L.msg('🟢 Zeit-Stein: ' + n + ' für ' + dur + ' Sekunden eingefroren.', 2500); break;
       }
       case 'geist': {
@@ -499,6 +508,7 @@
           if (!MK()[e.kind]) continue; n++;
           if (CFG.geistArt === 'ruhig') { e.prey = null; e.state = 'idle'; e.calmT = dur; }
           else { e.allyT = dur; e.prey = null; e.calmT = dur; mind.add(e); }
+          beamFx(hp, new T.Vector3(e.x, 2, e.z), S.col, 0.06, 0.8);
         }
         ringFx(P.x, y + 2, P.z, S.col, 50, 1);
         L.msg('🟡 Geist-Stein: ' + n + (CFG.geistArt === 'ruhig' ? ' vergessen dich' : ' kämpfen jetzt für dich') + ' (' + dur + ' s). Spieler laufen dorthin, wo du hinschaust.', 3000); break;
@@ -509,7 +519,8 @@
         if (L.backFade) { L.backFade.style.background = '#ffffff'; L.backFade.style.opacity = '0.9'; setTimeout(() => { L.backFade.style.opacity = '0'; }, 250); }
         L.tn && L.tn({ f: 2400, fTo: 1800, dur: 0.08, type: 'square', vol: 0.4 }); L.shake = Math.max(L.shake, 0.8);
         half.forEach((m, k) => setTimeout(() => { if (m.dead) return; for (let j = 0; j < 4; j++) L.fx('#6a5a4a', m.x + L.rand(-0.5, 0.5), 0.5 + j * 0.5, m.z + L.rand(-0.5, 0.5), 3, 2, { size: 0.3, life: 2, g: -1 }); dmg(m, 1e9); }, 600 + k * 40));
-        L.banner('✨ SCHNIPP', half.length + ' Monster zerfallen zu Staub.');
+        { let nb = 0; for (const e of (L._targets ? L._targets() : [])) { if (e.dead || MK()[e.kind] || e.kind === 'npc' || isRemote(e)) continue; if (L.worldOf && L.worldOf(e.x, e.z) !== L.worldOf(P.x, P.z)) continue; dmg(e, 15000); nb++; } shock(P.x, y + 2, P.z, 0xffffff, 120, 1.4); flashScr('#ffffff', 0.9);
+        L.banner('✨ SCHNIPP', half.length + ' Monster zerfallen zu Staub' + (nb ? ' – und ' + nb + ' Boss(e) schwer getroffen!' : '.')); }
         break;
       }
     }
