@@ -3237,6 +3237,7 @@
     if (L.updateWalrusRide) L.updateWalrusRide(dt);
     if (L.updateOmnitron) L.updateOmnitron(dt);
     if (L.updateCombat) L.updateCombat(dt);
+    if (L.updateRealism) L.updateRealism(dt);
     if (L.updateHeroes) L.updateHeroes(dt);
     if (L.updateTitan) L.updateTitan(dt);
     if (L.updateTitanArmor) L.updateTitanArmor(dt);
