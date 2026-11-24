@@ -41,7 +41,7 @@
   }
   // ---------- Begleiter ----------
   function companions() {
-    const mk = (app, tag, col) => { const rig = L.buildHuman(Object.assign({}, L.DEFAULT_CHAR, app), true); L.scene.add(rig.root); const c = document.createElement('canvas'); c.width = 256; c.height = 64; const x = c.getContext('2d'); x.font = 'bold 34px Arial'; x.textAlign = 'center'; x.lineWidth = 6; x.strokeStyle = '#000'; x.strokeText(tag, 128, 42); x.fillStyle = col; x.fillText(tag, 128, 42); const s = new T.Sprite(new T.SpriteMaterial({ map: new T.CanvasTexture(c), depthTest: false, transparent: true })); s.scale.set(2.4, 0.6, 1); s.position.y = 2.4; rig.root.add(s); return { rig, x: PAD.x + 4, z: PAD.z + 4, ph: 0, off: 0 };
+    const mk = (app, tag, col) => { const rig = L.buildHuman(Object.assign({}, L.DEFAULT_CHAR, app), true); L.scene.add(rig.root); const c = document.createElement('canvas'); c.width = 256; c.height = 64; const x = c.getContext('2d'); x.font = 'bold 34px Arial'; x.textAlign = 'center'; x.lineWidth = 6; x.strokeStyle = '#000'; x.strokeText(tag, 128, 42); x.fillStyle = col; x.fillText(tag, 128, 42); const s = new T.Sprite(new T.SpriteMaterial({ map: new T.CanvasTexture(c), depthTest: false, transparent: true })); s.scale.set(2.4, 0.6, 1); s.position.y = 2.4; rig.root.add(s); return { rig, x: PAD.x + 4, z: PAD.z + 4, ph: 0, off: 0, hp: 70, dead: false, deadT: 0, name: tag };
     };
     const a = mk({ name: 'Speedy', skin: '#7a4a2e', hair: 'buzz', hairColor: '#1a1a1a', top: 'trikot', topColor: '#c02a2a', pants: 'kurz', pantsColor: '#1a1a1a', shoeType: 'sneaker', shoes: '#f2f2f2', build: 'schmal', mouth: 'offen' }, '⚡ Speedy', '#ff5050');
     const b = mk({ name: 'Big C', skin: '#e3b48f', hair: 'kurz', hairColor: '#4a2f1c', top: 'hoodie', topColor: '#7a7a7a', pants: 'jogging', pantsColor: '#3a3a3a', shoeType: 'sneaker', shoes: '#1a1a1a', build: 'kraeftig', height: 'gross', beard: 'stoppel', mouth: 'laecheln', hat: 'beanie', hatColor: '#2a6ac0' }, '🍔 Big C', '#60c0ff');
@@ -61,9 +61,21 @@
   }
   function spawnKey() {
     const a = Math.random() * 6.283, d = 60 + Math.random() * 40, x = L.clamp(P.x + Math.sin(a) * d, J.x - J.r + 40, J.x + J.r - 40), z = L.clamp(P.z + Math.cos(a) * d, J.z - J.r + 40, J.z + J.r - 40);
-    M.keys.push({ m: buildKey(), x, z, y: 2, ph: Math.random() * 6, sp: 9 + Math.random() * 4, cd: 0, scr: Math.random() * 3, dead: false, melt: 0 });
+    const live = M.comp.filter((c) => !c.dead), near = live.length && Math.random() < 0.4 ? live[Math.floor(Math.random() * live.length)] : null;
+    M.keys.push({ m: buildKey(), x: near ? near.x + Math.sin(a) * 40 : x, z: near ? near.z + Math.cos(a) * 40 : z, y: 2, ph: Math.random() * 6, sp: 9 + Math.random() * 4, cd: 0, scr: Math.random() * 3, dead: false, melt: 0 });
   }
   function scream(k) { const d = Math.hypot(k.x - P.x, k.z - P.z); if (d > 45) return; const v = 0.14 * (1 - d / 45); L.tn && L.tn({ f: 2200 + Math.random() * 500, fTo: 3100, dur: 0.5, type: 'sawtooth', vol: v }); L.tn && L.tn({ f: 1600, fTo: 2600, dur: 0.45, type: 'square', vol: v * 0.5, delay: 0.05 }); }
+  // Begleiter wird von den Schlüsseln erledigt
+  function killComp(c) {
+    c.dead = true; c.deadT = 0; c.hp = 0;
+    L.tn && L.tn({ f: 900, fTo: 200, dur: 1.2, type: 'sawtooth', vol: 0.18 }); L.snd && L.snd.scream && L.snd.scream({ x: c.x, y: 1.5, z: c.z });
+    for (let k = 0; k < 4; k++) { L.blood && L.blood(c.x, 1.2, c.z, 30, true); } L.decal && L.decal(c.x, c.z, 2.5); L.shake = Math.max(L.shake, 0.6);
+    // drei Schlüssel kreisen um ihn und stechen zu
+    let n = 0; for (const k of M.keys) { if (k.dead || n >= 3) continue; k.x = c.x + Math.sin(n * 2.1) * 2; k.z = c.z + Math.cos(n * 2.1) * 2; n++; }
+    L.msg('💀 ' + c.name + ' wurde von den Schlüsseln brutal erstochen!', 4500);
+    const other = M.comp.find((o) => o !== c && !o.dead); if (other) setTimeout(() => L.msg(other.name.indexOf('Speedy') >= 0 ? '⚡ Speedy: „NEEEEIN! BIG C!!! CHAT, HABT IHR DAS GESEHEN?!“' : '🍔 Big C: „Bro … Speedy … NEIN!“', 4500), 1200);
+    if (!L.cine && L.startCine) { const cx = c.x, cz = c.z; L.startCine('💀 ' + c.name.replace(/^S+ /, '').toUpperCase(), 2.6, (t) => ({ x: cx + Math.sin(t * 1.2) * 6, y: 2.5 + t * 0.6, z: cz + Math.cos(t * 1.2) * 6, lx: cx, ly: 0.6, lz: cz })); }
+  }
   // ---------- Waffe ----------
   L.ITEMS.schmelzer = { name: 'Schlüssel-Schmelzer', slot: 'waffe', icon: '🔥', dmg: 0, rate: 0.12, noise: 40, range: 20, ammo: null, mag: 1, spread: 0, energy: true, auto: true, jup: true };
   const owf = L.weaponFire;
@@ -172,7 +184,7 @@
     M.built.spot.rotation.z += dt * 0.02;
     // Schlüssel
     if (!M.done) { M.spawnT -= dt; if (M.spawnT <= 0 && M.keys.filter((k) => !k.dead).length < 14) { M.spawnT = 1.6; spawnKey(); } }
-    const tg = [P].concat(M.comp.map((c) => ({ x: c.x, z: c.z, comp: c })));
+    const tg = [P].concat(M.comp.filter((c) => !c.dead).map((c) => ({ x: c.x, z: c.z, comp: c })));
     for (let i = M.keys.length - 1; i >= 0; i--) {
       const k = M.keys[i];
       if (k.dead) { k.deadT += dt; k.m.scale.set(1.3 * (1 - k.deadT), 1.3 * Math.max(0.05, 1 - k.deadT * 1.5), 1.3); k.m.position.y = Math.max(0, k.y - k.deadT * 3); if (Math.random() < 0.5) L.fx('#e0a010', k.x, k.m.position.y, k.z, 2, 1, { size: 0.2, life: 0.8 }); if (k.deadT > 1) { L.scene.remove(k.m); M.keys.splice(i, 1); } continue; }
@@ -183,10 +195,11 @@
       k.scr -= dt; if (k.scr <= 0) { k.scr = 2 + Math.random() * 3; scream(k); }
       k.cd -= dt;
       if (best === P && d < 1.8 && k.cd <= 0 && P.alive) { k.cd = 1; L.hurtPlayer(16, 'Von kreischenden Hausschlüsseln auf dem Jupiter zerstochen'); P.vx = -dx / d * 8; P.vz = -dz / d * 8; L.shake = Math.max(L.shake, 0.5); }
-      if (best.comp && d < 1.8 && k.cd <= 0) { k.cd = 1; best.comp.panic = 2; }
+      if (best.comp && d < 1.8 && k.cd <= 0) { k.cd = 0.8; const c = best.comp; c.panic = 2; c.hp -= 14; L.blood && L.blood(c.x, 1.3, c.z, 10); if (c.hp <= 0 && !c.dead) killComp(c); }
     }
     // Begleiter folgen, rennen, schreien
     M.comp.forEach((c, n) => {
+      if (c.dead) { c.deadT += dt; c.rig.root.position.set(c.x, 0.25, c.z); c.rig.root.rotation.set(-Math.PI / 2, c.rig.root.rotation.y, 0); if (c.deadT < 3 && Math.random() < dt * 8) { L.blood && L.blood(c.x + (Math.random() - 0.5), 0.5, c.z + (Math.random() - 0.5), 8, true); } return; }
       const a = P.camYaw + Math.PI + c.off * 0.7, gx = P.x + Math.sin(a) * 4, gz = P.z + Math.cos(a) * 4, dx = gx - c.x, dz = gz - c.z, d = Math.hypot(dx, dz);
       const sp = d > 3 ? Math.min(14, d * 2) : 0; if (d > 0.1) { c.x += dx / d * sp * dt; c.z += dz / d * sp * dt; }
       if (d > 120) { c.x = gx; c.z = gz; }
