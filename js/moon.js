@@ -386,7 +386,7 @@
       const u = Math.min(1, bern.t / 15), to = new T.Vector3(P.x - 2000, 9000, P.z - 9000);
       b.position.lerpVectors(bern.from, to, u * u * (3 - 2 * u)); b.lookAt(P.x, b.position.y, P.z);
       if (Math.random() < dt * 2) L.shake = Math.max(L.shake, u * 0.6);
-      if (u >= 1) { bern.phase = 'hunt'; bern.t = 0; bern.huntT = HUNT; bern.next = 14; }
+      if (u >= 1) { bern.phase = 'hunt'; bern.t = 0; bern.huntT = HUNT; if (L.mGodNoTag && L.save && !L.save.bernShort) { L.save.bernShort = 1; L.persist && L.persist(); bern.huntT = 10; } bern.next = 14; }
     } else if (bern.phase === 'hunt' || bern.phase === 'aim' || bern.phase === 'chomp' || bern.phase === 'rise') {
       bern.huntT -= dt;
       if (bern.phase === 'hunt') {
