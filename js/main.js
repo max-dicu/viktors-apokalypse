@@ -74,7 +74,7 @@ body.cinema #hud,body.cinema #touch,body.cinema #banner{visibility:hidden}`;
   L.startCine = function (title, dur, shot) {
     if (L.state !== 'game' || !P.alive) return;
     // Szenen nur in der Welt zeigen, in der sie spielen (z. B. keine Heimat-Boss-Szene auf dem Mond oder in der Märchenwelt)
-    if (typeof shot === 'function' && L.worldOf) { let c0 = null; try { c0 = shot(0); } catch (e) { c0 = null; } if (c0 && typeof c0.lx === 'number' && (Math.abs(c0.lx) + Math.abs(c0.lz || 0) > 1) && L.worldOf(c0.lx, c0.lz) !== L.worldOf(P.x, P.z)) return; }
+    if (typeof shot === 'function' && L.worldOf) { let c0 = null; try { c0 = shot(0); } catch (e) { c0 = null; } if (c0 && typeof c0.lx === 'number' && (Math.abs(c0.lx) + Math.abs(c0.lz || 0) > 1) && L.worldOf(c0.lx, c0.lz) !== L.worldOf(P.x, P.z) && (typeof c0.x !== 'number' || L.worldOf(c0.x, c0.z) !== L.worldOf(P.x, P.z))) return; }
     L.cine = { t: 0, dur, shot };
     L.$('cineT').textContent = title;
     cineEl.hidden = false; requestAnimationFrame(() => cineEl.classList.add('on'));
@@ -141,7 +141,7 @@ body.cinema #hud,body.cinema #touch,body.cinema #banner{visibility:hidden}`;
     const s = C.t < C.dur && P.alive && L.state === 'game' ? C.shot(C.t) : null;
     if (!s) { endCine(); return false; }
     // erste echte Kamera-Position: spielt die Szene in einer anderen Welt als du? Dann nicht zeigen
-    if (!C.checked && L.worldOf && typeof s.lx === 'number' && Math.abs(s.lx) + Math.abs(s.lz || 0) > 1) { C.checked = true; if (C.t < 0.8 && L.worldOf(s.lx, s.lz) !== L.worldOf(P.x, P.z)) { endCine(); return false; } }
+    if (!C.checked && L.worldOf && typeof s.lx === 'number' && Math.abs(s.lx) + Math.abs(s.lz || 0) > 1) { C.checked = true; if (C.t < 0.8 && L.worldOf(s.lx, s.lz) !== L.worldOf(P.x, P.z) && (typeof s.x !== 'number' || L.worldOf(s.x, s.z) !== L.worldOf(P.x, P.z))) { endCine(); return false; } }
     camera.position.set(s.x, s.y, s.z);
     if (L.shake > 0) {
       const k = L.shake * 0.6;
