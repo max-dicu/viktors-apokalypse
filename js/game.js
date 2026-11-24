@@ -84,7 +84,7 @@
   const homeBossOn = () => !!((L.boss && !L.boss.dead) || L.wboss || L.frenzy);
   const onIsl = (x, z) => !!((L.islandAt && L.islandAt(x, z)) || L.inDim(x));
   // in welcher Welt liegt (x, z)? Monster jagen nur Spieler in derselben Welt
-  const worldOf = (x, z) => { if (L.inBack && L.inBack(x)) return 'back'; if (L.inFairy && L.inFairy(x, z)) return 'fairy'; if (L.inTitan && L.inTitan(x, z)) return 'titan'; if (L.inMoon && L.inMoon(x)) return 'moon'; if (L.inDim(x)) return 'dim'; const I = L.islandAt && L.islandAt(x, z); return I ? I.id : 'home'; };
+  const worldOf = (x, z) => { if (L.inBack && L.inBack(x)) return 'back'; if (L.inFairy && L.inFairy(x, z)) return 'fairy'; if (L.inJupiter && L.inJupiter(x, z)) return 'jupiter'; if (L.inTitan && L.inTitan(x, z)) return 'titan'; if (L.inMoon && L.inMoon(x)) return 'moon'; if (L.inDim(x)) return 'dim'; const I = L.islandAt && L.islandAt(x, z); return I ? I.id : 'home'; };
   L.worldOf = worldOf;
   const atHome = (p) => worldOf(p.x, p.z) === 'home';
   L.atHome = () => atHome(P);
@@ -253,7 +253,7 @@
     for (const w of E.walkers) if (!w.dead) a.push(w);
     if (L.boss && !L.boss.dead) a.push(L.boss);
     if (L.wboss && !L.wboss.leaving) a.push(L.wboss);
-    if (L.dimWorm && !L.dimWorm.dead && L.inDim(P.x) && !(L.inFairy && L.inFairy(P.x, P.z))) a.push(L.dimWorm);
+    if (L.dimWorm && !L.dimWorm.dead && L.inDim(P.x) && !(L.inSpecialWorld && L.inSpecialWorld(P.x, P.z))) a.push(L.dimWorm);
     if (L.tentacleEnts) for (const e of L.tentacleEnts) if (!e.dead && e.rig.root.visible) a.push(e);
     if (L.islandTargets) for (const e of L.islandTargets()) a.push(e);
     if (L.bernTarget) { const b = L.bernTarget(); if (b) a.push(b); }
@@ -2951,7 +2951,7 @@
   // ---------- Runde ----------
   L.respawnQueue = [];
   function clearAll() {
-    clearCyls(); if (L.clearExtras) L.clearExtras(); if (L.clearWorkshop) L.clearWorkshop(); if (L.clearRevive) L.clearRevive(); if (L.clearInteriors) L.clearInteriors(); if (L.clearIslands) L.clearIslands(); if (L.clearIslandBosses) L.clearIslandBosses(); if (L.clearDimBoss) L.clearDimBoss(); if (L.clearPolice) L.clearPolice(); if (L.clearCrates) L.clearCrates(); if (L.clearMoon) L.clearMoon(); if (L.clearTentacles) L.clearTentacles(); if (L.clearSuitPortals) L.clearSuitPortals(); if (L.clearWeapons) L.clearWeapons(); if (L.clearLegend) L.clearLegend(); if (L.clearFireworks) L.clearFireworks(); if (L.clearEvents) L.clearEvents(); if (L.clearCarolina) L.clearCarolina(); if (L.clearBackrooms) L.clearBackrooms(); if (L.clearHeroes) L.clearHeroes(); if (L.clearTitan) L.clearTitan(); if (L.clearTitanArmor) L.clearTitanArmor(); if (L.clearRuslan) L.clearRuslan(); if (L.clearAsgard) L.clearAsgard(); if (L.clearFairy) L.clearFairy(); if (L.clearKaiju) L.clearKaiju(); if (L.clearFairyCastle) L.clearFairyCastle(); if (L.clearOmnitron) L.clearOmnitron(); if (L.clearCombat) L.clearCombat(); if (L.clearMoves) L.clearMoves(); if (L.clearMarlon2) L.clearMarlon2(); L.voyageOn = false; if (L.clearOcean) L.clearOcean(); if (L.clearNature) L.clearNature(); if (L.endRichard) L.endRichard(); if (L.endDuel) L.endDuel();
+    clearCyls(); if (L.clearExtras) L.clearExtras(); if (L.clearWorkshop) L.clearWorkshop(); if (L.clearRevive) L.clearRevive(); if (L.clearInteriors) L.clearInteriors(); if (L.clearIslands) L.clearIslands(); if (L.clearIslandBosses) L.clearIslandBosses(); if (L.clearDimBoss) L.clearDimBoss(); if (L.clearPolice) L.clearPolice(); if (L.clearCrates) L.clearCrates(); if (L.clearMoon) L.clearMoon(); if (L.clearTentacles) L.clearTentacles(); if (L.clearSuitPortals) L.clearSuitPortals(); if (L.clearWeapons) L.clearWeapons(); if (L.clearLegend) L.clearLegend(); if (L.clearFireworks) L.clearFireworks(); if (L.clearEvents) L.clearEvents(); if (L.clearCarolina) L.clearCarolina(); if (L.clearBackrooms) L.clearBackrooms(); if (L.clearHeroes) L.clearHeroes(); if (L.clearTitan) L.clearTitan(); if (L.clearTitanArmor) L.clearTitanArmor(); if (L.clearRuslan) L.clearRuslan(); if (L.clearAsgard) L.clearAsgard(); if (L.clearFairy) L.clearFairy(); if (L.clearKaiju) L.clearKaiju(); if (L.clearFairyCastle) L.clearFairyCastle(); if (L.clearOmnitron) L.clearOmnitron(); if (L.clearCombat) L.clearCombat(); if (L.clearMoves) L.clearMoves(); if (L.clearMarlon2) L.clearMarlon2(); if (L.clearJupiter) L.clearJupiter(); L.voyageOn = false; if (L.clearOcean) L.clearOcean(); if (L.clearNature) L.clearNature(); if (L.endRichard) L.endRichard(); if (L.endDuel) L.endDuel();
     if (L.wboss) { L.scene.remove(L.wboss.rig.root); L.wboss = null; }
     for (const m of E.monsters) L.scene.remove(m.rig.root);
     for (const w of E.walkers) L.scene.remove(w.rig.root);
@@ -3239,6 +3239,7 @@
     if (L.updateCombat) L.updateCombat(dt);
     if (L.updateMoves) L.updateMoves(dt);
     if (L.updateMarlon2) L.updateMarlon2(dt);
+    if (L.updateJupiter) L.updateJupiter(dt);
     if (L.updateRealism) L.updateRealism(dt);
     if (L.updateHeroes) L.updateHeroes(dt);
     if (L.updateTitan) L.updateTitan(dt);

@@ -8,7 +8,7 @@
   const S = 50, NSEG = 22, RESPAWN = 180, FIRST = 25, R0 = 7 * S;
   const maxHp = () => (L.remotes && [...L.remotes.values()].some((r) => r.inRound) ? 500 : 250);
   function part(geo, color, sx, sy, sz, x, y, z, parent, o) { const m = new T.Mesh(geo, L.mat(color, o)); m.scale.set(sx, sy, sz); m.position.set(x, y, z); if (parent) parent.add(m); return m; }
-  const inDim = () => L.inDim(P.x) && !(L.inMoon && L.inMoon(P.x)) && !(L.inBack && L.inBack(P.x)) && !(L.inTitan && L.inTitan(P.x, P.z)) && !(L.inFairy && L.inFairy(P.x, P.z));
+  const inDim = () => L.inDim(P.x) && !(L.inMoon && L.inMoon(P.x)) && !(L.inBack && L.inBack(P.x)) && !(L.inTitan && L.inTitan(P.x, P.z)) && !(L.inSpecialWorld && L.inSpecialWorld(P.x, P.z));
 
   // ---------- Modell (riesig, nicht vom Nebel verschluckt) ----------
   function build() {
