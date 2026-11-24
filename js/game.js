@@ -260,6 +260,7 @@
     if (L.extraTargets) for (const e of L.extraTargets()) a.push(e);
     if (L.seaTargets) for (const e of L.seaTargets()) a.push(e);
     if (L.titanTargets) for (const e of L.titanTargets()) a.push(e);
+    if (L.omniTargets) for (const e of L.omniTargets()) a.push(e);
     if (L.backTargets) for (const e of L.backTargets()) a.push(e);
     if (L.ruslanTargets) for (const e of L.ruslanTargets()) a.push(e);
     for (const r of remotesList()) if (r.inRound && r.alive && !r.gone && !r.inVeh) a.push(r);
@@ -333,6 +334,7 @@
     if (P.vehicle) leaveVehicle(true);
     L.blood(P.x, 1, P.z, 40, true); L.decal(P.x, P.z, 2.4); L.snd.splat({ x: P.x, y: 1, z: P.z });
     L.music.set('night');
+    if (L.deathFx) L.deathFx(cause);
   }
   L.damageEnt = function (e, dmg, fromX, fromZ, src) {
     if (e.dead) return;
@@ -342,6 +344,7 @@
     if (e.kind === 'bern') { if (L.bernHit) L.bernHit(dmg, src); return; }
     if (e.kind === 'carolina') { if (L.carolinaHit) L.carolinaHit(dmg, src); return; }
     if (e.kind === 'seamon') { if (L.seaHit) L.seaHit(e, dmg, src); return; }
+    if (e.kind === 'omni') { if (L.omniHit) L.omniHit(dmg, src); return; }
     if (e.kind === 'thanatos') { if (L.thanatosHit) L.thanatosHit(dmg, src); return; }
     if (e.kind === 'shade') { if (L.shadeHit) L.shadeHit(e, dmg); return; }
     if (e.kind === 'ruslan') { if (L.ruslanHit) L.ruslanHit(dmg, src); return; }
@@ -2948,7 +2951,7 @@
   // ---------- Runde ----------
   L.respawnQueue = [];
   function clearAll() {
-    clearCyls(); if (L.clearExtras) L.clearExtras(); if (L.clearWorkshop) L.clearWorkshop(); if (L.clearRevive) L.clearRevive(); if (L.clearInteriors) L.clearInteriors(); if (L.clearIslands) L.clearIslands(); if (L.clearIslandBosses) L.clearIslandBosses(); if (L.clearDimBoss) L.clearDimBoss(); if (L.clearPolice) L.clearPolice(); if (L.clearCrates) L.clearCrates(); if (L.clearMoon) L.clearMoon(); if (L.clearTentacles) L.clearTentacles(); if (L.clearSuitPortals) L.clearSuitPortals(); if (L.clearWeapons) L.clearWeapons(); if (L.clearLegend) L.clearLegend(); if (L.clearFireworks) L.clearFireworks(); if (L.clearEvents) L.clearEvents(); if (L.clearCarolina) L.clearCarolina(); if (L.clearBackrooms) L.clearBackrooms(); if (L.clearHeroes) L.clearHeroes(); if (L.clearTitan) L.clearTitan(); if (L.clearTitanArmor) L.clearTitanArmor(); if (L.clearRuslan) L.clearRuslan(); if (L.clearAsgard) L.clearAsgard(); if (L.clearFairy) L.clearFairy(); if (L.clearKaiju) L.clearKaiju(); if (L.clearFairyCastle) L.clearFairyCastle(); L.voyageOn = false; if (L.clearOcean) L.clearOcean(); if (L.clearNature) L.clearNature(); if (L.endRichard) L.endRichard(); if (L.endDuel) L.endDuel();
+    clearCyls(); if (L.clearExtras) L.clearExtras(); if (L.clearWorkshop) L.clearWorkshop(); if (L.clearRevive) L.clearRevive(); if (L.clearInteriors) L.clearInteriors(); if (L.clearIslands) L.clearIslands(); if (L.clearIslandBosses) L.clearIslandBosses(); if (L.clearDimBoss) L.clearDimBoss(); if (L.clearPolice) L.clearPolice(); if (L.clearCrates) L.clearCrates(); if (L.clearMoon) L.clearMoon(); if (L.clearTentacles) L.clearTentacles(); if (L.clearSuitPortals) L.clearSuitPortals(); if (L.clearWeapons) L.clearWeapons(); if (L.clearLegend) L.clearLegend(); if (L.clearFireworks) L.clearFireworks(); if (L.clearEvents) L.clearEvents(); if (L.clearCarolina) L.clearCarolina(); if (L.clearBackrooms) L.clearBackrooms(); if (L.clearHeroes) L.clearHeroes(); if (L.clearTitan) L.clearTitan(); if (L.clearTitanArmor) L.clearTitanArmor(); if (L.clearRuslan) L.clearRuslan(); if (L.clearAsgard) L.clearAsgard(); if (L.clearFairy) L.clearFairy(); if (L.clearKaiju) L.clearKaiju(); if (L.clearFairyCastle) L.clearFairyCastle(); if (L.clearOmnitron) L.clearOmnitron(); L.voyageOn = false; if (L.clearOcean) L.clearOcean(); if (L.clearNature) L.clearNature(); if (L.endRichard) L.endRichard(); if (L.endDuel) L.endDuel();
     if (L.wboss) { L.scene.remove(L.wboss.rig.root); L.wboss = null; }
     for (const m of E.monsters) L.scene.remove(m.rig.root);
     for (const w of E.walkers) L.scene.remove(w.rig.root);
@@ -3232,6 +3235,7 @@
     if (L.updateKaiju) L.updateKaiju(dt);
     if (L.updateFairyCastle) L.updateFairyCastle(dt);
     if (L.updateWalrusRide) L.updateWalrusRide(dt);
+    if (L.updateOmnitron) L.updateOmnitron(dt);
     if (L.updateHeroes) L.updateHeroes(dt);
     if (L.updateTitan) L.updateTitan(dt);
     if (L.updateTitanArmor) L.updateTitanArmor(dt);

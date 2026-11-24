@@ -133,7 +133,6 @@
     const out = [['🏠 Heimat (Altheim)', 30, 30]];
     if (L.TITAN) out.push(['🪐 Titanenmond', L.TITAN.x - 936, L.TITAN.z]);
     if (L.ASGARD) out.push(['🌈 Asgard (goldene Stadt)', L.ASGARD.x, L.ASGARD.z]);
-    if (L.FAIRY_LOC) out.push(['🏰 Märchenwelt (Dorf)', L.FAIRY_LOC.dorf.x + 20, L.FAIRY_LOC.dorf.z - 30]);
     if (L.backSpawn) { const b = L.backSpawn(0); out.push(['🟨 Backrooms (Level 0)', b.x, b.z]); }
     for (const I of L.ISL || []) { if (I.moon) out.push(['🌕 Mond', L.moonCheckpoint().x, L.moonCheckpoint().z]); else if (I.dim) out.push(['🌌 Dimension', L.dimCheckpoint().x, L.dimCheckpoint().z]); else out.push([I.icon + ' ' + I.name, I.x + 25, I.z + 25]); }
     return out;
