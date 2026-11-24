@@ -71,7 +71,7 @@
   };
   function die(src) {
     O.dead = true; O.deadT = 0;
-    if (L.atHome && L.atHome()) { L.banner('♾️ INFINITY-OMNITRON IST BESIEGT!', 'Die sechs Steine zerspringen – unglaublich!'); if (L.gotBossCoins) L.gotBossCoins(5000, 'Omnitron'); }
+    if (L.atHome && L.atHome()) { L.banner('♾️ INFINITY-OMNITRON IST BESIEGT!', 'Die sechs Steine zerspringen – unglaublich!'); const np = O.max / HP, tb = 0.6 + 0.9 * Math.max(0, O.life) / LIFE, c = Math.round(5000 * np * tb / 50) * 50; if (L.gotBossCoins) L.gotBossCoins(c, 'Omnitron'); L.msg('💰 ' + c + ' Münzen – ' + (np > 1 ? 'stärkerer Omnitron (' + Math.round(np * 100) + '% HP)' : 'normaler Omnitron') + (tb > 1.2 ? ', schnell besiegt!' : ''), 6000); }
   }
   function hurtNear(x, z, r, dmg, why) {
     if (!(L.atHome && L.atHome()) || !P.alive || (P.spawnProt > 0)) return;
@@ -80,7 +80,7 @@
   L.updateOmnitron = function (dt) {
     if (L.state !== 'game') return;
     for (let i = beams.length - 1; i >= 0; i--) { const b = beams[i]; b.t += dt; b.m.material.opacity = 0.85 * (1 - b.t / b.life); if (b.t > b.life) { L.scene.remove(b.m); beams.splice(i, 1); } }
-    if (!O) { if (!isClient()) { clock -= dt; if (clock <= 0) { clock = EVERY; spawn(); } } return; }
+    if (!O) { if (!isClient()) { if (L.save && !L.save.omniEarly && L.heroToken && L.heroToken('marlon')) { L.save.omniEarly = 1; L.persist && L.persist(); clock = Math.min(clock, 120); L.msg('♾️ Etwas reißt den Himmel auf … in 2 Minuten kommt OMNITRON!', 6000); } clock -= dt; if (clock <= 0) { clock = EVERY; spawn(); } } return; }
     const r = O.rig, t = performance.now() / 1000;
     if (O.dead) { O.deadT += dt; r.root.rotation.z = Math.min(1.4, O.deadT * 0.25); r.root.position.y = -Math.max(0, O.deadT - 5) * 15; if (Math.random() < dt * 10) L.fx(L.pick(['#ff6020', '#ffd040', '#a040ff']), O.x + L.rand(-40, 40), L.rand(10, 120), O.z + L.rand(-40, 40), 6, 20, { basic: true, size: 2, life: 1 }); if (O.deadT > 14) clear(); return; }
     O.life -= dt; const wasR = O.rise; O.rise = Math.min(1, O.rise + dt / 7);
