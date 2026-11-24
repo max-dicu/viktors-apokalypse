@@ -618,7 +618,7 @@
   // ADMIN-Schild über dem eigenen Kopf (nur mit dem Anzug)
   let adminTag = null;
   function updateAdminTag() {
-    const on = L.suitOn && L.suitOn() && P.rig;
+    const on = L.suitOn && L.suitOn() && P.rig && !L.mGodNoTag;
     if (on && (!adminTag || adminTag.parent !== P.rig.root)) {
       if (!adminTag) { adminTag = new T.Sprite(new T.SpriteMaterial({ map: L.textTex('🛡️ ADMIN', 256, 56, '#3a0a0a', '#ffd040', 'bold 40px Arial'), depthTest: false, transparent: true })); adminTag.scale.set(1.6, 0.35, 1); adminTag.renderOrder = 999; }
       P.rig.root.add(adminTag); adminTag.position.y = 2.45;
