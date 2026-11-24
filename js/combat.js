@@ -58,6 +58,13 @@
     if (D.t > 0) { D.t -= dt; const sp = 38; P.x += D.dir.x * sp * dt; P.z += D.dir.z * sp * dt; if (L.clampWorld) L.clampWorld(P); if (Math.random() < 0.6) ghost(); }
     // Zusammenzucken / Wegschleudern der Getroffenen
     for (const m of L.ents.monsters) { if (!(m.flinchT > 0) || !m.rig) continue; m.flinchT -= dt; const r = m.rig.root; r.rotation.x = -Math.max(0, m.flinchT) * 1.2; if (m.launchT > 0) { m.launchT -= dt; r.position.y = Math.sin(Math.max(0, m.launchT) / 0.6 * Math.PI) * 2.5; } }
+    // Monster-Angriffe: ausholen (zurücklehnen) und nach vorn springen
+    for (const m of L.ents.monsters) {
+      if (m.dead || m.state !== 'attack' || !m.rig || m.flinchT > 0) continue; const r = m.rig.root, u = m.atk || 0;
+      const lean = u < 0.4 ? -u / 0.4 * 0.35 : u < 0.6 ? -0.35 + (u - 0.4) / 0.2 * 0.8 : 0.45 * (1 - (u - 0.6) / 0.4), fwd = u < 0.4 ? -0.3 * u / 0.4 : u < 0.6 ? (u - 0.4) / 0.2 * 1.1 : 1.1 * (1 - (u - 0.6) / 0.4);
+      r.rotation.x = lean; r.position.x = m.x + Math.sin(m.yaw) * fwd; r.position.z = m.z + Math.cos(m.yaw) * fwd;
+      if (u > 0.45 && u < 0.5 && Math.hypot(m.x - L.player.x, m.z - L.player.z) < 25) L.shake = Math.max(L.shake, 0.15);
+    }
     // Zahlen nach oben schweben lassen
     const cam = L.camera, w = innerWidth, h = innerHeight;
     for (let i = nums.length - 1; i >= 0; i--) {
