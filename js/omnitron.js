@@ -247,6 +247,7 @@
     }
   };
   function clear() { if (O) { if (O.rift) L.scene.remove(O.rift); if (O.hulk) { L.scene.remove(O.hulk.H.root); if (O.hulk.flung) L.scene.remove(O.hulk.flung.m); } if (O.crater) L.scene.remove(O.crater); L.scene.remove(O.rig.root); O = null; L.omni = null; } for (const b of beams) L.scene.remove(b.m); beams.length = 0; }
+  const oue = L.updateEnv; L.updateEnv = function () { const res = oue.apply(this, arguments); if (L._clearFilm && O && O.hulk && L.scene.fog) { L.scene.fog.near = 3000; L.scene.fog.far = 14000; } if (L._clearFilm && !O && !L._omniFinale && L.cine == null) L._clearFilm = !!O; return res; };
   L.omniTargets = () => (O && !O.dead && L.atHome && L.atHome() ? [O] : []);
   L.omniText = () => (O && !O.dead ? '♾️ OMNITRON ist da – nur der Ewigkeitshandschuh hilft · noch ' + L.fmt(O.life) : '♾️ Omnitron kommt in ' + L.fmt(clock));
   L.clearOmnitron = function () { clear(); clock = EVERY; };
