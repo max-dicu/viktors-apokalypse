@@ -11,6 +11,21 @@
     for (let y = 0; y < 128; y++) for (let x = 0; x < 128; x++) { const i = (y * 128 + x) * 4, weave = (Math.sin(x * 0.8) + Math.sin(y * 0.8)) * 18, n = 128 + weave + (Math.random() - 0.5) * 50; d.data[i] = d.data[i + 1] = d.data[i + 2] = n; d.data[i + 3] = 255; }
     g.putImageData(d, 0, 0); const t = new T.CanvasTexture(c); t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(3, 3); return t;
   }
+  let detail = null;
+  function makeDetail() {
+    const N = 256, c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d'), d = g.createImageData(N, N);
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const i = (y * N + x) * 4, weave = ((x >> 1) + (y >> 1)) % 2 ? 6 : -6, n = (Math.random() - 0.5) * 22, grime = Math.sin(x * 0.05) * Math.sin(y * 0.07) * 10;
+      const v = Math.max(150, Math.min(255, 228 + weave + n + grime)); d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255;
+    }
+    g.putImageData(d, 0, 0);
+    g.globalAlpha = 0.08; g.strokeStyle = '#000'; for (let k = 0; k < 40; k++) { g.beginPath(); let x = Math.random() * N, y = Math.random() * N; g.moveTo(x, y); for (let q = 0; q < 6; q++) { x += (Math.random() - 0.5) * 30; y += (Math.random() - 0.5) * 30; g.lineTo(x, y); } g.stroke(); }
+    const t = new T.CanvasTexture(c); t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(2, 2); return t;
+  }
+  // Randlicht (Fresnel): Figuren wirken plastischer
+  function rim(m) {
+    m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <output_fragment>', 'float rimF = pow(1.0 - clamp(dot(normalize(vViewPosition), normal), 0.0, 1.0), 3.0); outgoingLight += vec3(0.95, 0.92, 1.0) * rimF * 0.16 * (1.0 - metalnessFactor);\n#include <output_fragment>'); };
+  }
   function makeEnv(r) {
     const s = new T.Scene(), c = document.createElement('canvas'); c.width = 4; c.height = 128; const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 128);
     gr.addColorStop(0, '#9ec4ef'); gr.addColorStop(0.48, '#dfe8f2'); gr.addColorStop(0.52, '#8a8070'); gr.addColorStop(1, '#3a342c'); g.fillStyle = gr; g.fillRect(0, 0, 4, 128);
@@ -25,7 +40,8 @@
     n = new T.MeshStandardMaterial({ color: m.color, map: m.map || null, emissive: m.emissive, emissiveIntensity: m.emissiveIntensity, emissiveMap: m.emissiveMap || null,
       transparent: m.transparent, opacity: m.opacity, side: m.side, alphaTest: m.alphaTest, depthWrite: m.depthWrite, vertexColors: m.vertexColors, fog: m.fog,
       roughness: metalish ? 0.3 : m.transparent ? 0.15 : 0.82, metalness: metalish ? 0.6 : 0.02, envMapIntensity: 0.28 });
-    if (!m.map && !m.transparent) { n.bumpMap = bump; n.bumpScale = 0.012; }
+    if (!m.map && !m.transparent) { n.bumpMap = bump; n.bumpScale = 0.014; if (!m.vertexColors) n.map = detail; }
+    if (!m.transparent) rim(n);
     n.name = m.name; conv.set(m, n); return n;
   }
   function scan() {
@@ -40,7 +56,7 @@
   L.updateRealism = function (dt) {
     const want = on(), r = L.renderer; if (!r || !L.scene) return;
     if (want && !active) {
-      active = true; bump = bump || makeBump(); env = env || makeEnv(r);
+      active = true; bump = bump || makeBump(); detail = detail || makeDetail(); env = env || makeEnv(r);
       r.toneMapping = T.ACESFilmicToneMapping; r.toneMappingExposure = 0.82; r.shadowMap.type = T.PCFSoftShadowMap; r.shadowMap.needsUpdate = true;
       L.scene.environment = env; scan();
     } else if (!want && active) { active = false; r.toneMapping = T.NoToneMapping; L.scene.environment = null; }
