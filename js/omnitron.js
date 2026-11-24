@@ -72,7 +72,7 @@
   // ---------- Kurzfilm: INFINITY-KOLOSS (eigener Entwurf, grüner Riese mit Stein-Faust) ----------
   function buildHulk() {
     const root = new T.Group(), body = new T.Group(); root.add(body); body.scale.setScalar(11);
-    const sk = new T.MeshStandardMaterial({ color: 0x4f8a2e, roughness: 0.7, metalness: 0.05 }), sh = new T.MeshStandardMaterial({ color: 0x4a2a6a, roughness: 0.9 }), hr = L.mat('#151515'), gd = new T.MeshStandardMaterial({ color: 0xe0b030, metalness: 0.9, roughness: 0.3 });
+    const sk = new T.MeshStandardMaterial({ color: 0x6d8656, roughness: 0.85, metalness: 0.02 }), rot = L.mat('#3a3a24'), bone = L.mat('#d8cfae'), eyeM = new T.MeshBasicMaterial({ color: 0xe8ff40 }), sh = new T.MeshStandardMaterial({ color: 0x4a2a6a, roughness: 0.9 }), hr = L.mat('#151515'), gd = new T.MeshStandardMaterial({ color: 0xe0b030, metalness: 0.9, roughness: 0.3 });
     const G = L.GEO, P3 = (geo, m, sx, sy, sz, x, y, z, par) => { const o = new T.Mesh(geo, m); o.scale.set(sx, sy, sz); o.position.set(x, y, z); o.castShadow = true; (par || body).add(o); return o; };
     const legs = [], arms = [];
     for (const s of [-1, 1]) { const lg = new T.Group(); lg.position.set(s * 0.6, 3.3, 0); body.add(lg); P3(G.cyl, sk, 0.6, 1.7, 0.65, 0, -0.85, 0, lg); const sn = new T.Group(); sn.position.y = -1.7; lg.add(sn); P3(G.cyl, sk, 0.5, 1.5, 0.55, 0, -0.75, 0, sn); P3(G.box, sk, 0.6, 0.25, 0.9, 0, -1.55, 0.15, sn); legs.push({ lg, sn }); }
@@ -83,13 +83,18 @@
     const head = new T.Group(); head.position.y = 7.1; body.add(head);
     P3(G.cyl, sk, 0.55, 0.5, 0.55, 0, -0.35, 0, head); P3(G.sph, sk, 0.52, 0.6, 0.55, 0, 0.25, 0.05, head); P3(G.sph, hr, 0.56, 0.4, 0.58, 0, 0.55, -0.05, head);
     P3(G.box, hr, 0.6, 0.1, 0.12, 0, 0.42, 0.5, head).rotation.x = 0.2; P3(G.box, sk, 0.5, 0.2, 0.3, 0, -0.02, 0.45, head);
-    for (const s of [-1, 1]) P3(G.sph, new T.MeshBasicMaterial({ color: 0x9aff60 }), 0.08, 0.05, 0.04, s * 0.2, 0.3, 0.55, head);
+    for (const s of [-1, 1]) { P3(G.sph, eyeM, 0.12, 0.08, 0.05, s * 0.2, 0.3, 0.55, head); P3(G.sph, rot, 0.18, 0.14, 0.06, s * 0.2, 0.28, 0.52, head); }
+    for (let k = 0; k < 7; k++) P3(G.box, bone, 0.06, 0.1, 0.05, -0.18 + k * 0.06, -0.02, 0.62, head);
+    P3(G.sph, bone, 0.2, 0.15, 0.1, 0.3, 0.5, 0.35, head);
+    for (const s of [-1, 1]) for (let k = 0; k < 4; k++) { P3(G.box, bone, 0.07, 0.07, 0.6, s * (1.2 - k * 0.05), 5.9 - k * 0.32, 0.25, body).rotation.y = s * 0.5; P3(G.box, rot, 0.08, 0.3, 0.55, s * (1.15 - k * 0.05), 5.75 - k * 0.32, 0.22, body); }
+    for (let k = 0; k < 26; k++) { const a = Math.random() * 6.283, y = 3 + Math.random() * 4; P3(G.sph, rot, 0.25 + Math.random() * 0.25, 0.2 + Math.random() * 0.3, 0.12, Math.sin(a) * 1.55, y, Math.cos(a) * 0.95, body); }
+    const aura = new T.PointLight(0xc060ff, 4, 300, 2); aura.position.set(0, 60, 30); root.add(aura);
     const mouth = P3(G.box, L.mat('#2a0a0a'), 0.3, 0.06, 0.05, 0, 0.05, 0.6, head);
     for (const s of [-1, 1]) {
       P3(G.sph, sk, 0.85, 0.75, 0.8, s * 1.7, 6.3, 0);
       const ar = new T.Group(); ar.position.set(s * 1.85, 6.3, 0); body.add(ar); P3(G.cyl, sk, 0.6, 1.9, 0.65, 0, -0.95, 0, ar);
       const fo = new T.Group(); fo.position.y = -1.9; ar.add(fo); P3(G.cyl, sk, 0.62, 1.7, 0.66, 0, -0.85, 0, fo); P3(G.sph, sk, 0.65, 0.6, 0.65, 0, -1.95, 0, fo);
-      if (s > 0) { P3(G.box, gd, 0.75, 0.6, 0.75, 0, -1.9, 0, fo); STONES.forEach((c, k) => P3(new T.OctahedronGeometry(0.1), new T.MeshBasicMaterial({ color: c }), 1, 1.3, 1, -0.2 + (k % 3) * 0.2, -1.75 - Math.floor(k / 3) * 0.3, 0.4, fo)); }
+      if (s > 0) { P3(G.box, gd, 0.8, 0.7, 0.8, 0, -1.9, 0, fo); P3(G.cyl, gd, 0.7, 0.9, 0.72, 0, -1.2, 0, fo); STONES.forEach((c, k) => P3(new T.OctahedronGeometry(0.14), new T.MeshBasicMaterial({ color: c }), 1, 1.3, 1, -0.24 + (k % 3) * 0.24, -1.7 - Math.floor(k / 3) * 0.35, 0.42, fo)); } else { P3(G.box, bone, 0.15, 0.8, 0.15, 0.3, -1, 0.3, fo); P3(G.sph, rot, 0.35, 0.6, 0.3, 0.25, -0.9, 0.2, fo); }
       arms.push({ ar, fo, s });
     }
     root.traverse((o) => { if (o.isMesh) o.frustumCulled = false; });
@@ -115,11 +120,12 @@
     const ox = O.x, oz = O.z, a = O.yaw, hx = ox + Math.sin(a) * 170, hz = oz + Math.cos(a) * 170;
     const H = buildHulk(); O.hulk = { H, x: hx, z: hz, y: 700, sx: hx, sz: hz, yaw: Math.atan2(ox - hx, oz - hz), ev: {}, flung: null };
     O.rig.root.rotation.order = 'YXZ'; O.yaw = Math.atan2(hx - ox, hz - oz); O.rig.root.rotation.y = O.yaw;
-    L.startCine && L.startCine('😡 INFINITY-KOLOSS', 24, (t) => hulkCam(t));
+    L.startCine && L.startCine('🧟 INFINITY-KOLOSS', 28, (t) => hulkCam(t));
   }
   const lerp = (a, b, k) => a + (b - a) * Math.max(0, Math.min(1, k));
   function hulkCam(t) {
-    if (!O || !O.hulk) return null; const U = O.hulk, ox = O.x, oz = O.z, sx = Math.cos(U.yaw), sz = -Math.sin(U.yaw), fx = Math.sin(U.yaw), fz = Math.cos(U.yaw);
+    if (!O || !O.hulk) return null; if (t >= 8.5) t -= 4; else if (t >= 2.5) { const U2 = O.hulk, sx2 = Math.cos(U2.yaw), sz2 = -Math.sin(U2.yaw), fx2 = Math.sin(U2.yaw), fz2 = Math.cos(U2.yaw); if (t < 5) return { x: U2.x + fx2 * 70 + sx2 * 40, y: 60, z: U2.z + fz2 * 70 + sz2 * 40, lx: U2.x, ly: 95, lz: U2.z }; return { x: (U2.x + O.x) / 2 + sx2 * 300, y: 60, z: (U2.z + O.z) / 2 + sz2 * 300, lx: O.x - fx2 * 40, ly: 50, lz: O.z - fz2 * 40 }; }
+    const U = O.hulk, ox = O.x, oz = O.z, sx = Math.cos(U.yaw), sz = -Math.sin(U.yaw), fx = Math.sin(U.yaw), fz = Math.cos(U.yaw);
     const mx = (U.x + ox) / 2, mz = (U.z + oz) / 2;
     if (t < 2.5) return { x: mx + sx * 330, y: 40, z: mz + sz * 330, lx: U.x, ly: U.y + 40, lz: U.z };
     if (t < 4.5) return { x: U.x + fx * 75 + sx * 20, y: 70, z: U.z + fz * 75 + sz * 20, lx: U.x, ly: 80, lz: U.z };
@@ -130,8 +136,26 @@
     const k = (t - 17.3) / 6.7, cx = U.cx || ox, cz = U.cz || oz;
     return { x: cx + sx * lerp(160, 260, k), y: lerp(25, 320, k), z: cz + sz * lerp(160, 260, k), lx: cx, ly: 0, lz: cz };
   }
+  function handPhase(U, H, r, t, dt) {
+    const ev = U.ev, once = (n) => (ev[n] ? false : (ev[n] = true)), A = H.arms.find((a) => a.s > 0), B = H.arms.find((a) => a.s < 0), fx = Math.sin(U.yaw), fz = Math.cos(U.yaw);
+    H.legs.forEach((l) => { l.lg.rotation.x = 0; l.sn.rotation.x = 0; }); B.ar.rotation.set(0, 0, -0.15); B.fo.rotation.x = -0.3; H.body.rotation.x = 0;
+    const up = Math.min(1, (t - 2.5) / 1.2); A.ar.rotation.set(-2.9 * up, 0, 0.2); A.fo.rotation.x = -0.15; H.head.rotation.x = -0.2 * up; H.mouth.scale.y = 0.06;
+    const hp = new T.Vector3(); A.fo.getWorldPosition(hp);
+    if (t < 4.3 && Math.random() < dt * 25) L.fx(L.pick(['#ff2a2a', '#ffd020', '#2a7aff', '#30e070', '#a040ff', '#ff8a20']), hp.x, hp.y + 20, hp.z, 6, 30, { basic: true, size: 2.5, life: 0.7 });
+    if (t >= 4.3 && once('pulse')) {
+      L.shake = Math.max(L.shake, 2.5); L.tn && L.tn({ f: 1400, fTo: 80, dur: 1.4, type: 'sine', vol: 0.25 }); L.snd.bossRoar && L.snd.bossRoar({ x: O.x, y: 60, z: O.z });
+      for (let k = 0; k < 6; k++) beam(hp.clone().setY(hp.y + 20), new T.Vector3(O.x + L.rand(-15, 15), 70 + k * 8, O.z + L.rand(-15, 15)), STONES[k], 0.8);
+      for (let k = 0; k < 60; k++) { const a = k / 60 * 6.283; L.fx('#c080ff', O.x + Math.sin(a) * 70, 40, O.z + Math.cos(a) * 70, 20, 40, { basic: true, size: 3, life: 1.2 }); }
+      L.msg('🧟✋ Der Koloss hebt nur die Hand – und Omnitron bricht zusammen!', 3500);
+    }
+    if (t >= 4.3) { const f = Math.min(1, (t - 4.3) / 1.4), g = t > 6.8 ? Math.min(1, (t - 6.8) / 1.6) : 0; r.root.rotation.x = -1.45 * f * f * (1 - g); r.root.position.y = 0; if (f >= 1 && once('fall0')) { L.shake = 3; L.snd.stomp && L.snd.stomp({ x: O.x, y: 0, z: O.z }); for (let k = 0; k < 50; k++) L.fx('#8a7a60', O.x - fx * L.rand(0, 140), 4, O.z - fz * L.rand(0, 140), 10, 25, { size: 3, life: 1.5 }); } if (t > 6.8 && once('roar0')) { L.snd.bossRoar && L.snd.bossRoar({ x: U.x, y: 60, z: U.z }); L.msg('🤖 Omnitron rappelt sich auf …', 2500); } }
+  }
   function hulkFilm(dt) {
-    const U = O.hulk, H = U.H, t = O.deadT, r = O.rig, ev = U.ev, once = (n) => (ev[n] ? false : (ev[n] = true));
+    const U = O.hulk, H = U.H, r = O.rig; let t = O.deadT;
+    if (t >= 2.5 && t < 8.5 && U.ev.land) { handPhase(U, H, r, t, dt); H.root.position.set(U.x, U.y, U.z); H.root.rotation.y = U.yaw; return; }
+    if (t >= 8.5) t -= 4;
+    const ev = U.ev, once = (n) => (ev[n] ? false : (ev[n] = true));
+    if (t >= 4.5 && once('up0')) r.root.rotation.x = 0;
     const ox = O.x, oz = O.z, fx = Math.sin(U.yaw), fz = Math.cos(U.yaw);
     const roar = () => { L.snd.bossRoar && L.snd.bossRoar({ x: U.x, y: 60, z: U.z }); L.tn && L.tn({ f: 90, fTo: 50, dur: 1.6, type: 'sawtooth', vol: 0.22 }); };
     const hit = (x, y, z, big) => { L.shake = Math.max(L.shake, big ? 2.2 : 1.2); L.snd.stomp && L.snd.stomp({ x, y, z }); for (let k = 0; k < (big ? 40 : 18); k++) L.fx(L.pick(['#ffd040', '#ff6020', '#a040ff', '#ffffff']), x, y, z, big ? 30 : 16, 30, { basic: true, size: 2.5, life: 0.9 }); };
@@ -139,7 +163,7 @@
     if (t < 2.5) { U.y = 700 * Math.pow(1 - t / 2.5, 2); H.arms.forEach((a) => { a.ar.rotation.z = a.s * 1.2; }); H.legs[0].lg.rotation.x = -0.6; H.legs[0].sn.rotation.x = 0.8; }
     else { U.y = Math.max(0, U.y); }
     if (t >= 2.5 && once('land')) { U.y = 0; hit(U.x, 2, U.z, true); for (let k = 0; k < 40; k++) { const a = k / 40 * 6.283; L.fx('#8a7a60', U.x + Math.sin(a) * 50, 3, U.z + Math.cos(a) * 50, 8, 25, { size: 3, life: 1.6 }); } L.banner('😡 INFINITY-KOLOSS', 'Der grüne Riese mit der Stein-Faust ist gelandet …'); }
-    if (t >= 2.5 && t < 4.5) { const k = Math.min(1, (t - 2.5) / 0.5); H.arms.forEach((a) => { a.ar.rotation.z = a.s * 1.3 * k; a.fo.rotation.x = -1.2 * k; }); H.head.rotation.x = -0.5 * k; H.mouth.scale.y = 0.06 + 0.2 * k; H.body.rotation.x = -0.15 * k; if (once('roar1')) roar(); }
+    if (false) { const k = 0; H.arms.forEach((a) => { a.ar.rotation.z = a.s * 1.3 * k; a.fo.rotation.x = -1.2 * k; }); H.head.rotation.x = -0.5 * k; H.mouth.scale.y = 0.06 + 0.2 * k; H.body.rotation.x = -0.15 * k; if (once('roar1')) roar(); }
     else H.mouth.scale.y = 0.06;
     if (t >= 4.5 && t < 7) { const k = (t - 4.5) / 2.5, d0 = 170, d1 = 55; const d = lerp(d0, d1, k); U.x = ox + Math.sin(O.yaw) * d; U.z = oz + Math.cos(O.yaw) * d; const ph = t * 9; H.legs.forEach((l, i) => { const s = Math.sin(ph + i * Math.PI); l.lg.rotation.x = s * 0.8; l.sn.rotation.x = Math.max(0, -s) * 1.1; }); H.arms.forEach((a, i) => { a.ar.rotation.x = Math.sin(ph + (i ? 0 : Math.PI)) * 0.9; }); H.body.rotation.x = 0.3; if (Math.random() < dt * 8) L.shake = Math.max(L.shake, 0.6); }
     // Schlag-Kombo
@@ -182,10 +206,12 @@
   L.updateOmnitron = function (dt) {
     if (L.state !== 'game') return;
     for (let i = beams.length - 1; i >= 0; i--) { const b = beams[i]; b.t += dt; b.m.material.opacity = 0.85 * (1 - b.t / b.life); if (b.t > b.life) { L.scene.remove(b.m); beams.splice(i, 1); } }
+    if (!O && L._omniFinale && P.alive && !L.cine) { L._omniFinale -= dt; if (L._omniFinale <= 0) { L._omniFinale = 0; spawn(); O.rise = 1; O.life = LIFE * 0.5; if (O.rift) { L.scene.remove(O.rift); O.rift = null; } O.rig.root.position.set(O.x, 0, O.z); O.rig.root.rotation.y = O.yaw; O.rig.gems.forEach((g) => g.scale.setScalar(1)); L.banner('♾️ OMNITRON – LETZTE SEKUNDEN', 'Er hat kaum noch Kraft …'); O.finT = 2.5; } return; }
     if (!O) { if (!isClient()) { if (L._omniSoon) { L._omniSoon = false; clock = 10; L.msg('♾️ In 10 Sekunden kommt OMNITRON!', 5000); } if (L.save && !L.save.omniEarly && L.heroToken && L.heroToken('marlon')) { L.save.omniEarly = 1; L.persist && L.persist(); clock = Math.min(clock, 120); L.msg('♾️ Etwas reißt den Himmel auf … in 2 Minuten kommt OMNITRON!', 6000); } clock -= dt; if (clock <= 0) { clock = EVERY; spawn(); } } return; }
     const r = O.rig, t = performance.now() / 1000;
-    if (O.dead && O.hulk) { O.deadT += dt; hulkFilm(dt); if (O.deadT > 46) clear(); return; }
+    if (O.dead && O.hulk) { O.deadT += dt; hulkFilm(dt); if (O.deadT > 50) clear(); return; }
     if (O.dead) { O.deadT += dt; r.root.rotation.z = Math.min(1.4, O.deadT * 0.25); r.root.position.y = -Math.max(0, O.deadT - 5) * 15; if (Math.random() < dt * 10) L.fx(L.pick(['#ff6020', '#ffd040', '#a040ff']), O.x + L.rand(-40, 40), L.rand(10, 120), O.z + L.rand(-40, 40), 6, 20, { basic: true, size: 2, life: 1 }); if (O.deadT > 14) clear(); return; }
+    if (O.finT) { O.finT -= dt; if (O.finT <= 0) { O.finT = 0; if (L.cine && L.endCine) L.endCine(); O.hp = 0; die(P); return; } }
     O.life -= dt; const wasR = O.rise; O.rise = Math.min(1, O.rise + dt / 7);
     if (O.rift) { O.rift.rotation.z += dt * 2; O.rift.material.opacity = O.rise < 1 ? 0.9 : Math.max(0, O.rift.material.opacity - dt * 0.4); if (O.rift.material.opacity <= 0) { L.scene.remove(O.rift); O.rift = null; } if (O.rise < 1 && Math.random() < dt * 10) L.fx(L.pick(['#c080ff', '#ffffff', '#60a0ff']), O.x + L.rand(-80, 80), L.rand(200, 700), O.z + L.rand(-80, 80), 3, 20, { basic: true, size: 2, life: 1 }); }
     if (wasR < 1 && O.rise >= 1) { L.shake = Math.max(L.shake, 2.5); L.snd.stomp && L.snd.stomp({ x: O.x, y: 0, z: O.z }); L.snd.bossRoar && L.snd.bossRoar({ x: O.x, y: 80, z: O.z }); for (let k = 0; k < 48; k++) { const a = k / 48 * 6.283; L.fx('#b080ff', O.x + Math.sin(a) * 90, 3, O.z + Math.cos(a) * 90, 6, 30, { basic: true, size: 2.5, life: 1.5 }); } }
