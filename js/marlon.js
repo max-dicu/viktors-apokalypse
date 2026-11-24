@@ -88,7 +88,9 @@
   const ohst = L.heroStart;
   L.heroStart = function () {
     if (ohst) ohst();
+    L.mGodOn = false;
     if (!isM()) return;
+    if (L.save && !L.save.mGodUsed && L.heroToken && L.heroToken(ID)) { L.save.mGodUsed = 1; L.persist && L.persist(); L.mGodOn = true; setTimeout(() => L.msg('⭐ Nur diese Runde: unsterblich + Teleport (T / Karte) – danach nie wieder!', 7000), 6500); }
     P.hot[1] = { type: 'steinkruecken', count: 1, mag: 1 }; P.sel = 1;
     L.msg('🩼 Krücken-Kämpfer: Stein-Krücken auf Taste 2 – der Strahl schadet sogar dem Infinity-Omnitron!', 6000);
   };
