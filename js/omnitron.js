@@ -14,7 +14,7 @@
     const P3 = (geo, m, sx, sy, sz, x, y, z, par) => { const o = new T.Mesh(geo, m); o.scale.set(sx, sy, sz); o.position.set(x, y, z); o.castShadow = true; (par || body).add(o); return o; };
     const G = L.GEO, legs = [], arms = [];
     for (const s of [-1, 1]) { const lg = new T.Group(); lg.position.set(s * 0.8, 4.4, 0); body.add(lg); P3(G.cyl, mt, 0.45, 2.2, 0.5, 0, -1.1, 0, lg); P3(G.sph, dk, 0.5, 0.5, 0.5, 0, -2.2, 0, lg); const sh = new T.Group(); sh.position.y = -2.2; lg.add(sh); P3(G.cyl, mt, 0.38, 2.1, 0.42, 0, -1.05, 0, sh); P3(G.box, dk, 0.8, 0.3, 1.2, 0, -2.15, 0.2, sh); legs.push({ lg, sh }); }
-    P3(G.box, dk, 2.1, 0.8, 1.1, 0, 4.6, 0); P3(G.box, mt, 2.6, 2.6, 1.4, 0, 6.3, 0); P3(G.box, mt, 3.4, 0.7, 1.5, 0, 7.6, 0);
+    P3(new T.CylinderGeometry(0.75, 0.55, 1.2, 16), dk, 1, 1, 0.75, 0, 4.7, 0); P3(new T.CylinderGeometry(1.75, 0.85, 2.8, 20), mt, 1, 1, 0.55, 0, 6.4, 0); P3(G.sph, mt, 1.9, 0.45, 0.85, 0, 7.75, 0); for (const s2 of [-1, 1]) P3(new T.CylinderGeometry(0.06, 0.06, 2.6, 6), dk, 1, 1, 1, s2 * 0.5, 6.3, 0.62).rotation.z = s2 * 0.25;
     // Brustkern mit sechs Steinen
     P3(new T.TorusGeometry(0.55, 0.12, 8, 24), dk, 1, 1, 1, 0, 6.5, 0.72);
     const gems = STONES.map((c, k) => { const a = k / 6 * 6.283; return P3(new T.OctahedronGeometry(0.17), glow(c), 1, 1.3, 1, Math.sin(a) * 0.55, 6.5 + Math.cos(a) * 0.55, 0.78); });
@@ -26,11 +26,11 @@
       arms.push({ ar, fo, s });
     }
     const head = new T.Group(); head.position.y = 8.3; body.add(head);
-    P3(G.box, mt, 0.95, 1.05, 0.9, 0, 0.4, 0, head); P3(G.cone, dk, 0.25, 0.8, 0.12, -0.32, 1.05, -0.1, head).rotation.z = 0.4; P3(G.cone, dk, 0.25, 0.8, 0.12, 0.32, 1.05, -0.1, head).rotation.z = -0.4;
-    for (const s of [-1, 1]) P3(G.box, glow(0xff2020), 0.26, 0.07, 0.05, s * 0.22, 0.5, 0.46, head);
-    P3(G.box, glow(0xff3020), 0.42, 0.05, 0.04, 0, 0.2, 0.47, head); for (let k = 0; k < 5; k++) P3(G.box, glow(0xff3020), 0.025, 0.12, 0.04, -0.16 + k * 0.08, 0.2, 0.47, head);
-    STONES.forEach((c, k) => P3(new T.OctahedronGeometry(0.05), glow(c), 1, 1.3, 0.8, -0.3 + k * 0.12, 0.82, 0.44, head));
-    P3(G.box, mt, 1.05, 0.12, 0.95, 0, 0.92, 0, head); P3(G.cone, mt, 0.3, 0.5, 0.2, 0, -0.12, 0.38, head).rotation.x = Math.PI;
+    P3(G.sph, mt, 0.5, 0.68, 0.55, 0, 0.45, 0, head); P3(G.sph, dk, 0.38, 0.42, 0.2, 0, 0.32, 0.4, head);
+    for (const s of [-1, 1]) { const ey = P3(G.box, glow(0xff2a20), 0.2, 0.05, 0.05, s * 0.17, 0.52, 0.5, head); ey.rotation.z = s * -0.3; P3(G.sph, mt, 0.12, 0.35, 0.18, s * 0.42, 0.55, 0, head); }
+    P3(G.box, glow(0xff2a20), 0.26, 0.025, 0.04, 0, 0.17, 0.56, head);
+    P3(new T.OctahedronGeometry(0.09), glow(0xffd020), 1, 1.3, 0.8, 0, 0.82, 0.48, head); STONES.forEach((c, k) => { const a = -1.1 + k * 0.44; P3(new T.OctahedronGeometry(0.045), glow(c), 1, 1.3, 0.8, Math.sin(a) * 0.48, 0.92 + Math.cos(a) * 0.08, Math.cos(a) * 0.42, head); });
+    P3(G.cone, mt, 0.18, 0.55, 0.3, 0, 1.15, -0.1, head).rotation.x = -0.4;
     for (let k = 0; k < 4; k++) { P3(G.box, glow(0xa040ff), 0.05, 2.2, 0.04, -0.9 + k * 0.6, 6.3, 0.72); }
     for (const s2 of [-1, 1]) { P3(G.box, glow(0xa040ff), 0.04, 0.5, 0.04, s2 * 1.85, 7.6, 0.72); P3(G.cone, dk, 0.25, 0.9, 0.25, s2 * 1.85, 8.3, 0); }
     const aura = new T.PointLight(0xa060ff, 3, 400, 2); aura.position.set(0, 6.5 * SC, 20); root.add(aura);
