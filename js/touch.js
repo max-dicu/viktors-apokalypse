@@ -21,7 +21,7 @@
     <div class="tgrp" id="tFoot">
       <button data-k="ShiftLeft" data-toggle="1" id="tRun" title="Rennen">🏃</button><button data-k="KeyC" title="Schleichen">🧎</button>
       <button data-k="KeyX" title="Kriechen">🐛</button><button data-k="KeyR" title="Nachladen">🔄</button>
-      <button data-k="KeyG" title="Granate werfen">💣</button><button data-k="KeyQ" title="Verband">🩹</button>
+      <button data-k="KeyG" title="Granate werfen">💣</button><button data-k="KeyQ" title="Verband">🩹</button><button data-k="KeyZ" title="Dash">💨</button>
       <button data-k="KeyL" title="Taschenlampe">🔦</button><button data-wheel="1" title="Nächster Platz (nach dem 5. = Hand leer)">⏭️</button><button data-act="zoom" title="Kamera: Ego-Sicht / nah / weit">🎥</button>
     </div>
     <div id="tAct">
