@@ -9,7 +9,7 @@
   const A = (name, icon, rate) => ({ name, slot: 'waffe', icon, dmg: 0, rate, noise: 80, range: 60, ammo: null, mag: 1, spread: 0, energy: true, kr: true });
   Object.assign(L.ITEMS, { kr_wurf: A('Krückenwurf', '🦯', 4), kr_tornado: A('Krücken-Tornado', '🌪️', 8), kr_orthese: A('Alamantium-Orthese', '🦿', 6), kr_beben: A('Krücken-Beben', '💥', 7) });
   const ohs = L.heroStart;
-  L.heroStart = function () { if (ohs) ohs(); if (!isM()) return; P.hot[0] = { type: 'kr_wurf', count: 1, mag: 1 }; P.hot[1] = { type: 'kr_tornado', count: 1, mag: 1 }; P.hot[2] = { type: 'kr_orthese', count: 1, mag: 1 }; P.hot[3] = { type: 'kr_beben', count: 1, mag: 1 }; P.hot[4] = { type: 'steinkruecken', count: 1, mag: 1 }; P.sel = 0; L.msg('🩼 Marlon: 1 Krückenwurf · 2 Tornado · 3 Alamantium-Orthese · 4 Krücken-Beben · 5 Stein-Strahl', 7000); };
+  L.heroStart = function () { if (ohs) ohs(); if (!isM()) return; P.hot[0] = { type: 'kr_wurf', count: 1, mag: 1 }; P.hot[1] = { type: 'kr_tornado', count: 1, mag: 1 }; P.hot[2] = { type: 'kr_orthese', count: 1, mag: 1 }; P.hot[3] = { type: 'kr_beben', count: 1, mag: 1 }; P.hot[4] = { type: 'steinkruecken', count: 1, mag: 1 }; P.sel = 0; L.msg('🩼 Krücken-Kämpfer aus Sina Sina: 1 Krückenwurf · 2 Tornado · 3 Alamantium-Orthese · 4 Krücken-Beben · 5 Stein-Strahl', 7000); };
   // ---------- Schaden: Anteil am maximalen Leben ----------
   const isOmni = (e) => e.kind === 'omni';
   function maxHp(e) { if (typeof e.hp === 'number') e._mx = Math.max(e._mx || 0, e.max || 0, e.hp); return e._mx || 600; }

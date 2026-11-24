@@ -9,9 +9,9 @@
   const oTok = L.heroToken, oChk = L.heroCheck;
   L.heroToken = (id) => { if (id !== ID) return oTok ? oTok(id) : null; const k = L.save && L.save.heroKeys && L.save.heroKeys[ID]; return k && L.hash53(L.hash53(k)) === PK ? L.hash53(k) : null; };
   L.heroCheck = (code) => (L.hash53(L.hash53(code)) === PK ? ID : oChk ? oChk(code) : null);
-  L.SKINS.push(['h_' + ID, '🩼 Marlon']);
+  L.SKINS.push(['h_' + ID, '🩼 Krücken-Kämpfer aus Sina Sina']);
   const STONES = [0xff2a2a, 0xffd020, 0x2a7aff, 0x30e070, 0xa040ff, 0xff8a20];
-  const LOOK = { name: 'Marlon', koerper: 'mann', skin: '#e3b48f', hair: 'mullet', hairColor: '#5a3a22', eyes: '#4a2f1c', brows: 'normal', mouth: 'laecheln', nose: 'normal', beard: 'kein',
+  const LOOK = { name: 'Krücken-Kämpfer', koerper: 'mann', skin: '#e3b48f', hair: 'mullet', hairColor: '#5a3a22', eyes: '#4a2f1c', brows: 'normal', mouth: 'laecheln', nose: 'normal', beard: 'kein',
     top: 'oversize', topColor: '#eee4cf', pants: 'baggy', pantsColor: '#cbb994', shoeType: 'lackschuh', shoes: '#5a3a22', build: 'normal', height: 'sehr_gross', schmuck: 'kette', schmuckFarbe: '#f0c850' };
   const obh = L.buildHuman;
   L.buildHuman = function (app, force) {
@@ -90,6 +90,6 @@
     if (ohst) ohst();
     if (!isM()) return;
     P.hot[1] = { type: 'steinkruecken', count: 1, mag: 1 }; P.sel = 1;
-    L.msg('🩼 Marlon: Stein-Krücken auf Taste 2 – der Strahl schadet sogar dem Infinity-Omnitron!', 6000);
+    L.msg('🩼 Krücken-Kämpfer: Stein-Krücken auf Taste 2 – der Strahl schadet sogar dem Infinity-Omnitron!', 6000);
   };
 })();
