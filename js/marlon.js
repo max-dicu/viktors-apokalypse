@@ -12,34 +12,79 @@
   L.SKINS.push(['h_' + ID, '🩼 Krücken-Kämpfer aus Sina Sina']);
   const STONES = [0xff2a2a, 0xffd020, 0x2a7aff, 0x30e070, 0xa040ff, 0xff8a20];
   const LOOK = { name: 'Krücken-Kämpfer', koerper: 'mann', skin: '#e3b48f', hair: 'mullet', hairColor: '#5a3a22', eyes: '#4a2f1c', brows: 'normal', mouth: 'laecheln', nose: 'normal', beard: 'kein',
-    top: 'oversize', topColor: '#eee4cf', pants: 'baggy', pantsColor: '#cbb994', shoeType: 'lackschuh', shoes: '#5a3a22', build: 'normal', height: 'sehr_gross', schmuck: 'kette', schmuckFarbe: '#f0c850' };
+    top: 'hoodie', topColor: '#c3c4c8', pants: 'jogging', pantsColor: '#3b3c41', shoeType: 'sandale', shoes: '#111111', build: 'muskuloes', height: 'sehr_gross', schmuck: 'kein' };
+  // Texturen: Vibranium (dunkles Sechseck-Gitter, lila Adern) und Adamantium (gebürsteter Stahl)
+  let vibT = null, adaT = null;
+  function vibTex() { if (vibT) return vibT; const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); g.fillStyle = '#17131f'; g.fillRect(0, 0, 128, 128); g.strokeStyle = '#7a4ad0'; g.lineWidth = 2; const r = 10; for (let y = 0; y < 150; y += r * 1.5) for (let x = 0; x < 150; x += r * 1.732) { const ox = x + ((y / (r * 1.5)) % 2 ? r * 0.866 : 0); g.beginPath(); for (let k = 0; k < 7; k++) { const an = Math.PI / 3 * k + Math.PI / 6; g.lineTo(ox + Math.cos(an) * r, y + Math.sin(an) * r); } g.stroke(); } vibT = new T.CanvasTexture(c); vibT.wrapS = vibT.wrapT = T.RepeatWrapping; vibT.repeat.set(2, 2); return vibT; }
+  function adaTex() { if (adaT) return adaT; const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); for (let y = 0; y < 128; y++) { const v = 170 + Math.floor(Math.random() * 60); g.fillStyle = 'rgb(' + v + ',' + (v + 4) + ',' + (v + 10) + ')'; g.fillRect(0, y, 128, 1); } for (let i = 0; i < 40; i++) { g.fillStyle = 'rgba(255,255,255,0.25)'; g.fillRect(Math.random() * 128, Math.random() * 128, 20 + Math.random() * 60, 1); } adaT = new T.CanvasTexture(c); adaT.wrapS = adaT.wrapT = T.RepeatWrapping; return adaT; }
   const obh = L.buildHuman;
   L.buildHuman = function (app, force) {
     if (!app || app.special !== 'h_' + ID) return obh(app, force);
     if (!force && !ok(app)) return obh(Object.assign({}, app, { special: '' }), force);
     const r = obh(Object.assign({}, app, LOOK, { special: '' }), force);
     r.app = Object.assign({}, r.app, app); r.marlon = true;
-    const M = (c, o) => (o ? new T.MeshStandardMaterial(Object.assign({ color: c }, o)) : L.mat(c));
-    const vib = M(0x3a3048, { metalness: 0.9, roughness: 0.25, emissive: 0x2a1050, emissiveIntensity: 0.4 }), ada = M(0xd8dce4, { metalness: 1, roughness: 0.18 });
-    const P3 = (geo, m, sx, sy, sz, x, y, z, par) => { const o = new T.Mesh(geo, typeof m === 'string' ? L.mat(m) : m); o.scale.set(sx, sy, sz); o.position.set(x, y, z); o.castShadow = true; par.add(o); return o; };
-    // Old Money: Kragen, Zopfmuster-Linien, Gürtel
-    P3(L.GEO.box, '#ffffff', 0.18, 0.04, 0.03, 0, 0.62, 0.12, r.torso);
-    for (let k = 0; k < 4; k++) P3(L.GEO.box, '#ddd2b8', 0.012, 0.42, 0.01, -0.09 + k * 0.06, 0.3, 0.135, r.torso);
-    P3(L.GEO.box, '#5a3a22', 0.4, 0.04, 0.24, 0, 0.02, 0, r.torso);
-    // Knieorthese rechts (legs[0])
-    const lg = r.legs[0];
+    const SM = (c, o) => new T.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.85, metalness: 0 }, o || {}));
+    const vib = SM(0x2a2238, { map: vibTex(), emissive: 0x3a1870, emissiveMap: vibTex(), emissiveIntensity: 0.7, metalness: 0.75, roughness: 0.3 });
+    const ada = SM(0xe0e4ea, { map: adaTex(), metalness: 1, roughness: 0.22 });
+    const hood = SM(0xb6b7bc, { roughness: 0.95 }), hoodD = SM(0x9c9da2, { roughness: 0.95 }), tee = SM(0xf4f4f2), pant = SM(0x3b3c41, { roughness: 0.95 }), pantD = SM(0x2c2d31, { roughness: 0.95 });
+    const blk = SM(0x111111, { roughness: 0.6 }), sock = SM(0xf2f2f2, { roughness: 1 }), grey = SM(0x9a9ca2, { metalness: 0.6, roughness: 0.35 }), zip = SM(0xcfd2d8, { metalness: 0.9, roughness: 0.3 });
+    const G = L.GEO;
+    const P3 = (geo, m, sx, sy, sz, x, y, z, par) => { const o = new T.Mesh(geo, m); o.scale.set(sx, sy, sz); o.position.set(x, y, z); o.castShadow = true; par.add(o); return o; };
+    const fz = 0.14;
+    // --- Athletischer Sleeper-Build: breite Schultern, Rücken, Schlüsselbeine (unter dem Hoodie) ---
+    P3(G.box, hood, 0.54, 0.2, 0.28, 0, 0.5, 0, r.torso);
+    P3(G.box, hood, 0.47, 0.14, 0.275, 0, 0.36, 0, r.torso);
+    P3(G.box, hood, 0.42, 0.24, 0.3, 0, 0.18, 0, r.torso);
+    for (const sd of [-1, 1]) { const cl = P3(G.box, hoodD, 0.16, 0.012, 0.012, sd * 0.1, 0.6, fz + 0.005, r.torso); cl.rotation.z = sd * -0.18; }
+    // Quarter-Zip: leicht offen, weißes T-Shirt sichtbar, Stehkragen, Kapuze
+    P3(G.box, tee, 0.075, 0.1, 0.01, 0, 0.56, fz + 0.004, r.torso);
+    for (const sd of [-1, 1]) { const f = P3(G.box, hood, 0.045, 0.13, 0.012, sd * 0.045, 0.56, fz + 0.007, r.torso); f.rotation.z = sd * 0.25; P3(G.box, zip, 0.006, 0.12, 0.006, sd * 0.03, 0.56, fz + 0.012, r.torso).rotation.z = sd * 0.25; const k = P3(G.box, hood, 0.07, 0.07, 0.03, sd * 0.08, 0.66, 0.08, r.torso); k.rotation.z = sd * 0.35; }
+    P3(G.box, zip, 0.006, 0.12, 0.006, 0, 0.44, fz + 0.006, r.torso); P3(G.box, zip, 0.02, 0.03, 0.008, 0, 0.5, fz + 0.012, r.torso);
+    P3(G.sph, hoodD, 0.2, 0.12, 0.1, 0, 0.62, -0.17, r.torso);
+    // Kängurutasche verdecken, zwei normale Seitentaschen
+    for (const sd of [-1, 1]) { const p = P3(G.box, hoodD, 0.012, 0.13, 0.01, sd * 0.15, 0.2, 0.152, r.torso); p.rotation.z = sd * 0.35; }
+    P3(G.box, hoodD, 0.42, 0.05, 0.27, 0, 0.06, 0, r.torso);
+    // Ärmel: oversized, Bündchen fallen über die Hände
+    (r.arms || []).forEach((a2) => {
+      P3(G.sph, hood, 0.105, 0.095, 0.11, 0, -0.03, 0, a2.arm);
+      P3(G.box, hood, 0.145, 0.32, 0.155, 0, -0.16, 0, a2.arm);
+      P3(G.box, hood, 0.14, 0.3, 0.15, 0, -0.15, 0, a2.elbow);
+      P3(G.box, hoodD, 0.135, 0.09, 0.145, 0, -0.33, 0, a2.elbow);
+    });
+    // Lockere dunkelgraue Jogginghose, weiße Socken, schwarze Slides
+    (r.legs || []).forEach((lg) => {
+      P3(G.box, pant, 0.17, 0.44, 0.18, 0, -0.22, 0, lg.leg);
+      P3(G.box, pant, 0.165, 0.34, 0.175, 0, -0.18, 0, lg.knee);
+      P3(G.box, pantD, 0.16, 0.06, 0.17, 0, -0.37, 0, lg.knee);
+      P3(G.box, sock, 0.13, 0.08, 0.125, 0, -0.42, 0, lg.knee);
+      P3(G.box, sock, 0.135, 0.06, 0.24, 0, -0.465, 0.05, lg.knee);
+      P3(G.box, blk, 0.16, 0.05, 0.29, 0, -0.505, 0.05, lg.knee);
+      P3(G.box, blk, 0.155, 0.055, 0.12, 0, -0.455, 0.11, lg.knee);
+      for (let k = 0; k < 3; k++) P3(G.box, SM(0x2a2a2a), 0.157, 0.006, 0.02, 0, -0.44 - k * 0.015, 0.11, lg.knee);
+    });
+    // Knieorthese rechts – über der Hose, so lang wie ein Schienbein, mittig am Knie
+    const lg = r.legs && r.legs[0];
     if (lg) {
-      for (const sd of [-1, 1]) { P3(L.GEO.box, ada, 0.025, 0.36, 0.035, sd * 0.1, -0.2, 0, lg.leg); P3(L.GEO.box, ada, 0.025, 0.34, 0.035, sd * 0.1, -0.18, 0, lg.knee); P3(L.GEO.cyl, vib, 0.05, 0.03, 0.05, sd * 0.11, 0, 0, lg.knee).rotation.z = Math.PI / 2; }
-      P3(L.GEO.box, vib, 0.23, 0.06, 0.2, 0, -0.18, 0, lg.leg); P3(L.GEO.box, vib, 0.21, 0.06, 0.19, 0, -0.32, 0, lg.knee);
-      P3(L.GEO.box, '#1a1a22', 0.22, 0.04, 0.2, 0, -0.08, 0, lg.leg); P3(L.GEO.sph, ada, 0.06, 0.06, 0.03, 0, -0.02, 0.1, lg.knee);
+      const cuff = (par, y) => { const m = new T.Mesh(new T.CylinderGeometry(1, 1, 1, 18, 1, true), vib); m.scale.set(0.105, 0.11, 0.105); m.position.set(0, y, 0); m.material.side = T.DoubleSide; m.castShadow = true; par.add(m); P3(G.box, blk, 0.2, 0.03, 0.2, 0, y - 0.04, 0, par); return m; };
+      cuff(lg.leg, -0.34); cuff(lg.knee, -0.14);
+      for (const sd of [-1, 1]) {
+        P3(G.box, ada, 0.022, 0.24, 0.04, sd * 0.11, -0.32, 0, lg.leg);
+        P3(G.box, ada, 0.022, 0.24, 0.04, sd * 0.11, -0.1, 0, lg.knee);
+        const h = P3(G.cyl, ada, 0.055, 0.03, 0.055, sd * 0.115, 0.01, 0, lg.knee); h.rotation.z = Math.PI / 2;
+        const h2 = P3(G.cyl, vib, 0.03, 0.035, 0.03, sd * 0.12, 0.01, 0, lg.knee); h2.rotation.z = Math.PI / 2;
+      }
+      P3(G.sph, ada, 0.085, 0.095, 0.045, 0, 0.0, 0.095, lg.knee); const fr = P3(new T.TorusGeometry(0.085, 0.012, 6, 20), vib, 1, 1.1, 1, 0, 0, 0.1, lg.knee); void fr;
     }
-    // Krücken mit Steinen
-    r.crutches = (r.arms || []).map((a, i) => {
-      const c = new T.Group(); c.position.set(0, -0.3, 0.06); a.elbow.add(c);
-      P3(new T.TorusGeometry(0.06, 0.012, 6, 14, Math.PI * 1.4), ada, 1, 1, 1, 0, 0.25, 0, c).rotation.x = Math.PI / 2;
-      P3(L.GEO.cyl, ada, 0.022, 0.3, 0.022, 0, 0.12, -0.02, c); P3(L.GEO.box, vib, 0.035, 0.035, 0.14, 0, 0, 0.04, c);
-      P3(L.GEO.cyl, vib, 0.024, 1.05, 0.024, 0, -0.52, 0, c); P3(L.GEO.cyl, '#1a1a1a', 0.035, 0.06, 0.035, 0, -1.06, 0, c);
-      for (let k = 0; k < 3; k++) P3(new T.OctahedronGeometry(0.035), new T.MeshBasicMaterial({ color: STONES[i * 3 + k] }), 1, 1.4, 1, 0.028, -0.25 - k * 0.12, 0.02, c);
+    // Krücken: grau, schwarze Griffe und Stopper, Steine kreisen um den Griff
+    r.crutches = (r.arms || []).map((a2, i) => {
+      const c = new T.Group(); c.position.set(0, -0.35, 0.02); a2.elbow.add(c);
+      const tor = P3(new T.TorusGeometry(0.075, 0.014, 8, 16, Math.PI * 1.3), grey, 1, 1, 1, 0, 0.27, -0.01, c); tor.rotation.set(Math.PI / 2, 0, Math.PI * 0.85);
+      P3(G.cyl, grey, 0.022, 0.3, 0.022, 0, 0.13, -0.035, c);
+      P3(G.cyl, grey, 0.024, 1.04, 0.024, 0, -0.52, -0.035, c);
+      const gp = P3(G.cyl, blk, 0.03, 0.16, 0.03, 0, 0, 0.04, c); gp.rotation.x = Math.PI / 2;
+      P3(G.cyl, blk, 0.045, 0.09, 0.045, 0, -1.08, -0.035, c);
+      const orb = new T.Group(); orb.position.set(0, 0, 0.04); c.add(orb); c.userData.orb = orb;
+      for (let k = 0; k < 6; k++) { const an = k / 6 * 6.283, st = new T.Mesh(new T.OctahedronGeometry(0.022), new T.MeshBasicMaterial({ color: STONES[(k + i * 3) % 6] })); st.scale.y = 1.4; st.position.set(Math.cos(an) * 0.075, Math.sin(an) * 0.075, 0); orb.add(st); }
       return c;
     });
     return r;
@@ -48,6 +93,7 @@
   const oapa = L.afterPlayerAnim;
   L.afterPlayerAnim = function (r, dt) {
     if (oapa) oapa(r, dt);
+    if (r && r.crutches) r.crutches.forEach((c) => { if (c.userData.orb) { c.userData.orb.rotation.z += (dt || 0.016) * 3; c.userData.orb.children.forEach((st) => { st.rotation.y += (dt || 0.016) * 4; }); } });
     if (!r || !r.marlon || P.vehicle || P.flying) return;
     const sp = Math.hypot(P.vx || 0, P.vz || 0);
     if (sp < 0.3) { r.arms.forEach((a) => { a.arm.rotation.x = -0.15; a.arm.rotation.z = a === r.arms[0] ? 0.08 : -0.08; a.elbow.rotation.x = -0.1; }); if (r.legs[0]) { r.legs[0].knee.rotation.x = 0.05; r.legs[0].leg.rotation.x = -0.15; } return; }

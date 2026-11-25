@@ -618,8 +618,9 @@
       const loop = () => {
         if (!$('charScreen').hidden && prev.rig) {
           const t = performance.now() / 1000;
-          prev.rig.root.rotation.y = Math.sin(t * 0.6) * 0.8;
+          prev.rig.root.rotation.y = Math.sin(t * 0.6) * 0.8; prev.rig.root.position.y = 0;
           L.animHuman(prev.rig, { mode: 'walk', phase: t * 1.5, speed: 0.02 });
+          if (L.menuAnim) L.menuAnim(prev.rig, charApp && charApp.special, t);
           prev.r.render(prev.s, prev.cam);
         }
         { const n = $('charTooBig'); if (n) { const on = !$('charScreen').hidden && !!prev.big, r = $('charPreview').getBoundingClientRect(); n.style.display = on && r.height > 0 ? 'block' : 'none'; if (on) { n.style.left = (r.left + r.width / 2) + 'px'; n.style.top = (r.bottom - 38) + 'px'; } } }

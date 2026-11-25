@@ -11,15 +11,41 @@
   L.tsunamiInfo = () => tsu;
 
   // ---------- Tornado ----------
+  let tTex = null, dTex = null;
+  function tornadoTex() {
+    if (tTex) return tTex;
+    const c = document.createElement('canvas'); c.width = 256; c.height = 256; const g = c.getContext('2d');
+    for (let i = 0; i < 170; i++) { const x = Math.random() * 256, w = 2 + Math.random() * 12, v = 60 + Math.floor(Math.random() * 80), a = 0.25 + Math.random() * 0.6; g.strokeStyle = 'rgba(' + (v + 12) + ',' + (v + 6) + ',' + v + ',' + a.toFixed(2) + ')'; g.lineWidth = w; g.beginPath(); for (const o of [-256, 0, 256]) { g.moveTo(x + o, 0); g.bezierCurveTo(x + o + 30, 90, x + o + 70, 170, x + o + 110, 256); } g.stroke(); }
+    g.globalCompositeOperation = 'destination-in'; const gr = g.createLinearGradient(0, 0, 0, 256); gr.addColorStop(0, 'rgba(0,0,0,0.2)'); gr.addColorStop(0.15, 'rgba(0,0,0,1)'); gr.addColorStop(0.9, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0.35)'); g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+    tTex = new T.CanvasTexture(c); return tTex;
+  }
+  function dustTex() { if (dTex) return dTex; const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); const gr = g.createRadialGradient(64, 64, 4, 64, 64, 64); gr.addColorStop(0, 'rgba(120,104,84,0.9)'); gr.addColorStop(0.5, 'rgba(110,96,78,0.45)'); gr.addColorStop(1, 'rgba(100,90,74,0)'); g.fillStyle = gr; g.fillRect(0, 0, 128, 128); dTex = new T.CanvasTexture(c); return dTex; }
+  // H = Höhe, R = Radius oben
+  L.makeTornadoFx = function (H, R) {
+    const g = new T.Group(), layers = [], dust = [];
+    const pts = []; for (let i = 0; i <= 28; i++) { const u = i / 28; pts.push(new T.Vector2(R * 0.07 + R * Math.pow(u, 2.3) + Math.sin(u * 9) * R * 0.015, u * H)); }
+    const geo = new T.LatheGeometry(pts, 48);
+    [[1, 0.9, 0x5c574f, 2.2, 0.9], [1.08, 0.55, 0x7a7266, -1.5, 0.6], [1.22, 0.3, 0x958c7c, 1.1, 0.4]].forEach(([s, op, col, sp, fl]) => {
+      const tx = tornadoTex().clone(); tx.needsUpdate = true; tx.wrapS = tx.wrapT = T.RepeatWrapping; tx.repeat.set(3, 1.5);
+      const m = new T.Mesh(geo, new T.MeshLambertMaterial({ color: col, map: tx, transparent: true, opacity: op, side: T.DoubleSide, depthWrite: false }));
+      m.scale.set(s, 1, s); m.renderOrder = 3; g.add(m); layers.push({ m, tx, sp, fl });
+    });
+    const cap = new T.Mesh(new T.CylinderGeometry(R * 1.9, R * 1.2, H * 0.08, 40, 1, true), new T.MeshLambertMaterial({ color: 0x3e3b37, map: tornadoTex(), transparent: true, opacity: 0.75, side: T.DoubleSide, depthWrite: false })); cap.position.y = H; g.add(cap);
+    for (let k = 0; k < 14; k++) { const s = new T.Sprite(new T.SpriteMaterial({ map: dustTex(), transparent: true, opacity: 0.55, depthWrite: false })); const sc = R * (0.5 + Math.random() * 0.5); s.scale.set(sc, sc * 0.6, 1); g.add(s); dust.push({ s, a: k / 14 * 6.283, r: R * (0.25 + Math.random() * 0.35), y: sc * 0.2, sp: 1.5 + Math.random(), base: sc }); }
+    g.traverse((o) => { o.frustumCulled = false; });
+    let t = 0;
+    return { g, update(dt) {
+      t += dt;
+      for (const l of layers) { l.m.rotation.y += dt * l.sp; l.tx.offset.y -= dt * l.fl; l.m.position.x = Math.sin(t * 1.1 + l.sp) * R * 0.05; }
+      cap.rotation.y += dt * 0.4;
+      g.rotation.z = Math.sin(t * 0.7) * 0.04; g.rotation.x = Math.cos(t * 0.53) * 0.04;
+      for (const d of dust) { d.a += dt * d.sp; d.s.position.set(Math.sin(d.a) * d.r, d.y, Math.cos(d.a) * d.r); const p = 1 + Math.sin(t * 2 + d.a) * 0.15; d.s.scale.set(d.base * p, d.base * 0.6 * p, 1); }
+    } };
+  };
   const funnelMat = new T.MeshLambertMaterial({ color: 0x6a6660, transparent: true, opacity: 0.55, side: T.DoubleSide, depthWrite: false });
   const funnelMat2 = new T.MeshLambertMaterial({ color: 0x4a4640, transparent: true, opacity: 0.4, side: T.DoubleSide, depthWrite: false });
   function buildFunnel() {
-    const g = new T.Group(), rings = [];
-    for (let i = 0; i < 9; i++) {
-      const y0 = i * 9, r0 = 2 + i * i * 0.32, r1 = 2 + (i + 1) * (i + 1) * 0.32;
-      const m = new T.Mesh(new T.CylinderGeometry(r1, r0, 9.5, 14, 1, true), i % 2 ? funnelMat : funnelMat2);
-      m.position.y = y0 + 4.5; g.add(m); rings.push(m);
-    }
+    const g = new T.Group(), rings = [], fx = L.makeTornadoFx(85, 30); g.add(fx.g); void funnelMat; void funnelMat2;
     // Trümmer, die herumwirbeln
     const debris = [];
     for (let i = 0; i < 26; i++) {
@@ -27,7 +53,7 @@
       d.scale.set(L.rand(0.3, 1.4), L.rand(0.2, 0.8), L.rand(0.3, 1.2)); g.add(d);
       debris.push({ m: d, a: Math.random() * 6.28, r: L.rand(4, 18), y: L.rand(1, 50), s: L.rand(1.5, 3.5) });
     }
-    return { g, rings, debris };
+    return { g, rings, debris, fx };
   }
   L.spawnTornado = function (x, z, id) {
     const f = buildFunnel(); L.scene.add(f.g);
@@ -60,7 +86,7 @@
       // Aussehen
       const grow = Math.min(1, t.age / 4) * (t.life < 4 && !isClient() ? t.life / 4 : 1);
       t.f.g.position.set(t.x, 0, t.z); t.f.g.scale.set(grow, Math.max(0.05, grow), grow);
-      t.f.rings.forEach((r, k) => { r.rotation.y += dt * (3 + k * 0.3); r.position.x = Math.sin(t.age * 1.3 + k * 0.6) * k * 0.4; });
+      t.f.fx.update(dt);
       for (const d of t.f.debris) { d.a += dt * d.s; d.m.position.set(Math.sin(d.a) * d.r, d.y + Math.sin(t.age + d.a) * 2, Math.cos(d.a) * d.r); d.m.rotation.x += dt * 3; d.m.rotation.y += dt * 2; }
       const dP = L.dist(P.x, P.z, t.x, t.z);
       if (Math.random() < dt * 20 && dP < 400) L.fx(Math.random() < 0.5 ? '#6a5a44' : '#4a4a46', t.x + L.rand(-12, 12), 0.5, t.z + L.rand(-12, 12), 2, 6, { size: 1.2, life: 1.5, g: -2 });

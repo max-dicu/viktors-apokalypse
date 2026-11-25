@@ -17,17 +17,17 @@
   function cv(w, h, fn, rep) { const c = document.createElement('canvas'); c.width = w; c.height = h; fn(c.getContext('2d'), w, h); const t = new T.CanvasTexture(c); if (rep) { t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(rep, rep); } return t; }
   function build() {
     const g = new T.Group(); L.scene.add(g);
-    const bands = cv(64, 512, (c, w, h) => { const C = ['#c88a52', '#e8c89a', '#a8643a', '#f0dcb8', '#b87848', '#d8a870', '#8a4a2a']; for (let y = 0; y < h; y += 8) { c.fillStyle = C[Math.floor(Math.abs(Math.sin(y * 0.03)) * C.length)]; c.fillRect(0, y, w, 8 + Math.random() * 6); } for (let i = 0; i < 600; i++) { c.fillStyle = 'rgba(255,255,255,' + (Math.random() * 0.12).toFixed(2) + ')'; c.fillRect(Math.random() * w, Math.random() * h, 6, 2); } }, 6);
-    const ground = new T.Mesh(new T.CylinderGeometry(J.r, J.r * 0.9, 40, 80), [L.mat('#7a4a2a'), new T.MeshLambertMaterial({ map: bands }), L.mat('#5a3420')]); ground.position.set(J.x, -20.02, J.z); g.add(ground);
+    const bands = cv(64, 512, (c, w, h) => { const C = ['#a89478', '#cbbc9e', '#8e7a60', '#d6cbb4', '#9c8668', '#b8a688', '#7a6650']; for (let y = 0; y < h; y += 8) { c.fillStyle = C[Math.floor(Math.abs(Math.sin(y * 0.03)) * C.length)]; c.fillRect(0, y, w, 8 + Math.random() * 6); } for (let i = 0; i < 900; i++) { c.fillStyle = (Math.random() < 0.5 ? 'rgba(255,250,240,' : 'rgba(40,30,20,') + (Math.random() * 0.1).toFixed(2) + ')'; c.fillRect(Math.random() * w, Math.random() * h, 3 + Math.random() * 10, 1 + Math.random() * 2); } }, 6);
+    const ground = new T.Mesh(new T.CylinderGeometry(J.r, J.r * 0.9, 40, 80), [L.mat('#6e5e4a'), new T.MeshLambertMaterial({ map: bands }), L.mat('#544636')]); ground.position.set(J.x, -20.02, J.z); g.add(ground);
     // Ammoniak-Eis und Felsen
-    for (let i = 0; i < 260; i++) { const a = Math.random() * 6.283, d = 60 + Math.sqrt(Math.random()) * (J.r - 100), x = J.x + Math.sin(a) * d, z = J.z + Math.cos(a) * d; if (Math.hypot(x - PAD.x, z - PAD.z) < 40) continue; const ice = Math.random() < 0.4, s = 2 + Math.random() * 6; const m = new T.Mesh(ice ? new T.OctahedronGeometry(1) : new T.DodecahedronGeometry(1), ice ? new T.MeshLambertMaterial({ color: 0xe8f0ff, emissive: 0x405870, transparent: true, opacity: 0.85 }) : L.mat(i % 2 ? '#6a3a22' : '#8a5a3a')); m.scale.set(s, s * (ice ? 2.2 : 1), s); m.position.set(x, s * (ice ? 1.6 : 0.6), z); m.rotation.set(Math.random(), Math.random() * 3, 0); g.add(m); L.addBox(x - s * 0.7, z - s * 0.7, x + s * 0.7, z + s * 0.7, s * 1.6, 'building'); }
+    for (let i = 0; i < 260; i++) { const a = Math.random() * 6.283, d = 60 + Math.sqrt(Math.random()) * (J.r - 100), x = J.x + Math.sin(a) * d, z = J.z + Math.cos(a) * d; if (Math.hypot(x - PAD.x, z - PAD.z) < 40) continue; const ice = Math.random() < 0.4, s = 2 + Math.random() * 6; const m = new T.Mesh(ice ? new T.OctahedronGeometry(1) : new T.DodecahedronGeometry(1), ice ? new T.MeshLambertMaterial({ color: 0xd8e0e8, emissive: 0x101820, transparent: true, opacity: 0.8 }) : L.mat(i % 2 ? '#5e5244' : '#76664f')); m.scale.set(s, s * (ice ? 2.2 : 1), s); m.position.set(x, s * (ice ? 1.6 : 0.6), z); m.rotation.set(Math.random(), Math.random() * 3, 0); g.add(m); L.addBox(x - s * 0.7, z - s * 0.7, x + s * 0.7, z + s * 0.7, s * 1.6, 'building'); }
     // Landeplatz
     const pad = new T.Mesh(new T.CylinderGeometry(16, 16, 0.4, 32), L.mat('#888a90')); pad.position.set(PAD.x, 0.2, PAD.z); g.add(pad);
     for (let k = 0; k < 8; k++) { const a = k / 8 * 6.283, l = new T.Mesh(L.GEO.box, new T.MeshBasicMaterial({ color: 0xffd040 })); l.scale.set(0.6, 0.2, 0.6); l.position.set(PAD.x + Math.sin(a) * 15, 0.5, PAD.z + Math.cos(a) * 15); g.add(l); }
     const rk = rocket(); rk.position.set(PAD.x, 0, PAD.z); g.add(rk);
     // Himmel: Großer Roter Fleck, Monde, Blitze
     const sky = new T.Group(); g.add(sky);
-    const spot = new T.Mesh(new T.CircleGeometry(900, 48), new T.MeshBasicMaterial({ map: cv(256, 256, (c) => { for (let r = 128; r > 0; r -= 6) { c.fillStyle = r % 12 ? '#c04a2a' : '#e8a070'; c.beginPath(); c.ellipse(128, 128, r, r * 0.6, 0, 0, 6.3); c.fill(); } }), transparent: true, opacity: 0.9, fog: false, side: T.DoubleSide }));
+    const spot = new T.Mesh(new T.CircleGeometry(900, 48), new T.MeshBasicMaterial({ map: cv(256, 256, (c) => { for (let r = 128; r > 0; r -= 6) { c.fillStyle = r % 12 ? '#a8664a' : '#c89878'; c.beginPath(); c.ellipse(128, 128, r, r * 0.6, 0, 0, 6.3); c.fill(); } }), transparent: true, opacity: 0.55, fog: false, side: T.DoubleSide }));
     spot.position.set(J.x + 800, 1400, J.z - 2600); spot.lookAt(J.x, 0, J.z); sky.add(spot);
     for (const [c, s, x, y] of [['#f0e0a0', 180, -2200, 900], ['#d8c8b8', 120, 1800, 1500], ['#a0a8b8', 90, -900, 1800]]) { const m = new T.Mesh(new T.SphereGeometry(s, 24, 16), new T.MeshBasicMaterial({ color: c, fog: false })); m.position.set(J.x + x, y, J.z - 3200); sky.add(m); }
     sky.traverse((o) => { o.frustumCulled = false; });
@@ -60,11 +60,31 @@
     g.scale.setScalar(1.3); L.scene.add(g); return g;
   }
   function spawnKey() {
-    const a = Math.random() * 6.283, d = 60 + Math.random() * 40, x = L.clamp(P.x + Math.sin(a) * d, J.x - J.r + 40, J.x + J.r - 40), z = L.clamp(P.z + Math.cos(a) * d, J.z - J.r + 40, J.z + J.r - 40);
-    const live = M.comp.filter((c) => !c.dead), near = live.length && Math.random() < 0.4 ? live[Math.floor(Math.random() * live.length)] : null;
-    M.keys.push({ m: buildKey(), x: near ? near.x + Math.sin(a) * 40 : x, z: near ? near.z + Math.cos(a) * 40 : z, y: 2, ph: Math.random() * 6, sp: 9 + Math.random() * 4, cd: 0, scr: Math.random() * 3, dead: false, melt: 0 });
+    const a = Math.random() * 6.283, d = 130 + Math.random() * 70, x = L.clamp(P.x + Math.sin(a) * d, J.x - J.r + 40, J.x + J.r - 40), z = L.clamp(P.z + Math.cos(a) * d, J.z - J.r + 40, J.z + J.r - 40);
+    const live = M.comp.filter((c) => !c.dead), near = live.length && Math.random() < 0.25 ? live[Math.floor(Math.random() * live.length)] : null;
+    M.keys.push({ m: buildKey(), x: near ? near.x + Math.sin(a) * 110 : x, z: near ? near.z + Math.cos(a) * 110 : z, y: 2, ph: Math.random() * 6, sp: 5.5 + Math.random() * 2.5, cd: 0, scr: Math.random() * 3, dead: false, melt: 0 });
   }
-  function scream(k) { const d = Math.hypot(k.x - P.x, k.z - P.z); if (d > 45) return; const v = 0.14 * (1 - d / 45); L.tn && L.tn({ f: 2200 + Math.random() * 500, fTo: 3100, dur: 0.5, type: 'sawtooth', vol: v }); L.tn && L.tn({ f: 1600, fTo: 2600, dur: 0.45, type: 'square', vol: v * 0.5, delay: 0.05 }); }
+  let sayT = 0;
+  function sayKeys(vol) {
+    const now = performance.now(); if (now - sayT < 1800) return; sayT = now;
+    try { if (window.speechSynthesis) { const u = new SpeechSynthesisUtterance(Math.random() < 0.5 ? 'KEYS!' : 'KEEEYS!'); u.lang = 'en-US'; u.pitch = 2; u.rate = 1.35; u.volume = Math.max(0.15, Math.min(1, vol)); speechSynthesis.speak(u); } } catch (e) { /* ohne Stimme */ }
+  }
+  function scream(k) { const d = Math.hypot(k.x - P.x, k.z - P.z); if (d > 90) return; const v = 0.2 * (1 - d / 90); if (d < 70) sayKeys(1 - d / 70); L.tn && L.tn({ f: 2200 + Math.random() * 500, fTo: 3100, dur: 0.5, type: 'sawtooth', vol: v }); L.tn && L.tn({ f: 1600, fTo: 2600, dur: 0.45, type: 'square', vol: v * 0.5, delay: 0.05 }); }
+  let storm = null;
+  function updStorm(dt, on) {
+    if (!on) { if (storm) { L.scene.remove(storm.pts); storm = null; } return; }
+    if (!storm) {
+      const N = 900, pos = new Float32Array(N * 3); for (let i = 0; i < N; i++) { pos[i * 3] = (Math.random() - 0.5) * 160; pos[i * 3 + 1] = Math.random() * 40; pos[i * 3 + 2] = (Math.random() - 0.5) * 160; }
+      const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3));
+      const pts = new T.Points(geo, new T.PointsMaterial({ color: 0xc8b496, size: 0.5, transparent: true, opacity: 0.6, depthWrite: false })); pts.frustumCulled = false; L.scene.add(pts); storm = { pts, pos, N };
+    }
+    const sp = 60, wx = Math.sin(M.windA), wz = Math.cos(M.windA), p = storm.pos;
+    for (let i = 0; i < storm.N; i++) { p[i * 3] += wx * sp * dt; p[i * 3 + 2] += wz * sp * dt; p[i * 3 + 1] += Math.sin(i + performance.now() * 0.002) * dt * 2; if (Math.abs(p[i * 3]) > 80) p[i * 3] -= Math.sign(p[i * 3]) * 160; if (Math.abs(p[i * 3 + 2]) > 80) p[i * 3 + 2] -= Math.sign(p[i * 3 + 2]) * 160; }
+    storm.pts.geometry.attributes.position.needsUpdate = true; storm.pts.position.set(P.x, 0, P.z);
+    if (Math.random() < dt * 1.2) { L.env.bolt = 1; if (M.built) { M.built.lightC.intensity = 4; setTimeout(() => { if (M.built) M.built.lightC.intensity = 0; }, 140); } L.snd.thunder && L.snd.thunder(1); }
+    M.windS = (M.windS || 0) - dt; if (M.windS <= 0) { M.windS = 1.6; L.nz && L.nz({ dur: 2, f: 300, fTo: 500, type: 'bandpass', vol: 0.12 }); }
+    L.shake = Math.max(L.shake, 0.12);
+  }
   // Begleiter wird von den Schlüsseln erledigt
   function killComp(c) {
     c.dead = true; c.deadT = 0; c.hp = 0;
@@ -126,7 +146,7 @@
     }
   }
   function arrive() {
-    M.on = true; M.kills = 0; M.done = false; M.spawnT = 4;
+    M.on = true; M.kills = 0; M.done = false; M.spawnT = 50; M.explore = true; M.storm = 0; M.stormNext = 35 + Math.random() * 40; setTimeout(() => { if (M.on) L.msg('🪐 Erkundet erst mal den Jupiter … irgendwo hört man leises Kreischen.', 6000); }, 4000);
     for (const k of M.keys) L.scene.remove(k.m); M.keys = [];
     for (const c of M.comp) L.scene.remove(c.rig.root); M.comp = companions();
     const a = Math.random() * 6.283, d = 380 + Math.random() * 200;
@@ -137,7 +157,7 @@
     const beam = new T.Mesh(new T.CylinderGeometry(1.2, 1.2, 200, 12, 1, true), new T.MeshBasicMaterial({ color: 0xff9030, transparent: true, opacity: 0.35, blending: T.AdditiveBlending, depthWrite: false, fog: false })); beam.position.y = 100; wg.add(beam);
     M.weapon = { g: wg, x: wx, z: wz, taken: false };
   }
-  function leaveJupiter() { M.on = false; for (const k of M.keys) L.scene.remove(k.m); M.keys = []; for (const c of M.comp) L.scene.remove(c.rig.root); M.comp = []; if (M.weapon) { L.scene.remove(M.weapon.g); M.weapon = null; } if (P.hot) for (let i = 0; i < P.hot.length; i++) if (P.hot[i] && P.hot[i].type === "schmelzer") P.hot[i] = null; }
+  function leaveJupiter() { M.on = false; M.storm = 0; updStorm(0, false); for (const k of M.keys) L.scene.remove(k.m); M.keys = []; for (const c of M.comp) L.scene.remove(c.rig.root); M.comp = []; if (M.weapon) { L.scene.remove(M.weapon.g); M.weapon = null; } if (P.hot) for (let i = 0; i < P.hot.length; i++) if (P.hot[i] && P.hot[i].type === "schmelzer") P.hot[i] = null; }
   // ---------- Rakete auf dem Mond: Auswahl ----------
   let pick = null;
   function moonRocketNear() { return L.inMoon && L.inMoon(P.x) && L.moonCheckpoint && Math.hypot(P.x - L.moonCheckpoint().x, P.z - L.moonCheckpoint().z) < 22 && !P.vehicle; }
@@ -183,7 +203,15 @@
     if (Math.random() < dt * 0.15) { L.env.bolt = 0.9; M.built.lightC.intensity = 3; setTimeout(() => { if (M.built) M.built.lightC.intensity = 0; }, 120); L.snd.thunder && L.snd.thunder(1); }
     M.built.spot.rotation.z += dt * 0.02;
     // Schlüssel
-    if (!M.done) { M.spawnT -= dt; if (M.spawnT <= 0 && M.keys.filter((k) => !k.dead).length < 14) { M.spawnT = 1.6; spawnKey(); } }
+    if (!M.done) {
+      if (M.explore && M.weapon && M.weapon.taken && M.spawnT > 8) M.spawnT = 8;
+      M.spawnT -= dt;
+      if (M.explore && M.spawnT <= 0) { M.explore = false; L.banner('🔑 KEYS! KEYS! KEYS!', 'Die Schlüssel haben euch entdeckt – sie kommen!'); sayKeys(1); }
+      if (!M.explore && M.spawnT <= 0 && M.keys.filter((k) => !k.dead).length < 8) { M.spawnT = 3.2; spawnKey(); }
+    }
+    // Jupiter-Sturm (kein Schaden)
+    if (M.storm > 0) { M.storm -= dt; updStorm(dt, true); if (M.storm <= 0) { updStorm(dt, false); L.msg('🌤️ Der Sturm legt sich.', 3000); M.stormNext = 60 + Math.random() * 70; } }
+    else { M.stormNext -= dt; if (M.stormNext <= 0) { M.stormLen = M.storm = 18 + Math.random() * 10; M.windA = Math.random() * 6.283; L.banner('🌪️ JUPITER-STURM', 'Ammoniak-Wind peitscht über die Wolkendecke – keine Sorge, er tut nichts.'); } }
     const tg = [P].concat(M.comp.filter((c) => !c.dead).map((c) => ({ x: c.x, z: c.z, comp: c })));
     for (let i = M.keys.length - 1; i >= 0; i--) {
       const k = M.keys[i];
@@ -192,10 +220,10 @@
       const dx = best.x - k.x, dz = best.z - k.z, d = Math.hypot(dx, dz) || 1;
       k.x += dx / d * k.sp * dt; k.z += dz / d * k.sp * dt; k.ph += dt * 6; k.y = 1.6 + Math.sin(k.ph) * 0.5;
       k.m.position.set(k.x, k.y, k.z); k.m.rotation.set(Math.sin(k.ph) * 0.3, Math.atan2(dx, dz), Math.sin(k.ph * 0.7) * 0.4);
-      k.scr -= dt; if (k.scr <= 0) { k.scr = 2 + Math.random() * 3; scream(k); }
+      k.scr -= dt; if (k.scr <= 0) { k.scr = 2.5 + Math.random() * 3; scream(k); }
       k.cd -= dt;
-      if (best === P && d < 1.8 && k.cd <= 0 && P.alive) { k.cd = 1; L.hurtPlayer(16, 'Von kreischenden Hausschlüsseln auf dem Jupiter zerstochen'); P.vx = -dx / d * 8; P.vz = -dz / d * 8; L.shake = Math.max(L.shake, 0.5); }
-      if (best.comp && d < 1.8 && k.cd <= 0) { k.cd = 0.8; const c = best.comp; c.panic = 2; c.hp -= 14; L.blood && L.blood(c.x, 1.3, c.z, 10); if (c.hp <= 0 && !c.dead) killComp(c); }
+      if (best === P && d < 1.8 && k.cd <= 0 && P.alive) { k.cd = 1.3; L.hurtPlayer(9, 'Von kreischenden Hausschlüsseln auf dem Jupiter zerstochen'); P.vx = -dx / d * 8; P.vz = -dz / d * 8; L.shake = Math.max(L.shake, 0.5); }
+      if (best.comp && d < 1.8 && k.cd <= 0) { k.cd = 1.1; const c = best.comp; c.panic = 2; c.hp -= 9; L.blood && L.blood(c.x, 1.3, c.z, 10); if (c.hp <= 0 && !c.dead) killComp(c); }
     }
     // Begleiter folgen, rennen, schreien
     M.comp.forEach((c, n) => {
@@ -217,9 +245,9 @@
   L.updateEnv = function (dt, cam, focus, paused) {
     oue(dt, cam, focus, paused);
     if (!cam || !L.inJupiter(cam.position.x, cam.position.z) || cam.position.y > 1000) return;
-    const E2 = L.env; L.scene.background.set('#b87848'); L.scene.fog.color.set('#c88a5a'); L.scene.fog.near = 150; L.scene.fog.far = 1400;
+    const E2 = L.env; const st = M.storm > 0 ? Math.min(1, M.storm / 3, (M.stormLen - M.storm + 0.01) / 3) : 0; L.scene.background.set('#8c7d6a').lerp(new T.Color('#4a3e32'), st); L.scene.fog.color.set('#9a8a74').lerp(new T.Color('#5a4a3a'), st); L.scene.fog.near = 200 - st * 170; L.scene.fog.far = 1900 - st * 1550;
     if (E2.stars) E2.stars.material.opacity = 0.1; if (E2.sunDisc) E2.sunDisc.material.opacity = 0; if (E2.moon) E2.moon.material.opacity = 0; if (E2.rainMesh) E2.rainMesh.visible = false;
-    E2.hemi.intensity = 0.6; E2.hemi.color.set('#ffd0a0'); E2.hemi.groundColor.set('#6a3a1a'); E2.sun.intensity = 0.7; E2.sun.color.set('#ffb070');
+    E2.hemi.intensity = 0.62 - st * 0.25; E2.hemi.color.set('#f0e4d0'); E2.hemi.groundColor.set('#5a4a38'); E2.sun.intensity = 0.62 - st * 0.35; E2.sun.color.set('#f4dcc0');
   };
   L.clearJupiter = function () { if (M.trip) { if (M.trip.rk) L.scene.remove(M.trip.rk); if (M.trip.rk2) L.scene.remove(M.trip.rk2); M.trip = null; } leaveJupiter(); if (P.rig) P.rig.root.visible = true; };
 })();

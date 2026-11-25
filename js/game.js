@@ -1618,6 +1618,7 @@
     flieger: { build: () => L.buildFlieger(), anim: (r, s) => L.animBeast(r, s), spd: [7, 13, 16], hp: 300, r: 3, fly: true, metal: true, view: 520,
       cause: 'Im schwarzen Rauch erstickt', voice: (p) => L.snd.flieger(p), idle: (p) => L.snd.fliegerIdle(p), hit: [[16, 3.4, 1], [15.4, 0.9, 2]] }
   };
+  L._spawnMonster = (k, x, z, v) => spawnMonster(k, x, z, v);
   function spawnMonster(kind, x, z, variant, id) {
     const D = MK[kind] || MK.viktor;
     const rig = D.build(variant);
