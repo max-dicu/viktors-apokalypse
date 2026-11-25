@@ -42,7 +42,7 @@
   function start() {
     const keep = { char: L.save.char, gaunt: L.save.gauntlet };
     L.save.char = Object.assign({}, L.DEFAULT_CHAR, { special: 'h_marlon', hk: L.heroToken('marlon') });
-    document.getElementById('btnPlay').click();
+    L._catBypass = true; document.getElementById('btnPlay').click(); L._catBypass = false;
     const css = document.createElement('style');
     css.textContent = `body.trl2>*:not(#c):not(#trl2){visibility:hidden!important}#trl2{position:fixed;inset:0;z-index:500;pointer-events:none}
     #t2F{position:absolute;inset:0;overflow:hidden}#t2Cap{position:absolute;left:4%;right:4%;top:16%;text-align:center;font:900 clamp(26px,7vh,76px) Impact,'Arial Black',sans-serif;color:#fff;-webkit-text-stroke:2px #000;text-shadow:0 4px 0 #000,0 0 24px rgba(0,0,0,.7);line-height:1.05;transform:scale(.4);opacity:0}

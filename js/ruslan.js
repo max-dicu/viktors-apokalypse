@@ -231,6 +231,71 @@
     }
   }
   // Schlussfilm: MAMA IVA in goldener Super-Form – Ruslan überfährt sie
+  // ---------- Kurzfilm: ein riesiges, extrem behaartes Walross springt auf Ruslan, rollt sich auf ihm, explodiert – Richard steigt aus dem Licht ----------
+  function startWalrusEnd() {
+    if (B.bag && B.bag.g) B.bag.g.visible = false;
+    if (B.iva && B.iva.root) { L.scene.remove(B.iva.root); B.iva = null; }
+    if (!B.rig) { B.rig = buildRuslan(); L.scene.add(B.rig.root); }
+    B.rig.root.scale.setScalar(5); B.rig.root.position.set(B.x, 0, B.z); B.rig.root.rotation.set(0, B.yaw, 0); B.rig.root.visible = true;
+    const a = B.yaw + 2.2, wx = B.x + Math.sin(a) * 140, wz = B.z + Math.cos(a) * 140;
+    const w = L.buildWalross(); w.root.scale.setScalar(16); w.root.position.set(wx, 0, wz); L.scene.add(w.root);
+    // extrem viel Fell
+    w.root.updateMatrixWorld(true); const bb = new T.Box3().setFromObject(w.root), sz = bb.getSize(new T.Vector3()), S = 16;
+    const furM = [L.mat('#4a3424'), L.mat('#5e4430'), L.mat('#3a281a'), L.mat('#6e5038')];
+    for (let k = 0; k < 520; k++) {
+      const th = Math.random() * 6.283, ph = Math.acos(2 * Math.random() - 1) * 0.9, rx = sz.x / S * 0.5, ry = sz.y / S * 0.5, rz = sz.z / S * 0.5;
+      const dir = new T.Vector3(Math.sin(ph) * Math.cos(th), Math.cos(ph), Math.sin(ph) * Math.sin(th));
+      const m = new T.Mesh(L.GEO.cone, furM[k % 4]); const len = 0.12 + Math.random() * 0.22; m.scale.set(0.035, len, 0.035);
+      m.position.set(dir.x * rx * 0.95, ry + dir.y * ry * 0.95, dir.z * rz * 0.95); m.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), dir.clone().add(new T.Vector3((Math.random() - 0.5) * 0.6, -0.3, (Math.random() - 0.5) * 0.6)).normalize());
+      w.root.add(m);
+    }
+    w.root.traverse((o) => { o.frustumCulled = false; });
+    B.wal = { w, wx, wz, rich: null, light: null, aura: null, boom: false };
+    B.state = 'walrus'; B.t = 0;
+    L.startCine('🦭 DAS RIESEN-WALROSS', 14, () => B.cam);
+  }
+  function updWalrusEnd(dt) {
+    const t = B.t, V = B.wal, w = V.w, R = B.rig;
+    let cx = B.x, cz = B.z;
+    if (t < 1.6) { const u = t / 1.6; w.root.position.set(L.lerp(V.wx, V.wx + (B.x - V.wx) * 0.35, u), Math.abs(Math.sin(u * 9)) * 2, L.lerp(V.wz, V.wz + (B.z - V.wz) * 0.35, u)); w.root.rotation.y = Math.atan2(B.x - V.wx, B.z - V.wz); if (Math.random() < dt * 6) L.shake = Math.max(L.shake, 0.5); if (t - dt <= 0) { L.snd.bossRoar && L.snd.bossRoar({ x: V.wx, y: 10, z: V.wz }); L.banner('🦭 EIN RIESIGES WALROSS!', '… und es ist EXTREM behaart.'); } }
+    else if (t < 3.2) { const u = (t - 1.6) / 1.6, sx = V.wx + (B.x - V.wx) * 0.35, sz2 = V.wz + (B.z - V.wz) * 0.35; w.root.position.set(L.lerp(sx, B.x, u), Math.sin(u * Math.PI) * 60, L.lerp(sz2, B.z, u)); w.root.rotation.x = -0.4 + u * 0.6; if (R) R.arms[1].arm.rotation.x = -2.6; }
+    else if (t < 8.4) {
+      // drauf – und dreht sich auf ihm
+      if (t - dt < 3.2) { L.shake = 3; L.snd.stomp && L.snd.stomp({ x: B.x, y: 0, z: B.z }); L.snd.explosion && L.snd.explosion({ x: B.x, y: 0, z: B.z }); for (let k = 0; k < 40; k++) L.fx('#8a7a60', B.x + L.rand(-30, 30), 2, B.z + L.rand(-30, 30), 8, 30, { size: 3, life: 1.6 }); }
+      const u = t - 3.2; w.root.position.set(B.x, 0, B.z); w.root.rotation.set(Math.sin(u * 3) * 0.15, w.root.rotation.y + dt * 2.6, Math.sin(u * 5) * 0.25);
+      if (R) { R.root.scale.set(5, 5 * 0.12, 5); R.root.position.y = 0; }
+      if (Math.random() < dt * 5) { L.shake = Math.max(L.shake, 0.8); L.fx('#5e4430', B.x + L.rand(-25, 25), L.rand(2, 20), B.z + L.rand(-25, 25), 4, 12, { size: 1, life: 1 }); }
+      if (t > 7 && Math.random() < dt * 14) w.root.scale.setScalar(16 * (1 + Math.random() * 0.06));
+    } else if (!V.boom) {
+      // BOOM
+      V.boom = true; w.root.visible = false; if (R) R.root.visible = false; L.shake = 4; L.env.bolt = 1;
+      L.snd.explosion && L.snd.explosion({ x: B.x, y: 10, z: B.z }); L.snd.bossRoar && L.snd.bossRoar({ x: B.x, y: 10, z: B.z });
+      for (let k = 0; k < 120; k++) L.fx(L.pick(['#ffb030', '#ff6020', '#ffffff', '#5e4430', '#3a281a']), B.x + L.rand(-10, 10), L.rand(5, 40), B.z + L.rand(-10, 10), 14, 60, { basic: k % 3 !== 0, size: 3, life: 2 });
+      L.decal && L.decal(B.x, B.z, 30, '#1a120a');
+      // Licht + Richard
+      const lc = new T.Mesh(new T.CylinderGeometry(3, 6, 400, 24, 1, true), new T.MeshBasicMaterial({ color: 0xfff4d0, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false, side: T.BackSide })); lc.position.set(B.x, 200, B.z); L.scene.add(lc);
+      const pl = new T.PointLight(0xfff0c0, 6, 300, 2); pl.position.set(B.x, 30, B.z); L.scene.add(pl);
+      const rich = L.buildHuman(Object.assign({}, L.DEFAULT_CHAR, { special: 'richard' }), true); rich.root.scale.setScalar(7); rich.root.position.set(B.x, -14, B.z); rich.root.rotation.y = B.yaw + Math.PI * 0.6; L.scene.add(rich.root);
+      const aura = new T.Group(); rich.root.add(aura); aura.position.y = 1;
+      for (let k = 0; k < 22; k++) { const c = new T.Mesh(L.GEO.cone, new T.MeshBasicMaterial({ color: k % 2 ? 0xfff6c0 : 0xffd040, transparent: true, opacity: 0.35, blending: T.AdditiveBlending, depthWrite: false })); const ang = k / 22 * 6.283; c.scale.set(0.25, 1.6 + (k % 3) * 0.6, 0.25); c.position.set(Math.sin(ang) * 0.6, 0.8, Math.cos(ang) * 0.6); c.rotation.set(Math.cos(ang) * 0.3, 0, -Math.sin(ang) * 0.3); aura.add(c); }
+      rich.root.traverse((o) => { o.frustumCulled = false; });
+      V.rich = rich; V.light = lc; V.pl = pl; V.aura = aura;
+      setTimeout(() => L.banner('✨ RICHARD', '… steigt mit purer Aura aus dem Licht.'), 1200);
+    } else {
+      const u = t - 8.4; V.light.material.opacity = Math.min(0.4, u * 0.8) * (u > 4.5 ? Math.max(0, 1 - (u - 4.5)) : 1); V.light.rotation.y += dt;
+      V.rich.root.position.y = Math.min(0, -14 + u * 7); V.aura.rotation.y += dt * 2; V.aura.children.forEach((c, k) => { c.scale.y = (1.6 + (k % 3) * 0.6) * (0.8 + Math.random() * 0.5); });
+      if (V.rich.arms && u > 2) { const f = Math.min(1, (u - 2) / 0.6); V.rich.arms[0].arm.rotation.set(0, 0, -1.5 * f); V.rich.arms[1].arm.rotation.set(0, 0, 1.5 * f); V.rich.arms[0].elbow.rotation.x = V.rich.arms[1].elbow.rotation.x = -1.9 * f; }
+      if (Math.random() < dt * 10) L.fx(L.pick(['#fff4c0', '#ffd040']), B.x + L.rand(-8, 8), L.rand(1, 30), B.z + L.rand(-8, 8), 3, 8, { basic: true, size: 0.6, life: 1 });
+    }
+    const cA = B.yaw + 1.0 + t * 0.07, cd = t < 8.4 ? 160 - t * 6 : 42;
+    Object.assign(B.cam, { x: cx + Math.sin(cA) * cd, y: t < 8.4 ? 30 : 9, z: cz + Math.cos(cA) * cd, lx: cx, ly: t < 8.4 ? 12 : 8, lz: cz });
+    if (t > 14 || (!L.cine && t > 0.5)) {
+      if (L.cine && L.endCine) L.endCine();
+      for (const o of [w.root, V.light, V.pl, V.rich && V.rich.root]) if (o) L.scene.remove(o);
+      B.wal = null; cleanupModels(); B.state = 'pause'; B.pauseT = 600;
+    }
+  }
+  L._ruslanWalrus = () => { if (!B.x && B.x !== 0) return; startWalrusEnd(); };
   function startEnding() {
     B.state = 'ending'; B.t = 0;
     const a = B.yaw, ix = B.x + Math.sin(a) * 160, iz = B.z + Math.cos(a) * 160;
@@ -267,7 +332,7 @@
     B.bag.boom.rotation.x = t > 9 ? -0.9 : -0.3;
     const cA = a + 1.3 + t * 0.06, cd = 230 - t * 5;
     Object.assign(B.cam, { x: B.x + Math.sin(cA) * cd, y: 35 + Math.max(0, 10 - t) * 2, z: B.z + Math.cos(cA) * cd, lx: (ivx + bg.g.position.x) / 2, ly: 18, lz: (ivz + bg.g.position.z) / 2 });
-    if (t > 14 || (!L.cine && t > 0.3)) { if (L.cine && L.endCine) L.endCine(); if (onIsland() && P.alive && L.gotBossCoins) L.gotBossCoins(500, 'das Überleben gegen Ruslan'); cleanupModels(); B.state = 'pause'; B.pauseT = 600; }
+    if (t > 14 || (!L.cine && t > 0.3)) { if (L.cine && L.endCine) L.endCine(); if (onIsland() && P.alive && L.gotBossCoins) L.gotBossCoins(500, 'das Überleben gegen Ruslan'); if (onIsland() && P.alive) startWalrusEnd(); else { cleanupModels(); B.state = 'pause'; B.pauseT = 600; } }
   }
 
   // ---------- jedes Bild ----------
@@ -280,7 +345,8 @@
     if (B.state === 'intro') { B.t += dt; updIntro(dt); return; }
     if (B.state === 'hunt') { updHunt(dt); if (B.t > 300) { if (onIsland() && P.alive && !L.cine) startEnding(); else { cleanupModels(); B.state = 'pause'; B.pauseT = 600; } } return; }
     if (B.state === 'ending') { B.t += dt; updEnding(dt); return; }
-    if (B.state === 'defeat') { B.t += dt; B.bag.g.position.y = -B.t * 2; B.rig.root.position.y = TOP - B.t * 2; if (B.t > 12) { cleanupModels(); B.state = 'pause'; B.pauseT = 600; } }
+    if (B.state === 'walrus') { B.t += dt; updWalrusEnd(dt); return; }
+    if (B.state === 'defeat') { B.t += dt; B.bag.g.position.y = -B.t * 2; B.rig.root.position.y = TOP - B.t * 2; if (B.t > 12) { if (onIsland() && P.alive && !L.cine) startWalrusEnd(); else { cleanupModels(); B.state = 'pause'; B.pauseT = 600; } } }
   };
   // Anzeige oben
   const oibt = L.islandBossText;
