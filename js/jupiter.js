@@ -67,6 +67,7 @@
   }
   let sayT = 0;
   function sayKeys(vol) {
+    return; // Schlüssel rufen nicht mehr „KEYS!“ (nur noch Kreischen)
     const now = performance.now(); if (now - sayT < 1800) return; sayT = now;
     try { if (window.speechSynthesis) { const u = new SpeechSynthesisUtterance(Math.random() < 0.5 ? 'KEYS!' : 'KEEEYS!'); u.lang = 'en-US'; u.pitch = 2; u.rate = 1.35; u.volume = Math.max(0.15, Math.min(1, vol)); speechSynthesis.speak(u); } } catch (e) { /* ohne Stimme */ }
   }
@@ -207,7 +208,7 @@
     if (!M.done) {
       if (M.explore && M.weapon && M.weapon.taken && M.spawnT > 8) M.spawnT = 8;
       M.spawnT -= dt;
-      if (M.explore && M.spawnT <= 0) { M.explore = false; L.banner('🔑 KEYS! KEYS! KEYS!', 'Die Schlüssel haben euch entdeckt – sie kommen!'); sayKeys(1); }
+      if (M.explore && M.spawnT <= 0) { M.explore = false; L.banner('🔑 DIE SCHLÜSSEL KOMMEN!', 'Sie haben euch entdeckt!'); sayKeys(1); }
       if (!M.explore && M.spawnT <= 0 && M.keys.filter((k) => !k.dead).length < 8) { M.spawnT = 3.2; spawnKey(); }
     }
     // Jupiter-Sturm (kein Schaden)
