@@ -38,6 +38,7 @@
     L.scene.add(root);
     return { root, body, legs, arms, head, gems, core, aura };
   }
+  L.buildOmniRig = () => build(); L.buildKolossRig = () => buildHulk();
   const beams = [];
   function beam(from, to, col, life) {
     const len = from.distanceTo(to), m = new T.Mesh(new T.CylinderGeometry(1, 1, 1, 10, 1, true).translate(0, 0.5, 0).rotateX(Math.PI / 2), new T.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.85, blending: T.AdditiveBlending, depthWrite: false, fog: false }));

@@ -59,6 +59,7 @@
     P3(L.GEO.sph, blk, 0.16, 0.14, 0.05, 0.02, 0.68, 0.07); P3(L.GEO.sph, drip, 0.08, 0.25, 0.06, -0.05, 0.42, 0.05);
     g.scale.setScalar(1.3); L.scene.add(g); return g;
   }
+  L.buildJupKey = () => buildKey();
   function spawnKey() {
     const a = Math.random() * 6.283, d = 130 + Math.random() * 70, x = L.clamp(P.x + Math.sin(a) * d, J.x - J.r + 40, J.x + J.r - 40), z = L.clamp(P.z + Math.cos(a) * d, J.z - J.r + 40, J.z + J.r - 40);
     const live = M.comp.filter((c) => !c.dead), near = live.length && Math.random() < 0.25 ? live[Math.floor(Math.random() * live.length)] : null;
