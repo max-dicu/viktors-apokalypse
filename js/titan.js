@@ -347,6 +347,7 @@
 
   // ---------- Handschuh benutzen ----------
   const G = { stone: 0, cd: {}, anim: 0, col: 0xffffff, hud: null };
+  L._gStone = (i) => { G.stone = i; G.cd = {}; };
   function hud() {
     if (G.hud) return G.hud;
     const d = document.createElement('div'); d.id = 'gauntHud';

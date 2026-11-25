@@ -100,6 +100,7 @@
     L.scene.add(rig.root);
     return { rig, anim: (st) => L.animBeast(rig, { mode: st.speed > 0.2 ? 'walk' : 'search', phase: st.phase }) };
   }
+  L._buildIslandBoss = (id) => buildBoss(id);
   function buildBoss(id) {
     const b = B[id];
     let m;

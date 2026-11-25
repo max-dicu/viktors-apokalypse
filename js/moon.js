@@ -372,7 +372,7 @@
       }
       return;
     }
-    if (!L.inMoon(P.x)) { if (iva) endIva(); bern.g.visible = false; bern.phase = 'gone'; for (const f of bern.frags || []) L.scene.remove(f); if (I.earth) { I.earth.visible = true; I.atmo.visible = true; } return; }
+    if (!L.inMoon(P.x) && !(L._ivaKeep && iva)) { if (iva) endIva(); bern.g.visible = false; bern.phase = 'gone'; for (const f of bern.frags || []) L.scene.remove(f); if (I.earth) { I.earth.visible = true; I.atmo.visible = true; } return; }
     bern.t += dt; const b = bern.g, Ep = I.earth.position;
     for (const f of bern.frags || []) { f.position.addScaledVector(f.userData.v, dt); f.rotation.x += dt; f.rotation.y += dt * 0.7; }
     if (bern.phase === 'cine') {
@@ -683,6 +683,9 @@
     updateBernhard(dt);
     updateRings(dt);
   };
+  // für den Trailer: MAMA IVA gegen Bernhard starten (Suplex ca. 17 s später)
+  L._ivaShow = function () { const I = moonIsl; if (!I || !I.earth) return false; if (!bern || !bern.g) bern = { g: buildBernhard(), frags: [] }; bern.frags = bern.frags || []; bern.g.visible = true; L._ivaKeep = true; startIvaEnd(); return true; };
+  L._iva = () => iva; L._bernT = () => (bern ? bern.t : 0);
   L._moonDbg = { setT: (v) => { bTimer = v; }, bern: () => bern, isl: () => moonIsl };
   L.clearMoon = function () { trip = null; bTimer = 45; if (bern && bern.g) { bern.g.visible = false; bern.phase = 'gone'; } if (moonIsl.earth) { moonIsl.earth.visible = true; moonIsl.atmo.visible = true; } if (moonIsl.surface) for (const m of moonIsl.surface) m.visible = true; };
 })();

@@ -147,6 +147,12 @@
       else L.banner('🌍 ZURÜCK AUF DER ERDE', 'Was für ein Ausflug.');
     }
   }
+  // für den Trailer: direkt auf dem Jupiter landen und Schlüssel in der Nähe erscheinen lassen
+  L._jupShow = function (n) {
+    if (!M.built) M.built = build();
+    P.x = PAD.x + 20; P.z = PAD.z; P.y = 0; arrive(); M.explore = false; M.spawnT = 99;
+    for (let i = 0; i < (n || 7); i++) { const a = Math.random() * 6.283, d = 9 + Math.random() * 12; M.keys.push({ m: buildKey(), x: P.x + Math.sin(a) * d, z: P.z + Math.cos(a) * d, y: 2, ph: Math.random() * 6, sp: 4 + Math.random() * 2, cd: 2, scr: Math.random() * 2, dead: false, melt: 0 }); }
+  };
   function arrive() {
     M.on = true; M.kills = 0; M.done = false; M.spawnT = 50; M.explore = true; M.storm = 0; M.stormNext = 35 + Math.random() * 40; setTimeout(() => { if (M.on) L.msg('🪐 Erkundet erst mal den Jupiter … irgendwo hört man leises Kreischen.', 6000); }, 4000);
     for (const k of M.keys) L.scene.remove(k.m); M.keys = [];
