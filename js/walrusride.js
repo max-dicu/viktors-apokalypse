@@ -83,6 +83,7 @@
   };
   // ---------- Tempo einstellen ----------
   function rideV() { const v = P.vehicle; return v && v.type === TYPE && !(P.seat > 0) ? v : null; }
+  L.walrusSetTop = (v, val) => setTop(v, val);
   function setTop(v, val) {
     v.wTop = Math.round(L.clamp(val, MIN, MAX) / 50) * 50;
     if (!v.tOwn) { v.t = Object.assign({}, v.t); v.tOwn = true; }
