@@ -36,7 +36,7 @@
     for (const p of PH) if (o.includes(p[0])) o = o.split(p[0]).join(p[k + 1]);
     o = o.replace(/[A-Za-zÄÖÜäöüß]+/g, (w) => { if (W[w]) return W[w][k]; const lw = w.toLowerCase(), e = W[lw]; if (!e) return w; const t = e[k]; return w === w.toUpperCase() && w.length > 1 ? t.toUpperCase() : t.charAt(0).toUpperCase() + t.slice(1); });
     o = o.replace(/⟦([0-9]+)⟧/g, (m, i) => toks[+i]);
-    return o.replace(/ {2,}/g, ' ').replace(/^ (?=S)/, '');
+    return o.replace(/ {2,}/g, ' ').trimStart();
   }
   L.trText = tr;
   setTimeout(() => {
