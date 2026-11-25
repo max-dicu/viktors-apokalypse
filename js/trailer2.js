@@ -63,33 +63,35 @@
     const tp = (x, z, y) => { if (P.vehicle && L._leaveVehicle) L._leaveVehicle(true); P.x = x; P.z = z; P.y = y || 0; P.vx = P.vz = P.vy = 0; P.flying = 0; P.air = false; };
     const sky = (time, w) => { L.env.time = time; if (L.setWeather) L.setWeather(w); L.env.wT = 999; L.env.rain = /regen|gewitter/.test(w) ? 1 : 0; };
     const fire = (slot, type) => { P.hot[slot] = { type, count: 1, mag: 1 }; P.sel = slot; P.fireCd = 0; try { L.weaponFire(P.hot[slot], L.ITEMS[type]); } catch (e) { /* egal */ } };
+    const open = (x, z, rad) => { for (let i = 0; i < 400; i++) { const a = i * 2.4, d = i * 6, cx = L.clamp(x + Math.sin(a) * d, -1350, 1350), cz = L.clamp(z + Math.cos(a) * d, -1350, 1350); let ok = true; try { ok = !L.queryBoxes(cx, cz, rad || 28).some((b) => b.h > 1.5); } catch (e) { ok = true; } if (ok) return [cx, cz]; } return [x, z]; };
+    const spot = {}; const tpo = (key, x, z, rad) => { if (!spot[key]) spot[key] = open(x, z, rad); tp(spot[key][0], spot[key][1]); };
     const mon = (k, dx, dz) => { try { return L._spawnMonster(k, P.x + dx, P.z + dz); } catch (e) { return null; } };
     const H = { x: 0, z: 60 }, OFF = 4;
     { const q = (id) => U.intro.querySelector(id); setTimeout(() => { q('#t2a').style.opacity = 1; }, 300); setTimeout(() => { q('#t2a').style.opacity = 0; }, 3000); setTimeout(() => { q('#t2b').style.opacity = 1; q('#t2b').style.transform = 'scale(1)'; }, 3700); setTimeout(() => { q('#t2c').style.opacity = 1; }, 4900); }
     const SH = [
       { t: 3.5, d: 5, place() { tp(H.x, H.z); sky(6.4, 'klar'); P.camYaw = 0; }, spawn() { U.capt('VIKTORS<br>APOKALYPSE', 'Eine Stadt. Ein Turm. Und Monster überall.'); },
         cam(u) { const k = ease(u / 5); return { x: P.x + lerp(-170, -7, k), y: lerp(110, 3, k), z: P.z + lerp(-170, -9, k), lx: P.x, ly: 1.5, lz: P.z }; } },
-      { t: 8.5, d: 4.5, place() { tp(H.x + 120, H.z - 40); sky(23.4, 'nebel'); P.camYaw = 0; P.flash = true; }, spawn() { ['viktor', 'langer', 'starrende', 'schwelle', 'blockling'].forEach((k, i) => mon(k, (i - 2) * 6, 16 + (i % 2) * 6)); U.capt('NACHTS<br>KOMMEN SIE…', 'Sie hören jedes Geräusch'); },
-        cam(u) { return { x: P.x + 1.2, y: 1.4, z: P.z - 3.2 + u * 0.3, lx: P.x, ly: 1.6, lz: P.z + 20 }; } },
-      { t: 13, d: 4.5, place() { tp(H.x - 120, H.z + 40); sky(13, 'klar'); P.camYaw = 0; P.flash = false; }, spawn() { mon('greifer', 0, 18); mon('daniel', -5, 22); mon('viktor', 5, 20); U.capt('🩼 KRÜCKEN-<br>KÄMPFER', 'Krückenwurf · Beben · Knie'); setTimeout(() => fire(0, 'kr_wurf'), 400); setTimeout(() => fire(3, 'kr_beben'), 2700); },
+      { t: 8.5, d: 4.5, place() { tpo('n', H.x + 120, H.z - 40); sky(23.4, 'nebel'); P.camYaw = 0; P.flash = false; }, spawn() { ['viktor', 'langer', 'starrende', 'schwelle', 'blockling'].forEach((k, i) => mon(k, (i - 2) * 6, 16 + (i % 2) * 6)); U.capt('NACHTS<br>KOMMEN SIE…', 'Sie hören jedes Geräusch'); },
+        cam(u) { return { x: P.x + 2.5, y: 2.4, z: P.z - 7 + u * 0.6, lx: P.x, ly: 2, lz: P.z + 20 }; } },
+      { t: 13, d: 4.5, place() { tpo('f', H.x - 120, H.z + 40); sky(13, 'klar'); P.camYaw = 0; P.flash = false; }, spawn() { mon('greifer', 0, 18); mon('daniel', -5, 22); mon('viktor', 5, 20); U.capt('🩼 KRÜCKEN-<br>KÄMPFER', 'Krückenwurf · Beben · Knie'); setTimeout(() => fire(0, 'kr_wurf'), 400); setTimeout(() => fire(3, 'kr_beben'), 2700); },
         cam(u) { const a = 0.8 + u * 0.25; return { x: P.x + Math.sin(a) * 9, y: 3.5, z: P.z + Math.cos(a) * 9 - 2, lx: P.x, ly: 2, lz: P.z + 8 }; } },
-      { t: 17.5, d: 4.5, place() { tp(H.x + 300, H.z + 200); sky(17.5, 'gewitter'); }, spawn() { L.spawnTornado && L.spawnTornado(P.x + 90, P.z + 40); ['viktor', 'blockling', 'rollerviktor', 'marsianer'].forEach((k, i) => mon(k, Math.sin(i * 1.6) * 7, Math.cos(i * 1.6) * 7)); setTimeout(() => fire(1, 'kr_tornado'), 500); U.capt('⛈️ STÜRME &<br>TORNADOS'); },
+      { t: 17.5, d: 4.5, place() { tpo('s', H.x + 300, H.z + 200, 40); sky(17.5, 'gewitter'); }, spawn() { L.spawnTornado && L.spawnTornado(P.x + 90, P.z + 40); ['viktor', 'blockling', 'rollerviktor', 'marsianer'].forEach((k, i) => mon(k, Math.sin(i * 1.6) * 7, Math.cos(i * 1.6) * 7)); setTimeout(() => fire(1, 'kr_tornado'), 500); U.capt('⛈️ STÜRME &<br>TORNADOS'); },
         cam(u) { return { x: P.x - 28 + u * 2, y: 10, z: P.z - 22, lx: P.x + 30, ly: 14, lz: P.z + 20 }; } },
-      { t: 22, d: 4, place() { tp(H.x - 40, H.z - 60); sky(10, 'wolkig'); P.camYaw = 0.4; }, spawn() { try { L.suitPortalTo(L.ASGARD.x, L.ASGARD.z, 'Asgard'); } catch (e) { /* egal */ } U.capt('🌀 PORTALE<br>ÜBERALL HIN'); },
+      { t: 22, d: 4, place() { tpo('p', H.x - 40, H.z - 60, 18); sky(10, 'wolkig'); P.camYaw = 0.4; }, spawn() { try { L.suitPortalTo(L.ASGARD.x, L.ASGARD.z, 'Asgard'); } catch (e) { /* egal */ } U.capt('🌀 PORTALE<br>ÜBERALL HIN'); },
         cam(u) { const a = 2.2 + u * 0.45, cx = P.x + Math.sin(0.4) * 4, cz = P.z + Math.cos(0.4) * 4; return { x: cx + Math.sin(a) * 9, y: 3, z: cz + Math.cos(a) * 9, lx: cx, ly: 2.2, lz: cz }; } },
       { t: 26, d: 4.5, place() { tp(L.ASGARD.x, L.ASGARD.z, L.ASGARD.y); sky(19.2, 'klar'); }, spawn() { U.capt('⚡ ASGARD'); },
         cam(u) { const a = u * 0.35; return { x: P.x + Math.sin(a) * 90, y: P.y + 45 - u * 4, z: P.z + Math.cos(a) * 90, lx: P.x, ly: P.y + 8, lz: P.z }; } },
-      { t: 30.5, d: 4.5, place() { tp(81012.5, 12.5); sky(12, 'klar'); P.camYaw = 0; }, spawn() { U.capt('🟨 DIE<br>BACKROOMS', 'Kein Ausgang…'); },
+      { t: 30.5, d: 4.5, place() { try { L.backEnter(0); } catch (e) { tp(81012.5, 12.5); } P.camYaw = 0; }, spawn() { U.capt('🟨 DIE<br>BACKROOMS', 'Kein Ausgang…'); },
         cam(u) { return { x: P.x, y: 1.6, z: P.z - 2 + u * 1.2, lx: P.x + Math.sin(u * 0.6) * 2, ly: 1.5, lz: P.z + 10 }; } },
       { t: 35, d: 4.5, place() { tp(L.TITAN.x + 150, L.TITAN.z); sky(15, 'klar'); }, spawn() { U.capt('🪐 DER<br>TITANENMOND'); },
         cam(u) { const a = 1 + u * 0.25; return { x: P.x + Math.sin(a) * 70, y: 26, z: P.z + Math.cos(a) * 70, lx: P.x, ly: 6, lz: P.z }; } },
-      { t: 39.5, d: 5.5, place() { tp(H.x + 60, H.z + 250); sky(12.5, 'wolkig'); P.camYaw = 0; }, spawn() { ['greifer', 'rufer', 'marsianer', 'daniel'].forEach((k, i) => mon(k, (i - 1.5) * 9, 30 + i * 4)); U.capt('🧤 DER EWIGKEITS-<br>HANDSCHUH', 'Sechs Steine. Unendliche Macht.'); for (let i = 0; i < 5; i++) setTimeout(() => { P.camYaw = 0; fire(4, 'ewigkeitshandschuh'); dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyN' })); }, 400 + i * 1000); },
+      { t: 39.5, d: 5.5, place() { tpo('g', H.x + 60, H.z + 250, 40); sky(12.5, 'wolkig'); P.camYaw = 0; }, spawn() { ['greifer', 'rufer', 'marsianer', 'daniel'].forEach((k, i) => mon(k, (i - 1.5) * 9, 30 + i * 4)); U.capt('🧤 DER EWIGKEITS-<br>HANDSCHUH', 'Sechs Steine. Unendliche Macht.'); for (let i = 0; i < 5; i++) setTimeout(() => { P.camYaw = 0; fire(4, 'ewigkeitshandschuh'); dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyN' })); }, 400 + i * 1000); },
         cam(u) { return { x: P.x - 1.6, y: 2.4, z: P.z - 4.5, lx: P.x + 1, ly: 2.2, lz: P.z + 25 }; } },
-      { t: 45, d: 5, place() { tp(H.x + 100, H.z - 120); sky(16, 'regen'); P.camYaw = Math.PI / 2; }, spawn() { try { L.spawnGiantBoss(L.pick(['walross', 'viktor', 'daniel'])); } catch (e) { /* egal */ } U.capt('👹 RIESIGE<br>BOSSE'); },
-        cam(u) { return { x: P.x - 25 - u * 3, y: 4 + u, z: P.z + 10, lx: P.x + 200, ly: 40, lz: P.z }; } },
-      { t: 50, d: 6, place() { tp(H.x - 200, H.z + 100); sky(20.3, 'klar'); }, spawn() { try { if (!L.omni) L.spawnOmni(); } catch (e) { /* egal */ } U.capt('♾️ INFINITY-<br>OMNITRON', 'Jede Stunde. Für alle.'); },
+      { t: 45, d: 5, place() { tpo('b', H.x + 100, H.z - 120, 60); sky(16, 'regen'); P.camYaw = Math.PI / 2; }, spawn() { try { L.spawnGiantBoss(L.pick(['walross', 'viktor', 'daniel'])); } catch (e) { /* egal */ } U.capt('👹 RIESIGE<br>BOSSE'); },
+        cam(u) { const w = L.wboss && (L.wboss.rig ? L.wboss.rig.root.position : L.wboss), bx = w && w.x !== undefined ? w.x : P.x + 260, bz = w && w.z !== undefined ? w.z : P.z, dx = P.x - bx, dz = P.z - bz, d = Math.hypot(dx, dz) || 1, cd = 90 - u * 6; return { x: bx + dx / d * cd + dz / d * 25, y: 6 + u * 2, z: bz + dz / d * cd - dx / d * 25, lx: bx, ly: 35, lz: bz }; } },
+      { t: 50, d: 6, place() { tpo('o', H.x - 200, H.z + 100, 50); sky(20.3, 'klar'); }, spawn() { try { if (!L.omni) L.spawnOmni(); } catch (e) { /* egal */ } U.capt('♾️ INFINITY-<br>OMNITRON', 'Jede Stunde. Für alle.'); },
         cam(u) { const O = L.omni; const ox = O ? O.x : P.x + 300, oz = O ? O.z : P.z; return { x: P.x - (ox - P.x) * 0.15, y: 4, z: P.z - (oz - P.z) * 0.15, lx: ox, ly: O && O.rig ? O.rig.root.position.y + 80 : 80, lz: oz }; } },
-      { t: 56, d: 5, place() { tp(L.MOON.x - 60, L.MOON.z + 20); sky(22, 'klar'); }, spawn() { U.capt('🌕 BIS ZUM<br>MOND', '…und noch viel weiter'); },
+      { t: 56, d: 5, place() { tp(L.MOON.x - 260, L.MOON.z + 220); sky(22, 'klar'); }, spawn() { U.capt('🌕 BIS ZUM<br>MOND', '…und noch viel weiter'); },
         cam(u) { return { x: P.x + 6, y: 2.5 + u * 0.4, z: P.z + 9, lx: P.x - 900, ly: 420 - u * 30, lz: P.z - 1100 }; } }
     ];
     SH.forEach((s) => { s.t += OFF; });
