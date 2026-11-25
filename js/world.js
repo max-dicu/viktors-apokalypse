@@ -274,7 +274,7 @@
   // ---------- Bauabschnitte ----------
 
   // ---------- Der Turm: höchstes Gebäude der Stadt, einziger sicherer Ort vor den Monstern ----------
-  // Innen (Erdgeschoss) kommt kein Monster hinein. Nur MAMA IVA kann ihn zerstören, wenn es drinnen zu laut ist.
+  // Innen (Erdgeschoss) kommt kein Monster hinein. Nur BIG MAMA kann ihn zerstören, wenn es drinnen zu laut ist.
   L.TOWER = { x: 38, z: 38, half: 12, h: 62 };
   L.inTower = (x, z, m) => { const T0 = L.TOWER, r = 10.8 + (m || 0); return Math.abs(x - T0.x) < r && Math.abs(z - T0.z) < r; };
   L.tower = { down: false, boxes: [], segs: [], group: null, fall: null };
@@ -311,7 +311,7 @@
     B(-hf, -hf, hf, -hf + 0.8); B(-hf, -hf, -hf + 0.8, hf); B(hf - 0.8, -hf, hf, hf); B(-hf, hf - 0.8, -3, hf); B(3, hf - 0.8, hf, hf);
     L.mapRects.push({ x: cx, z: cz, w: hf * 2, d: hf * 2, c: '#2a6ad0' });
     sign('TURM · SICHERER ORT', cx, 6.4, cz + hf + 0.12, 10, 1.4, 0, '#123', '#7cf');
-    // rotes Leuchten: Hülle um den Turm und eine Lichtsäule in den Himmel (nur wenn MAMA IVA da ist)
+    // rotes Leuchten: Hülle um den Turm und eine Lichtsäule in den Himmel (nur wenn BIG MAMA da ist)
     const glowM = { color: 0xff2020, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false };
     const shell = new T.Mesh(new T.BoxGeometry(hf * 2 + 1.5, H + 1, hf * 2 + 1.5), new T.MeshBasicMaterial(glowM)); shell.position.set(cx, H / 2, cz);
     const beam = new T.Mesh(new T.CylinderGeometry(7, 12, 500, 16, 1, true), new T.MeshBasicMaterial(Object.assign({ side: T.DoubleSide, fog: false }, glowM))); beam.position.set(cx, H + 250, cz);
@@ -333,7 +333,7 @@
     TW.fallT = 0;
     L.snd.explosion({ x: T0.x, y: 30, z: T0.z }); L.snd.stomp({ x: T0.x, y: 0, z: T0.z });
     L.shake = Math.max(L.shake, 1.4);
-    L.banner('DER TURM STÜRZT EIN!', 'MAMA IVA hat dich gehört – lauf!');
+    L.banner('DER TURM STÜRZT EIN!', 'BIG MAMA hat dich gehört – lauf!');
     const P = L.player;
     if (P.alive && !P.gone && L.inTower(P.x, P.z, 1)) L.hurtPlayer(45 * (L.md ? L.md.dmg : 1), 'Vom einstürzenden Turm erschlagen');
   };
@@ -660,7 +660,7 @@
     mesh(L.GEO.boxB, '#555', 0.3, 4, 0.3, -8, 0, -1490); mesh(L.GEO.boxB, '#555', 0.3, 4, 0.3, 8, 0, -1490);
     L.interact.gate = { x: 12, z: -1486, gate, gbox, btn };
   }
-  // ---------- Bergkette am Kartenrand (hinter diesen Bergen kann MAMA IVA auftauchen) ----------
+  // ---------- Bergkette am Kartenrand (hinter diesen Bergen kann BIG MAMA auftauchen) ----------
   L.mountains = [];
   function buildMountains() {
     for (const [x, z, r, h] of [[-1360, 600, 95, 58], [1370, -470, 100, 62], [600, -1370, 95, 55], [-850, 1390, 90, 52], [1385, 200, 85, 50]]) {

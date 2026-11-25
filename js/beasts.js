@@ -1,6 +1,6 @@
 'use strict';
 // Neue Monster (eigene Entwürfe): Der Gesichtslose, Der Rufer, Blockling, Schwellengänger,
-// Greifer und Flugmaschine (beide nach H. G. Wells' „Krieg der Welten“) – plus die Fusion zu MAMA IVA
+// Greifer und Flugmaschine (beide nach H. G. Wells' „Krieg der Welten“) – plus die Fusion zu BIG MAMA
 (function () {
   const L = window.L, T = THREE;
   const G = () => L.GEO;
@@ -322,8 +322,8 @@
     if (r.kind === 'langer' && (m === 'run' || m === 'alert')) r.head.rotation.z = 0.35;
   };
 
-  // ---------- Fusion: alle Monster fliegen zusammen und verschmelzen zu MAMA IVA ----------
-  // läuft 5 Sekunden, danach steigt MAMA IVA auf
+  // ---------- Fusion: alle Monster fliegen zusammen und verschmelzen zu BIG MAMA ----------
+  // läuft 5 Sekunden, danach steigt BIG MAMA auf
   L.FUSION_T = 5;
   let fusion = null;
   L.fusionStart = function (x, z) {

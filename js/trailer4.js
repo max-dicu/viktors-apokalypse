@@ -79,7 +79,7 @@
       // Stadt bei Tag
       { place() { tp(H.x, H.z); sky(8.5, 'klar'); P.camYaw = 0; }, spawn() {},
         cam(u) { const k = ease(u / 1.8); return { x: P.x + lerp(-150, -60, k), y: lerp(95, 55, k), z: P.z + lerp(-150, -60, k), lx: P.x, ly: 10, lz: P.z }; } },
-      // Mond – Erde am Himmel (und MAMA IVA vs. Bernhard startet im Hintergrund)
+      // Mond – Erde am Himmel (und BIG MAMA vs. Bernhard startet im Hintergrund)
       { place() { tp(L.MOON.x - 260, L.MOON.z + 220); sky(22, 'klar'); }, spawn() { let n = 0; const tryIva = () => { try { if (!W.iva && L._ivaShow && L._ivaShow()) { W.iva = performance.now() / 1000; return; } } catch (e) { /* egal */ } if (++n < 12) setTimeout(tryIva, 200); }; setTimeout(tryIva, 250); },
         cam(u) { return { x: P.x + 6, y: 2.5 + u * 0.4, z: P.z + 9, lx: P.x - 900, ly: 420 - u * 30, lz: P.z - 1100 }; } },
       // Nacht – Monster
@@ -104,7 +104,7 @@
       { place() { tpo('a', H.x + 50, H.z + 400, 30); sky(10, 'klar'); P.camYaw = 0; }, spawn() { try { guard = L.buildHuman(Object.assign({}, L.DEFAULT_CHAR, L.GUARD_APP || {}, { special: 'waechter' }), true); oldRig = P.rig; L.scene.remove(oldRig.root); P.rig = guard; L.scene.add(guard.root); this.y0 = P.y || 0; this.x0 = P.x; this.z0 = P.z; P.flying = 1; } catch (e) { guard = null; } },
         cam(u) { if (guard) { P.flying = 1; P.y = (this.y0 || 0) + 2 + u * 14; P.z = (this.z0 || P.z) + u * 22; P.x = this.x0 || P.x; P.vx = P.vz = P.vy = 0; guard.root.position.set(P.x, P.y, P.z); guard.root.rotation.set(0.5, 0, 0); if (guard.arms) { guard.arms[0].arm.rotation.set(-3, 0, 0); guard.arms[1].arm.rotation.set(0.2, 0, 0); } } return { x: P.x + 5, y: P.y + 1.5, z: P.z - 7, lx: P.x, ly: P.y + 1, lz: P.z + 6 }; },
         end() { if (guard && oldRig) { L.scene.remove(guard.root); P.rig = oldRig; L.scene.add(oldRig.root); guard = null; P.flying = 0; } } },
-      // MAMA IVA: Suplex auf Bernhard
+      // BIG MAMA: Suplex auf Bernhard
       { place() { tpo('i', H.x, H.z + 300, 30); sky(12, 'klar'); }, spawn() {},
         cam(u) { const V = L._iva && L._iva(); if (V && V.cam && (V.cam.y || V.cam.x)) return V.cam; return { x: P.x, y: 300, z: P.z, lx: P.x, ly: 0, lz: P.z + 1 }; } },
       // Ewigkeitshandschuh nah + Schnipp

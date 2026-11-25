@@ -368,7 +368,7 @@
       case 'tsu': if (!host) L.startTsunami(m.side, false); break;
       case 'cyl': if (!host) L.cylinderFall(m.x, m.z, false); break;
       case 'smoke': if (!host) L.dropSmoke(m.x, m.z, false); break;
-      case 'towerWarn': if (!host) L.msg('⚠️ MAMA IVA hat jemanden im Turm gehört! Sie kommt, um ihn einzureißen …', 7000); break;
+      case 'towerWarn': if (!host) L.msg('⚠️ BIG MAMA hat jemanden im Turm gehört! Sie kommt, um ihn einzureißen …', 7000); break;
       case 'bossGone': if (!host && L.boss) { L.capyRemove(L.boss); L.scene.remove(L.boss.rig.root); L.boss = null; } break;
       case 'capy': if (!host && L.boss && !L.boss.capy) { L.boss.sinking = 0.001; L.capyStart(L.boss, m.seed); const c = L.boss.capy; c.x = m.x; c.z = m.z; c.yaw = m.yaw; } break;
       case 'stomp':
@@ -476,7 +476,7 @@
   function sendRound() {
     const R = L.round; if (!R || !mp.anyInRound()) return;
     const H = L.heli;
-    mp.send({ t: 'rs', bossT: Math.round(R.bossT), radio: R.radio, radioT: r1(R.radioT || 0), gate: R.gate, gateT: r1(R.gateT || 0), bunker: !!R.bunkerOpen, found: R.found, heli: H ? [r1(H.x), r1(H.y), r1(H.z), H.state, r1(H.t)] : null, time: r2(L.env.time), weather: L.env.weather, tor: L.natureState(), wb: L.wbossState(), nb: R.nextBoss || 'MAMA IVA' });
+    mp.send({ t: 'rs', bossT: Math.round(R.bossT), radio: R.radio, radioT: r1(R.radioT || 0), gate: R.gate, gateT: r1(R.gateT || 0), bunker: !!R.bunkerOpen, found: R.found, heli: H ? [r1(H.x), r1(H.y), r1(H.z), H.state, r1(H.t)] : null, time: r2(L.env.time), weather: L.env.weather, tor: L.natureState(), wb: L.wbossState(), nb: R.nextBoss || 'BIG MAMA' });
   }
 
   // ---------- Runde starten (Host schickt allen die ganze Welt) ----------
@@ -582,7 +582,7 @@
   function applyRound(m) {
     if (N.role !== 'client' || !L.round || L.round.over || L.state !== 'game') return;
     const R = L.round, I = L.interact;
-    if (R.bossT > 30 && m.bossT <= 30 && !L.boss) L.banner('DER BODEN BEBT ...', 'In 30 Sekunden kommt MAMA IVA.');
+    if (R.bossT > 30 && m.bossT <= 30 && !L.boss) L.banner('DER BODEN BEBT ...', 'In 30 Sekunden kommt BIG MAMA.');
     L.applyNature(m.tor); L.applyWboss(m.wb); R.nextBoss = m.nb;
     R.bossT = m.bossT;
     if (m.radio === 'calling' && R.radio === 'idle') L.banner('HUBSCHRAUBER GERUFEN', 'Überlebt 90 Sekunden!');

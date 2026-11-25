@@ -295,7 +295,7 @@
   const MODE_TXT = { idle: '🧍 Stehen', walk: '🚶 Gehen', run: '🏃 Rennen', crouch: '🧎 Schleichen', crawl: '🐛 Kriechen' };
   ui.hud = function (dt) {
     hudT -= dt;
-    // Wegweiser zum Turm, solange MAMA IVA da ist
+    // Wegweiser zum Turm, solange BIG MAMA da ist
     const tn = $('towerNav');
     const inSub = P.vehicle && P.vehicle.t.sub, shelter = L.islandNav && L.islandNav(), navT = shelter || (L.towerCall ? L.TOWER : inSub ? L.PORTAL : null);
     tn.hidden = !navT;
@@ -338,7 +338,7 @@
     $('clock').textContent = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
     $('weather').textContent = (E.day < 0.3 ? '🌙 Nacht · ' : '') + (E.label || '');
     const GW = L.wboss && L.GBT[L.wboss.type || 'walross'];
-    $('bossTimer').textContent = (L.onIsl && L.onIsl(P.x, P.z)) ? ((L.islandBossText && L.islandBossText()) || '') : (L.wboss ? (L.wboss.rootY < -0.5 ? GW.icon + ' ' + GW.short + ' erscheint …' : `${GW.icon} ${GW.short} (Stufe ${(L.wboss.lvl || 0) + 1}) ist da – noch ${L.fmt(Math.max(0, L.wboss.life))}`) : L.boss ? (L.boss.dead ? '' : (L.boss.rootY || 0) < -0.5 ? '👹 MAMA IVA erscheint …' : L.boss.life > 0 ? `👹 MAMA IVA (Stufe ${(L.boss.lvl || 0) + 1}) ist da – noch ${L.fmt(L.boss.life)}` : (L.boss.capy ? '🦫 GIGA-CAPY zieht MAMA IVA in die Tiefe!' : '👹 MAMA IVA versinkt …')) : `${(R.nextBoss || 'MAMA IVA') === 'MAMA IVA' ? '👹 MAMA IVA' : ((L.GBT[R.nextBossType] || {}).icon || '👹') + ' ' + R.nextBoss} in ${L.fmt(R.bossT)}`);
+    $('bossTimer').textContent = (L.onIsl && L.onIsl(P.x, P.z)) ? ((L.islandBossText && L.islandBossText()) || '') : (L.wboss ? (L.wboss.rootY < -0.5 ? GW.icon + ' ' + GW.short + ' erscheint …' : `${GW.icon} ${GW.short} (Stufe ${(L.wboss.lvl || 0) + 1}) ist da – noch ${L.fmt(Math.max(0, L.wboss.life))}`) : L.boss ? (L.boss.dead ? '' : (L.boss.rootY || 0) < -0.5 ? '👹 BIG MAMA erscheint …' : L.boss.life > 0 ? `👹 BIG MAMA (Stufe ${(L.boss.lvl || 0) + 1}) ist da – noch ${L.fmt(L.boss.life)}` : (L.boss.capy ? '🦫 GIGA-CAPY zieht BIG MAMA in die Tiefe!' : '👹 BIG MAMA versinkt …')) : `${(R.nextBoss || 'BIG MAMA') === 'BIG MAMA' ? '👹 BIG MAMA' : ((L.GBT[R.nextBossType] || {}).icon || '👹') + ' ' + R.nextBoss} in ${L.fmt(R.bossT)}`);
     const nf = R.found.filter(Boolean).length;
     $('codes').textContent = nf ? '🔒 Bunker-Code: ' + R.code.map((c, i) => (R.found[i] ? c : '_')).join(' ') : '';
     let obj = '';

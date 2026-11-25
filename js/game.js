@@ -1,5 +1,5 @@
 'use strict';
-// Spiellogik: Spieler, Inventar, Waffen, Fahrzeuge, Monster, Stelzer, MAMA IVA, NPCs, Fluchtwege
+// Spiellogik: Spieler, Inventar, Waffen, Fahrzeuge, Monster, Stelzer, BIG MAMA, NPCs, Fluchtwege
 (function () {
   const L = window.L, T = THREE;
 
@@ -78,9 +78,9 @@
   // aus Sicht des Hosts: Mitspieler, die gerade lebend in der Runde sind
   const RPs = () => (isHost() ? remotesList().filter((r) => r.inRound && r.alive && !r.gone) : []);
   function players() { const a = []; if (P.alive && !P.gone) a.push(P); for (const r of RPs()) a.push(r); return a; }
-  // Boss-Zeit (MAMA IVA, Riesen-Boss oder Raserei): wer schleicht, ist unsichtbar und unhörbar.
+  // Boss-Zeit (BIG MAMA, Riesen-Boss oder Raserei): wer schleicht, ist unsichtbar und unhörbar.
   // Nur wer sich direkt neben einem Monster duckt, wird noch ganz kurz gesehen (unter 1 Sekunde).
-  // Bosse gelten nur dort, wo sie sind: auf einer Insel zählt nur der Insel-Boss, daheim nur MAMA IVA & Co.
+  // Bosse gelten nur dort, wo sie sind: auf einer Insel zählt nur der Insel-Boss, daheim nur BIG MAMA & Co.
   const homeBossOn = () => !!((L.boss && !L.boss.dead) || L.wboss || L.frenzy);
   const onIsl = (x, z) => !!((L.islandAt && L.islandAt(x, z)) || L.inDim(x));
   // in welcher Welt liegt (x, z)? Monster jagen nur Spieler in derselben Welt
@@ -197,11 +197,11 @@
   L.makeNoise = function (x, z, rad, src) {
     if (rad <= 0) return;
     const hm = L.env.hearMul * L.md.hear;
-    // im Turm zu laut (rennen, schießen, hupen …) → MAMA IVA kommt und reißt ihn ein
+    // im Turm zu laut (rennen, schießen, hupen …) → BIG MAMA kommt und reißt ihn ein
     const B0 = L.boss || L.wboss;
     if (!isClient() && B0 && !B0.dead && !B0.leaving && !B0.towerAtk && rad >= 20 && L.towerSafe() && L.inTower(x, z, 1)) {
       B0.towerAtk = true; B0.smashT = 0; B0.smashed = false;
-      L.msg('⚠️ MAMA IVA hat dich im Turm gehört! Sie kommt, um ihn einzureißen …', 7000);
+      L.msg('⚠️ BIG MAMA hat dich im Turm gehört! Sie kommt, um ihn einzureißen …', 7000);
       if (NET() !== 'solo') L.mp.send({ t: 'towerWarn' });
     }
     if (src === P) P.noiseShow = Math.max(P.noiseShow, rad);
@@ -329,7 +329,7 @@
   function killPlayer(cause) {
     if (L.suitOn && L.suitOn()) { P.hp = 100; P.alive = true; return; }
     P.alive = false; P.deathT = 0; P.cause = cause;
-    // Tod: MAMA IVA fängt wieder bei Stufe 1 an
+    // Tod: BIG MAMA fängt wieder bei Stufe 1 an
     L.save.ivaLvl = 0; L.save.walLvl = 0; L.save.vikLvl = 0; L.save.danLvl = 0; L.persist();
     if (P.vehicle) leaveVehicle(true);
     L.blood(P.x, 1, P.z, 40, true); L.decal(P.x, P.z, 2.4); L.snd.splat({ x: P.x, y: 1, z: P.z });
@@ -431,7 +431,7 @@
     }
     if (e.kind === 'npc') { L.blood(e.x, 1, e.z, 25, true); L.decal(e.x, e.z, 1.8); dropNpcLoot(e); }
     if (e.kind === 'walker') { L.explode(e.x, e.hy, e.z, 12, 0, null, true); L.msg('💥 Ein Stelzer ist zerstört!'); for (let i = 0; i < 2; i++) L.spawnItem('artefakt', e.x + L.rand(-6, 6), e.z + L.rand(-6, 6), 1); }
-    if (e.kind === 'boss') { L.ivaDone = e.idx; calmMonsters(); L.explode(e.x, e.hy, e.z, 20, 0, null, true); homeBanner('MAMA IVA IST GEFALLEN', 'Unglaublich. Sammle seine Beute ein.'); for (let i = 0; i < 6; i++) L.spawnItem(i < 3 ? 'artefakt' : 'gold', e.x + L.rand(-10, 10), e.z + L.rand(-10, 10), 1); }
+    if (e.kind === 'boss') { L.ivaDone = e.idx; calmMonsters(); L.explode(e.x, e.hy, e.z, 20, 0, null, true); homeBanner('BIG MAMA IST GEFALLEN', 'Unglaublich. Sammle seine Beute ein.'); for (let i = 0; i < 6; i++) L.spawnItem(i < 3 ? 'artefakt' : 'gold', e.x + L.rand(-10, 10), e.z + L.rand(-10, 10), 1); }
   }
 
   // ---------- Inventar ----------
@@ -1679,7 +1679,7 @@
     }
     return best;
   }
-  // nach MAMA IVA: alle Monster rennen weg und beruhigen sich
+  // nach BIG MAMA: alle Monster rennen weg und beruhigen sich
   function calmMonsters() {
     if (!L.frenzy) return;
     L.frenzy = false;
@@ -1690,7 +1690,7 @@
       m.state = 'investigate'; m.alertT = 0; m.prey = null; m.timer = 25; m.calmT = 25;
       m.tx = L.clamp(m.x + Math.sin(a) * 220, -1480, 1480); m.tz = L.clamp(m.z + Math.cos(a) * 220, -1480, 1480);
     }
-    homeMsg('😮‍💨 MAMA IVA ist weg – die Monster laufen davon.', 6000);
+    homeMsg('😮‍💨 BIG MAMA ist weg – die Monster laufen davon.', 6000);
   }
   // Monster bleiben draußen vor dem Turm
   function keepOutOfTower(e) {
@@ -1743,7 +1743,7 @@
     const peaceful = !!(m.isl && m.isl.peace && !((m.angryT = (m.angryT || 0) - dt) > 0));
     if (peaceful && (m.state === 'chase' || m.state === 'investigate' || m.state === 'attack' || m.alertT > 0)) { m.state = 'wander'; m.prey = null; m.alertT = 0; m.timer = 0; m.tx = m.x; m.tz = m.z; }
     else if (m.isl && m.isl.peace && m.angryT > 0 && m.prey && !m.prey.dead && m.prey.alive !== false && m.state !== 'attack' && L.dist(m.x, m.z, m.prey.x, m.prey.z) < 120) { m.state = 'chase'; m.tx = m.prey.x; m.tz = m.prey.z; m.timer = 2; m.alertT = 0; }
-    // Raserei, solange MAMA IVA da ist: alle stürmen auf den nächsten Spieler zu
+    // Raserei, solange BIG MAMA da ist: alle stürmen auf den nächsten Spieler zu
     if (L.frenzy && !m.isl && m.state !== 'attack') {
       m.frT = (m.frT || 0) - dt;
       if (m.frT <= 0) {
@@ -2185,7 +2185,7 @@
     return true;
   }
 
-  // ---------- MAMA IVA (der Riesen-Boss) ----------
+  // ---------- BIG MAMA (der Riesen-Boss) ----------
   // Sie erscheint entweder hinter einem Berg oder bricht aus dem Boden, bleibt eine Weile und versinkt dann wieder.
   // MAMA-IVA-Uhr: startet, wenn man zum ersten Mal eine Runde betritt (Tab neu laden = von vorne).
   // Bei Tod oder neuer Runde läuft sie einfach weiter. Im Mehrspieler bestimmt der Host die Zeit.
@@ -2234,8 +2234,8 @@
     if (isHost()) L.mp.send({ t: "boss", x: b.x, z: b.z, yaw: b.yaw, how, lvl: b.lvl, instant: !!b.instant });
     L.bossAppear(b);
   }
-  // ---------- GIGA-CAPY gegen MAMA IVA: Aufstieg, Brüllen, ein Kampf (jedes Mal anders), dann zieht es sie in die Tiefe ----------
-  // Zeitplan (s): 0–5 aufsteigen · 5–7 brüllen · 7–14,8 drei Kampf-Aktionen · 14,8–16,8 packen · 16,8–22,3 MAMA IVA versinkt · ab 17,8 taucht GIGA-CAPY hinterher
+  // ---------- GIGA-CAPY gegen BIG MAMA: Aufstieg, Brüllen, ein Kampf (jedes Mal anders), dann zieht es sie in die Tiefe ----------
+  // Zeitplan (s): 0–5 aufsteigen · 5–7 brüllen · 7–14,8 drei Kampf-Aktionen · 14,8–16,8 packen · 16,8–22,3 BIG MAMA versinkt · ab 17,8 taucht GIGA-CAPY hinterher
   const C_RISE = 5, C_ROAR = 7, C_MOVE = 2.6, C_NM = 5, C_FIGHT = C_ROAR + C_MOVE * C_NM, C_GRAB = C_FIGHT + 2;
   const CAPY_MOVES = ['schlag', 'strahl', 'stampfer', 'biss', 'rammen', 'peitsche'];
   function seededRng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -2247,14 +2247,14 @@
     // drei verschiedene Kampf-Aktionen in zufälliger Reihenfolge, jede mit eigener Stärke und Seite
     const pool = CAPY_MOVES.slice(), moves = [];
     for (let i = 0; i < C_NM; i++) { if (!pool.length) pool.push(...CAPY_MOVES); moves.push({ k: pool.splice(Math.floor(rnd() * pool.length), 1)[0], s: rnd() < 0.5 ? -1 : 1, pow: 0.75 + rnd() * 0.5, hit: false }); }
-    // neben MAMA IVA, etwas zum Spieler hin – damit man GIGA-CAPY ganz sieht
+    // neben BIG MAMA, etwas zum Spieler hin – damit man GIGA-CAPY ganz sieht
     const a = Math.atan2(P.x - b.x, P.z - b.z) + (rnd() < 0.5 ? 1 : -1) * (0.7 + rnd() * 0.6);
     const x = b.x + Math.sin(a) * 60, z = b.z + Math.cos(a) * 60;
     b.capy = { rig, x, z, yaw: Math.atan2(b.x - x, b.z - z), y: -85, roared: false, rumbleT: 0, seed, rnd, moves, cam: [rnd(), rnd(), rnd(), rnd(), rnd()] };
     b.fp = null;
     duelStart(b.capy, b);
     rig.root.position.set(x, -85, z); rig.root.rotation.y = b.capy.yaw;
-    homeBanner('GIGA-CAPY ERWACHT', 'Ein riesiges Capybara bricht aus dem Boden – und greift MAMA IVA an!');
+    homeBanner('GIGA-CAPY ERWACHT', 'Ein riesiges Capybara bricht aus dem Boden – und greift BIG MAMA an!');
     if (L.cineCapy) L.cineCapy(b);
   };
   const ease3 = (k) => 1 - Math.pow(1 - L.clamp(k, 0, 1), 3);
@@ -2399,7 +2399,7 @@
     vik.root.rotation.set(0, vYaw, 0); vik.root.rotateX(vRx); vik.root.rotateZ(vRz);
     dan.root.rotation.set(0, dYaw, 0); dan.root.rotateX(dRx);
   }
-  // gibt zurück, wie weit MAMA IVA schon im Boden ist (0 … 1)
+  // gibt zurück, wie weit BIG MAMA schon im Boden ist (0 … 1)
   L.capyUpdate = function (b, dt) {
     const c = b.capy; if (!c) return Math.min(1, b.sinking / 7);
     const t = b.sinking, r = c.rig;
@@ -2407,7 +2407,7 @@
     if (t < C_RISE) c.y = -85 * (1 - ease3(t / C_RISE));
     else if (t < C_GRAB + 1) c.y = 0;
     else c.y = -90 * ease3((t - C_GRAB - 1) / 5.5);
-    // Pose von GIGA-CAPY und Wirkung auf MAMA IVA
+    // Pose von GIGA-CAPY und Wirkung auf BIG MAMA
     let armX = [0, 0], elbowX = [0, 0], lean = 0, headX = 0.1, headY = 0, headZ = Math.sin(t * 0.8) * 0.06, adv = 0;
     const fp = { tilt: 0, side: 0, push: 0, dip: 0, armUp: 0, whip: 0, beam: 0 };
     const capyChest = () => V2.set(r.root.position.x, r.root.position.y + 38, r.root.position.z);
@@ -2419,13 +2419,13 @@
       adv = 12 * ease3((t - C_ROAR) / 1.5);
       const i = Math.floor((t - C_ROAR) / C_MOVE), u = (t - C_ROAR - i * C_MOVE) / C_MOVE, mv = c.moves[i], s = mv.s, w = mv.pow, j = s > 0 ? 0 : 1;
       if (mv.k === 'schlag') {
-        // GIGA-CAPY holt aus und schlägt zu – MAMA IVA taumelt
+        // GIGA-CAPY holt aus und schlägt zu – BIG MAMA taumelt
         armX[j] = u < 0.4 ? 0.9 * (u / 0.4) : L.lerp(0.9, -1.9, ease3((u - 0.4) / 0.15)); elbowX[j] = -0.6;
         armX[1 - j] = -0.6; lean = 0.15 + bump(u, 0.35, 0.7) * 0.25; adv += bump(u, 0.3, 0.75) * 7;
         fp.tilt = -bump(u, 0.5, 1) * 0.35 * w; fp.side = s * bump(u, 0.5, 1) * 0.25 * w; fp.push = bump(u, 0.5, 1) * 5 * w;
         if (u > 0.5 && !mv.hit) { mv.hit = true; L.snd.crash(1, { x: b.x, y: 20, z: b.z }); L.snd.heavy({ x: b.x, y: 20, z: b.z }, 1); atIva(30); L.shake = Math.max(L.shake, 0.8); L.snd.bossRoar({ x: b.x, y: 40, z: b.z }); }
       } else if (mv.k === 'strahl') {
-        // MAMA IVA feuert ihren Brust-Strahl – GIGA-CAPY schützt sich und taumelt zurück
+        // BIG MAMA feuert ihren Brust-Strahl – GIGA-CAPY schützt sich und taumelt zurück
         fp.beam = u > 0.12 && u < 0.78 ? 1 : 0;
         armX = [-1.5 * bump(u, 0.1, 0.9), -1.5 * bump(u, 0.1, 0.9)]; elbowX = [-1.2, -1.2]; lean = -0.25 * bump(u, 0.1, 0.9) * w; adv -= bump(u, 0.1, 0.9) * 6;
         headY = s * 0.4 * bump(u, 0.2, 0.9);
@@ -2434,25 +2434,25 @@
         if (fp.beam && Math.random() < dt * 4) L.snd.ray({ x: b.x, y: b.hy, z: b.z });
         if (u > 0.8 && !mv.roar) { mv.roar = true; L.snd.capyRoar({ x: c.x, y: 50, z: c.z }); }
       } else if (mv.k === 'stampfer') {
-        // MAMA IVA reißt die Arme hoch und stampft – der Boden bebt, GIGA-CAPY wankt
+        // BIG MAMA reißt die Arme hoch und stampft – der Boden bebt, GIGA-CAPY wankt
         fp.armUp = u < 0.5 ? 2.2 * (u / 0.5) : L.lerp(2.2, -0.5, ease3((u - 0.5) / 0.12)) * (1 - bump(u, 0.75, 1) * 0.3);
         fp.dip = bump(u, 0.5, 0.75) * 3;
         lean = -0.22 * bump(u, 0.55, 1) * w; adv -= bump(u, 0.55, 1) * 5; headZ += s * 0.3 * bump(u, 0.55, 1);
         if (u > 0.55 && !mv.hit) { mv.hit = true; L.snd.stomp({ x: b.x, y: 0, z: b.z }); L.shake = Math.max(L.shake, 1.2); for (let k = 0; k < 4; k++) L.fx('#6a5a40', L.lerp(b.x, c.x, k / 4), 0.5, L.lerp(b.z, c.z, k / 4), 12, 10, { size: 0.9, life: 1.6 }); }
       } else if (mv.k === 'biss') {
-        // GIGA-CAPY beißt MAMA IVA in die Schulter
+        // GIGA-CAPY beißt BIG MAMA in die Schulter
         lean = 0.5 * bump(u, 0.2, 0.85) * w; headX = 0.1 + 0.7 * bump(u, 0.25, 0.8); headY = s * 0.3 * bump(u, 0.25, 0.8);
         armX = [-1.2 * bump(u, 0.2, 0.9), -1.2 * bump(u, 0.2, 0.9)]; adv += bump(u, 0.2, 0.85) * 8;
         fp.side = -s * bump(u, 0.45, 1) * 0.4 * w; fp.tilt = -bump(u, 0.45, 1) * 0.15;
         if (u > 0.45 && !mv.hit) { mv.hit = true; L.snd.capyRoar({ x: c.x, y: 50, z: c.z }); L.snd.crash(0.8, { x: b.x, y: 25, z: b.z }); atIva(40, '#ff6a20'); L.shake = Math.max(L.shake, 0.7); }
       } else if (mv.k === 'rammen') {
-        // GIGA-CAPY rennt los und rammt MAMA IVA weg
+        // GIGA-CAPY rennt los und rammt BIG MAMA weg
         lean = 0.45 * bump(u, 0.1, 0.8); armX = [-0.6, -0.6]; adv += 11 * bump(u, 0.1, 0.8);
         fp.push = bump(u, 0.45, 1) * 9 * w; fp.tilt = -bump(u, 0.45, 1) * 0.45 * w;
         if (Math.random() < dt * 8 && u < 0.6) L.snd.stomp({ x: c.x, y: 0, z: c.z });
         if (u > 0.45 && !mv.hit) { mv.hit = true; L.snd.crash(1, { x: b.x, y: 15, z: b.z }); atIva(40); L.shake = Math.max(L.shake, 1.3); L.snd.bossRoar({ x: b.x, y: 40, z: b.z }); }
       } else {
-        // MAMA IVA peitscht mit ihren dünnen Armen – GIGA-CAPY reißt den Kopf zur Seite
+        // BIG MAMA peitscht mit ihren dünnen Armen – GIGA-CAPY reißt den Kopf zur Seite
         fp.whip = bump(u, 0.1, 0.7);
         headY = -s * 0.7 * bump(u, 0.4, 1); headZ += s * 0.2 * bump(u, 0.4, 1); lean = -0.12 * bump(u, 0.4, 1);
         armX = [-0.8 * bump(u, 0.4, 1), -0.8 * bump(u, 0.4, 1)];
@@ -2464,7 +2464,7 @@
       armX = [L.lerp(-0.6, -1.25, k), L.lerp(-0.6, -1.25, k)]; elbowX = [L.lerp(-0.2, -0.9, k), L.lerp(-0.2, -0.9, k)]; lean = L.lerp(0, 0.38, k);
       if (t > C_FIGHT + 0.6 && !c.grabbed) { c.grabbed = true; L.snd.heavy({ x: b.x, y: 20, z: b.z }, 1); L.snd.bossRoar({ x: b.x, y: 40, z: b.z }); }
     }
-    // MAMA IVA schaut zu GIGA-CAPY
+    // BIG MAMA schaut zu GIGA-CAPY
     if (!isClient()) b.yaw += L.angDiff(b.yaw, Math.atan2(c.x - b.x, c.z - b.z)) * Math.min(1, dt * 2);
     b.fp = fp;
     r.root.position.set(c.x + Math.sin(c.yaw) * adv, c.y + L.mountainH(c.x, c.z), c.z + Math.cos(c.yaw) * adv);
@@ -2483,10 +2483,10 @@
       c.rumbleT -= dt; if (c.rumbleT <= 0) { c.rumbleT = 0.6; L.snd.stomp({ x: c.x, y: 0, z: c.z }); }
     }
     if (t > C_GRAB) L.bossRise(b, dt);
-    if (t >= C_GRAB && !c.pulled) { c.pulled = true; homeMsg('🦫 MAMA IVA hat verloren – GIGA-CAPY zieht sie in die Tiefe!', 5000); }
+    if (t >= C_GRAB && !c.pulled) { c.pulled = true; homeMsg('🦫 BIG MAMA hat verloren – GIGA-CAPY zieht sie in die Tiefe!', 5000); }
     return t < C_GRAB ? 0 : ease3((t - C_GRAB) / 5.5);
   };
-  // Kampf-Haltung von MAMA IVA (nach ihrer normalen Animation anwenden)
+  // Kampf-Haltung von BIG MAMA (nach ihrer normalen Animation anwenden)
   L.capyBossPose = function (b) {
     const fp = b.fp, c = b.capy; if (!fp || !c) return;
     const rig = b.rig, a = Math.atan2(c.x - b.x, c.z - b.z);
@@ -2506,15 +2506,15 @@
   L.bossAppear = function (b) {
     L.towerRestore();
     if (!atHome(P)) { L.fusionStart(b.x, b.z); return; }
-    if (b.instant) { homeBanner("MAMA IVA IST DA", "Nur noch 30 Sekunden – bleib leise im Turm!"); L.snd.bossRoar({ x: b.x, y: 40, z: b.z }); return; }
-    // erst verschmelzen alle Monster zu MAMA IVA, dann steigt sie auf
+    if (b.instant) { homeBanner("BIG MAMA IST DA", "Nur noch 30 Sekunden – bleib leise im Turm!"); L.snd.bossRoar({ x: b.x, y: 40, z: b.z }); return; }
+    // erst verschmelzen alle Monster zu BIG MAMA, dann steigt sie auf
     L.fusionStart(b.x, b.z);
     if (b.how === "boden") {
       L.decal(b.x, b.z, 30, "#1a120c");
       L.fx("#5a4630", b.x, 1, b.z, 40, 14, { size: 0.9, life: 2.5 });
     }
     const lv = (b.lvl || 0) + 1;
-    homeBanner("MAMA IVA ENTSTEHT – STUFE " + lv, (lv > 1 ? "Schneller und stärker als letztes Mal! " : "") + "Alle Monster drehen durch! Schaff es zum 🗼 TURM in der Stadtmitte (Karte: M)");
+    homeBanner("BIG MAMA ENTSTEHT – STUFE " + lv, (lv > 1 ? "Schneller und stärker als letztes Mal! " : "") + "Alle Monster drehen durch! Schaff es zum 🗼 TURM in der Stadtmitte (Karte: M)");
     L.msg('🗼 Turm = sicher (aber leise sein!). Tipp: Sprinte weg und duck dich dann (C) – so verlieren die Monster deine Spur.', 9000);
     if (L.cineBossAppear) L.cineBossAppear(b);
   };
@@ -2546,7 +2546,7 @@
       const k = L.clamp(b.emerge / b.emergeDur, 0, 1), ease = 1 - Math.pow(1 - k, 3);
       b.rootY = b.startY * (1 - ease);
       if (b.emerge > 0) L.bossRise(b, dt);
-      if (k >= 1) { b.rootY = 0; b.leaving = false; homeMsg('👹 MAMA IVA ist da – ' + Math.round(b.life / 60) + ' Minuten lang!'); }
+      if (k >= 1) { b.rootY = 0; b.leaving = false; homeMsg('👹 BIG MAMA ist da – ' + Math.round(b.life / 60) + ' Minuten lang!'); }
     } else if (!b.sinking) {
       b.life -= dt;
       if (b.life <= 0) {
@@ -2556,13 +2556,13 @@
       }
     } else {
       b.sinking += dt;
-      // GIGA-CAPY zieht MAMA IVA in den Boden
+      // GIGA-CAPY zieht BIG MAMA in den Boden
       b.rootY = -72 * L.capyUpdate(b, dt);
       if (b.sinking >= L.CAPY_TOTAL) {
-        L.ivaDone = b.idx; calmMonsters(); L.capyRemove(b); L.scene.remove(rig.root); L.boss = null; L.round.bossT = ivaClock().left; if (isHost()) L.mp.send({ t: 'bossGone' }); homeMsg('Ruhe … ' + Math.max(1, Math.round(ivaClock().left / 60)) + ' Minuten Pause, dann kommt MAMA IVA wieder.', 6000); return; }
+        L.ivaDone = b.idx; calmMonsters(); L.capyRemove(b); L.scene.remove(rig.root); L.boss = null; L.round.bossT = ivaClock().left; if (isHost()) L.mp.send({ t: 'bossGone' }); homeMsg('Ruhe … ' + Math.max(1, Math.round(ivaClock().left / 60)) + ' Minuten Pause, dann kommt BIG MAMA wieder.', 6000); return; }
     }
     // Ziel: Spieler im Umkreis jagen, sonst letztem Lärm folgen
-    // MAMA IVA hört jeden, der nicht schleicht – egal wie weit weg. Nur im Turm ist man sicher, solange man leise ist
+    // BIG MAMA hört jeden, der nicht schleicht – egal wie weit weg. Nur im Turm ist man sicher, solange man leise ist
     const TW = L.TOWER;
     if (b.towerAtk && !L.towerSafe()) b.towerAtk = false;
     if (b.towerAtk) { b.tx = TW.x; b.tz = TW.z; }
@@ -2609,13 +2609,13 @@
         const d = L.dist(P.x, P.z, b.x, b.z);
         if (d < 26 && P.alive) {
           const sneaking = P.stance !== 'stand' && !P.vehicle;
-          L.hurtPlayer((sneaking ? 40 : 85) * L.md.dmg * (b.dmgMul || 1) * (1 - d / 40), 'Von MAMA IVA zertrampelt');
+          L.hurtPlayer((sneaking ? 40 : 85) * L.md.dmg * (b.dmgMul || 1) * (1 - d / 40), 'Von BIG MAMA zertrampelt');
           if (P.alive && !P.vehicle) { const k = 16; P.vx = (P.x - b.x) / (d || 1) * k; P.vz = (P.z - b.z) / (d || 1) * k; P.vy = 7; P.air = true; P.tumble = 0.01; P.knockT = 1.5; }
         }
         for (const n of E.npcs) if (!n.dead && L.dist(n.x, n.z, b.x, b.z) < 26) L.damageEnt(n, 200, b.x, b.z, b);
         for (const rp of RPs()) {
           const d2 = L.dist(rp.x, rp.z, b.x, b.z);
-          if (d2 < 26) { const sn = rp.stance !== 'stand' && !rp.inVeh; hurtRemote(rp, (sn ? 40 : 85) * L.md.dmg * (b.dmgMul || 1) * (1 - d2 / 40), 'Von MAMA IVA zertrampelt', (rp.x - b.x) / (d2 || 1) * 16, (rp.z - b.z) / (d2 || 1) * 16, 7, sn); }
+          if (d2 < 26) { const sn = rp.stance !== 'stand' && !rp.inVeh; hurtRemote(rp, (sn ? 40 : 85) * L.md.dmg * (b.dmgMul || 1) * (1 - d2 / 40), 'Von BIG MAMA zertrampelt', (rp.x - b.x) / (d2 || 1) * 16, (rp.z - b.z) / (d2 || 1) * 16, 7, sn); }
         }
         if (isHost()) L.mp.send({ t: 'stomp', x: b.x, z: b.z });
       }
@@ -2638,7 +2638,7 @@
         rig.beam.g.visible = true; L.setBeam(rig.beam, chest, V2.set(b.aimX, 0.5, b.aimZ), 1.3);
         if (Math.random() < dt * 8) L.decal(b.aimX, b.aimZ, 1.6, '#1a1008');
         if (Math.random() < dt * 3) L.snd.ray({ x: b.aimX, y: 1, z: b.aimZ });
-        if (T.alive && see && L.dist(T.x, T.z, b.aimX, b.aimZ) < 3.2) dps(T, 60 * dt * L.md.dmg * (b.dmgMul || 1), 'Vom Strahl von MAMA IVA verbrannt');
+        if (T.alive && see && L.dist(T.x, T.z, b.aimX, b.aimZ) < 3.2) dps(T, 60 * dt * L.md.dmg * (b.dmgMul || 1), 'Vom Strahl von BIG MAMA verbrannt');
       }
       if (b.beamT <= 0) { rig.beam.g.visible = false; b.beamCd = 7 / (b.spdMul || 1); }
     } else rig.beam.g.visible = false;
@@ -2664,7 +2664,7 @@
   }
 
 
-  // ---------- Riesen-Bosse: DAS RIESEN-WALROSS, RIESEN-VIKTOR, RIESEN-DANIEL (wechseln sich mit MAMA IVA ab) ----------
+  // ---------- Riesen-Bosse: DAS RIESEN-WALROSS, RIESEN-VIKTOR, RIESEN-DANIEL (wechseln sich mit BIG MAMA ab) ----------
   // Steigen aus dem Boden, hören alle, die nicht schleichen, und greifen mit einem Bodenschlag an. Am Ende kommt jemand und besiegt sie.
   function wbVoice(p) { for (let k = 0; k < 3; k++) { L.tn({ f: 70, fTo: 52, dur: 0.45, type: 'sawtooth', vol: 0.45, pos: p, delay: k * 0.5, rev: true, ref: 60 }); L.nz({ dur: 0.4, f: 240, type: 'bandpass', q: 2, vol: 0.35, pos: p, delay: k * 0.5, ref: 60 }); } }
   L.wbVoice = wbVoice;
@@ -3006,9 +3006,9 @@
     if (L.save.towerSpawnPending) {
       L.save.towerSpawnPending = false; L.persist();
       P.x = L.TOWER.x; P.z = L.TOWER.z + 2; P.yaw = P.camYaw = 0;
-      // MAMA IVA ist schon da – aber nur noch 30 Sekunden
+      // BIG MAMA ist schon da – aber nur noch 30 Sekunden
       const C0 = L.S().bossMin * 60; L.ivaEpoch = Date.now() - (C0 + L.BOSS_STAY - 31) * 1000; L.ivaDone = undefined; L.ivaInstant = true;
-      setTimeout(() => L.msg('🗼 Bonus: Du startest einmalig sicher im Turm – MAMA IVA ist nur noch 30 Sekunden da!', 7000), 500);
+      setTimeout(() => L.msg('🗼 Bonus: Du startest einmalig sicher im Turm – BIG MAMA ist nur noch 30 Sekunden da!', 7000), 500);
     }
     L.round = {
       over: false, time: 0, code: [0, 1, 2, 3].map(() => L.randi(0, 9)), found: [false, false, false, false],
@@ -3163,7 +3163,7 @@
     for (const rp of RPs()) rp.sneakT = isSneak(rp) ? (rp.sneakT || 0) + dt : 0;
     // Boss-Timer
     if (L.bossShow && !isClient()) {
-      // 1 = gleich MAMA IVA · 2 = MAMA IVA läuft · 3 = gleich Walross · 4 = Walross läuft · dann fertig
+      // 1 = gleich BIG MAMA · 2 = BIG MAMA läuft · 3 = gleich Walross · 4 = Walross läuft · dann fertig
       L.bossShowT -= dt;
       if (L.bossShow === 1 && L.bossShowT <= 0) { spawnBoss(60); L.boss.idx = -1; L.boss.life = 20; L.bossShow = 2; }
       else if (L.bossShow === 2 && !L.boss) { L.bossShow = 3; L.bossShowT = 4; }
@@ -3179,7 +3179,7 @@
       const nIdx = K.pause ? K.idx : K.idx + 1;
       const BOSSES = ['iva', 'viktor', 'walross', 'daniel', 'echse'];
       R.nextBossType = BOSSES[nIdx % 5];
-      R.nextBoss = R.nextBossType === 'iva' ? 'MAMA IVA' : GBT[R.nextBossType].name;
+      R.nextBoss = R.nextBossType === 'iva' ? 'BIG MAMA' : GBT[R.nextBossType].name;
       if (K.pause) {
         R.bossT = K.left;
         if (R.bossT < 30 && !R.warned && atHome(P)) { R.warned = true; L.banner('DER BODEN BEBT ...', 'In 30 Sekunden kommt ' + R.nextBoss + '.'); L.snd.horn({ x: P.x + 400, y: 50, z: P.z }); }
@@ -3254,7 +3254,7 @@
     L.updateExtras(dt);
     if (L.updateWorkshop) L.updateWorkshop(dt);
     if (L.updateRevive) L.updateRevive(dt);
-    // solange MAMA IVA da ist, leuchtet der Turm rot – bis man drin ist
+    // solange BIG MAMA da ist, leuchtet der Turm rot – bis man drin ist
     L.towerCall = !!(((L.boss && !L.boss.dead) || L.wboss) && L.towerSafe() && P.alive && !P.gone && !L.inTower(P.x, P.z) && !onIsl(P.x, P.z) && atHome(P));
     L.setTowerGlow(L.towerCall);
     L.updateFusion(dt);

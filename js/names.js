@@ -8,7 +8,7 @@
     ['starrende', 'Starrende', '👁️'], ['walross', 'Walross', '🦭'], ['flieger', 'Flugmaschine', '🛸']
   ].map(([k, n, e]) => ({ k, n, e, cat: 'Monster', price: Math.round((200 + ((L.MK && L.MK[k] && L.MK[k].hp) || 150)) / 50) * 50, build: () => L.MK[k].build() }));
   const BOS = [
-    ['MAMA IVA', '👹', 3000], ['RIESEN-WALROSS', '🦭', 2000, () => L.buildWalross()], ['RIESEN-VIKTOR', '🧟', 2000, () => L.buildViktor()], ['GIGA-CAPY', '🦫', 2200, () => L.buildGigaCapy()],
+    ['BIG MAMA', '👹', 3000], ['RIESEN-WALROSS', '🦭', 2000, () => L.buildWalross()], ['RIESEN-VIKTOR', '🧟', 2000, () => L.buildViktor()], ['GIGA-CAPY', '🦫', 2200, () => L.buildGigaCapy()],
     ['URZEIT-ECHSE', '🦖', 2600, () => L.buildEchse()], ['CAROLINA', '🖤', 1800], ['RUSLAN', '🛡️', 2200], ['THOR', '⚡', 1800], ['ODIN', '🔱', 1800], ['LOKI', '🐍', 1600],
     ['YMIR', '❄️', 1800], ['LAVATITAN', '🌋', 2000], ['GEISTERKÖNIGIN', '👻', 1800], ['SANDWURM', '🪱', 1800], ['URWALDWÄCHTER', '🌳', 1800], ['SPORENKÖNIG', '🍄', 1600],
     ['KRISTALLGOLEM', '💎', 2000], ['NINA', '🧹', 1500]

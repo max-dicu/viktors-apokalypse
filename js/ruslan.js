@@ -1,7 +1,7 @@
 'use strict';
 // Mystery Island mit RUSLAN (eigener Entwurf): Held im blau-weißen Anzug mit Flaggen-Schild und Flaggen-Umhang,
 // fährt einen riesigen Bagger. Intro: Schildwurf, dann steigt der Bagger aus dem Boden. 5 Minuten Jagd, 10 Minuten Pause.
-// Zuflucht: kleines blau-weiß gestreiftes Häuschen mit goldener Kuppel. Danach: MAMA IVA in goldener Super-Form – Ruslan überfährt sie.
+// Zuflucht: kleines blau-weiß gestreiftes Häuschen mit goldener Kuppel. Danach: BIG MAMA in goldener Super-Form – Ruslan überfährt sie.
 // Außerdem: Roller-Unfall „JOYOR QUALITY“ (man stirbt nicht) und Roller-Viktors, die Werbung rufen.
 (function () {
   const L = window.L, T = THREE, P = L.player;
@@ -230,7 +230,7 @@
       if (u >= 1) { B.throwS = null; rigShield(false); }
     }
   }
-  // Schlussfilm: MAMA IVA in goldener Super-Form – Ruslan überfährt sie
+  // Schlussfilm: BIG MAMA in goldener Super-Form – Ruslan überfährt sie
   // ---------- Kurzfilm: ein riesiges, extrem behaartes Walross springt auf Ruslan, rollt sich auf ihm, explodiert – Richard steigt aus dem Licht ----------
   function startWalrusEnd() {
     if (B.bag && B.bag.g) B.bag.g.visible = false;
@@ -332,8 +332,8 @@
     const glow = new T.PointLight(0xffd040, 3, 200, 2); glow.position.y = 30; rig.root.add(glow);
     rig.root.traverse((o) => { o.frustumCulled = false; });
     B.iva = { root: rig.root, rig, aura, ix, iz };
-    L.banner('⚡ MAMA IVA – SUPER STUFE 100', 'Sie hat ihre goldene Endform erreicht …');
-    L.startCine('⚡ RUSLAN GEGEN MAMA IVA (SUPER STUFE 100)', 14, () => B.cam);
+    L.banner('⚡ BIG MAMA – SUPER STUFE 100', 'Sie hat ihre goldene Endform erreicht …');
+    L.startCine('⚡ RUSLAN GEGEN BIG MAMA (SUPER STUFE 100)', 14, () => B.cam);
   }
   function updEnding(dt) {
     const t = B.t, V = B.iva, bg = B.bag, a = B.yaw, fx = Math.sin(a), fz = Math.cos(a);
@@ -353,7 +353,7 @@
       // platt – die Aura verlischt, Ruslan hebt den Schild
       V.aura.visible = Math.random() > (t - 9) / 3; V.root.scale.y = 3.2 * 0.15;
       B.rig.arms[1].arm.rotation.x = -3; if (B.rig.cape) B.rig.cape.rotation.x = 0.6;
-      if (t - dt < 9) L.banner('🛡️ RUSLAN HAT GEWONNEN', 'MAMA IVA wurde vom Riesenbagger plattgewalzt.');
+      if (t - dt < 9) L.banner('🛡️ RUSLAN HAT GEWONNEN', 'BIG MAMA wurde vom Riesenbagger plattgewalzt.');
     }
     B.bag.boom.rotation.x = t > 9 ? -0.9 : -0.3;
     const cA = a + 1.3 + t * 0.06, cd = 230 - t * 5;

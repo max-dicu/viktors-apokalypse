@@ -86,7 +86,7 @@ body.cinema #hud,body.cinema #touch,body.cinema #banner{visibility:hidden}`;
   }
   L.endCine = endCine;
   const groundY = (x, z) => (L.mountainH ? L.mountainH(x, z) : 0);
-  // MAMA IVA erscheint
+  // BIG MAMA erscheint
   L.cineBossAppear = function (b) {
     const a0 = Math.atan2(P.x - b.x, P.z - b.z), berg = b.how === 'berg';
     const peak = groundY(b.x, b.z), FT = L.FUSION_T || 0;
@@ -95,7 +95,7 @@ body.cinema #hud,body.cinema #touch,body.cinema #banner{visibility:hidden}`;
       if (t0 < FT) {
         // Fusion von schräg unten
         const a = a0 + 0.3 + t0 * 0.08, d = 125 - t0 * 6, x = B.x + Math.sin(a) * d, z = B.z + Math.cos(a) * d;
-        if (t0 > FT - 0.6) L.$('cineT').textContent = 'MAMA IVA';
+        if (t0 > FT - 0.6) L.$('cineT').textContent = 'BIG MAMA';
         return { x, y: Math.max(groundY(x, z) + 30, peak + 45), z, lx: B.x, ly: peak + 30, lz: B.z };
       }
       const t = t0 - FT;
@@ -105,7 +105,7 @@ body.cinema #hud,body.cinema #touch,body.cinema #banner{visibility:hidden}`;
       return { x, y, z, lx: B.x, ly: groundY(B.x, B.z) + (B.rootY || 0) + 40, lz: B.z };
     });
   };
-  // GIGA-CAPY holt MAMA IVA
+  // GIGA-CAPY holt BIG MAMA
   L.cineCapy = function (b) {
     const c0 = b.capy; if (!c0) return;
     // von der Seite filmen, auf der Seite des Spielers
@@ -113,7 +113,7 @@ body.cinema #hud,body.cinema #touch,body.cinema #banner{visibility:hidden}`;
     const px = Math.sin(side), pz = Math.cos(side);
     if ((P.x - c0.x) * px + (P.z - c0.z) * pz < 0) side += Math.PI;
     const R = c0.cam || [0.5, 0.5, 0.5, 0.5, 0.5], dir = R[0] < 0.5 ? -1 : 1;
-    L.startCine('GIGA-CAPY GEGEN MAMA IVA', L.CAPY_TOTAL - 2, (t) => {
+    L.startCine('GIGA-CAPY GEGEN BIG MAMA', L.CAPY_TOTAL - 2, (t) => {
       const B = L.boss, c = B && B.capy; if (!c) return null;
       const mx = (c.x + B.x) / 2, mz = (c.z + B.z) / 2, gy = groundY(mx, mz);
       // jede Kampf-Aktion bekommt einen eigenen Kamerawinkel

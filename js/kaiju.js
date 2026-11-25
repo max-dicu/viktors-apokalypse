@@ -1,7 +1,7 @@
 'use strict';
 // DIE URZEIT-ECHSE: Riesen-Boss der Heimat (eigener Entwurf). Steigt aus dem Boden, stampft durch die Stadt,
 // lädt ihre leuchtenden Rückenstacheln auf und feuert einen blauen Strahl aus dem Maul.
-// Läuft in der Boss-Reihe mit MAMA IVA, Riesen-Viktor, Riesen-Walross und Riesen-Daniel.
+// Läuft in der Boss-Reihe mit BIG MAMA, Riesen-Viktor, Riesen-Walross und Riesen-Daniel.
 (function () {
   const L = window.L, T = THREE, P = L.player;
   const G = () => L.GEO;

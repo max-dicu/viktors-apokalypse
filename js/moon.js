@@ -249,7 +249,7 @@
     if (bern.hp <= 0) {
       bern.hp = 0; bern.killed = true; if (L.unlockJupiter) L.unlockJupiter(); if (L.gotBossCoins) L.gotBossCoins(1000, 'Bernhard');
       if (L.bossReward) L.bossReward('bernhard', P.x + 3, P.z + 3, P.y || 0, 'defeat');
-      L.banner('🏆 BERNHARD IST BESIEGT!', 'Und jetzt holt MAMA IVA sich den Rest …');
+      L.banner('🏆 BERNHARD IST BESIEGT!', 'Und jetzt holt BIG MAMA sich den Rest …');
       startIvaEnd();
     }
   };
@@ -439,7 +439,7 @@
       if (u >= 1) { bern.phase = 'gone'; b.visible = false; for (const f of bern.frags) L.scene.remove(f); bern.frags = []; I.earth.visible = true; I.atmo.visible = true; L.msg('🌍 Die Erde ist wieder da. Bernhard kommt in 10 Minuten wieder.', 5000); }
     }
   }
-  // ---------- Kurzfilm: MAMA IVA zieht Bernhard mit den Händen zur Erde, Kampf, Suplex, sie zieht sich das Maul auf und frisst ihn ----------
+  // ---------- Kurzfilm: BIG MAMA zieht Bernhard mit den Händen zur Erde, Kampf, Suplex, sie zieht sich das Maul auf und frisst ihn ----------
   let iva = null;
   function buildMaw() {
     const g = new T.Group(), flesh = (c) => new T.MeshBasicMaterial({ color: c, fog: false, side: T.DoubleSide });
@@ -460,7 +460,7 @@
     I.earth.visible = true; I.atmo.visible = true;
     for (const f of bern.frags) L.scene.remove(f); bern.frags = [];
     const E0 = I.earth.position.clone();
-    // ---- Teil 1 (Mond): ein riesiger Arm von MAMA IVA schießt aus der Erde und reißt Bernhard hinunter ----
+    // ---- Teil 1 (Mond): ein riesiger Arm von BIG MAMA schießt aus der Erde und reißt Bernhard hinunter ----
     const armM = new T.MeshPhongMaterial({ color: 0x5c4840, emissive: 0x401010, shininess: 30, fog: false }), armS = [];
     for (let k = 0; k < 34; k++) { const m = new T.Mesh(new T.SphereGeometry(1, 12, 8), armM); m.frustumCulled = false; m.visible = false; L.scene.add(m); armS.push(m); }
     const handM = new T.Group(); for (let f = 0; f < 5; f++) { const c = new T.Mesh(L.GEO.cone, new T.MeshPhongMaterial({ color: 0x2c2925, fog: false })); c.scale.set(90, 700, 90); c.rotation.z = (f - 2) * 0.35; c.position.set((f - 2) * 180, 350, 0); c.frustumCulled = false; handM.add(c); } handM.visible = false; L.scene.add(handM);
@@ -481,8 +481,8 @@
     const clawUp = claw(), clawDn = claw(); clawDn.rotation.z = Math.PI;
     const wave = new T.Mesh(new T.TorusGeometry(1, 0.08, 8, 64), new T.MeshBasicMaterial({ color: 0xffd8a0, transparent: true, opacity: 0, depthWrite: false })); wave.frustumCulled = false; wave.visible = false; L.scene.add(wave);
     iva = { rig, K, F, E0, maw, clawUp, clawDn, wave, armS, handM, chunks: [], cam: { x: 0, y: 0, z: 0, lx: 0, ly: 0, lz: 0 } };
-    L.banner('👹 MAMA IVA', '… sie hat Hunger.');
-    L.startCine('👹 MAMA IVA GEGEN BERNHARD', 33, () => iva && iva.cam);
+    L.banner('👹 BIG MAMA', '… sie hat Hunger.');
+    L.startCine('👹 BIG MAMA GEGEN BERNHARD', 33, () => iva && iva.cam);
   }
   const ease = (u) => { u = L.clamp(u, 0, 1); return u * u * (3 - 2 * u); };
   function chunk(V, pos, big) {
@@ -635,7 +635,7 @@
     if (P.alive && !P.gone && L.inMoon(P.x) && L.unlockJupiter) L.unlockJupiter();
     bern.killed = false;
     moonIsl.earth.visible = true; moonIsl.atmo.visible = true;
-    L.msg('👹 MAMA IVA hat Bernhard gefressen … Er kommt in 10 Minuten wieder. Wenn er sich traut.', 7000);
+    L.msg('👹 BIG MAMA hat Bernhard gefressen … Er kommt in 10 Minuten wieder. Wenn er sich traut.', 7000);
   }
   const rings = [];
   function ring(x, z) {
@@ -661,7 +661,7 @@
     if (ph === 'aim' || ph === 'chomp') return '⚠️ BERNHARD BEISST ZU – RAUS AUS DEM ROTEN KREIS!';
     if (ph === 'hunt' || ph === 'rise') return '😈 BERNHARD jagt dich – noch ' + L.fmt(Math.max(0, bern.huntT)) + ' · nur der 🍔 Burger ist sicher';
     if (ph === 'final') return '😱 BERNHARD FRISST DEN MOND! In den 🍔 Burger! (' + Math.max(0, Math.ceil(12 - bern.t)) + ' s)';
-    if (ph === 'iva') return '👹 MAMA IVA FRISST BERNHARD';
+    if (ph === 'iva') return '👹 BIG MAMA FRISST BERNHARD';
     if (ph === 'cine' || ph === 'approach' || ph === 'eat' || ph === 'leave') return '😈 BERNHARD AKA DER MASSIVE ZERSTÖRER';
     return '🍔 Bernhard kommt in ' + L.fmt(Math.max(0, bTimer));
   };
@@ -683,7 +683,7 @@
     updateBernhard(dt);
     updateRings(dt);
   };
-  // für den Trailer: MAMA IVA gegen Bernhard starten (Suplex ca. 17 s später)
+  // für den Trailer: BIG MAMA gegen Bernhard starten (Suplex ca. 17 s später)
   L._ivaShow = function () { const I = moonIsl; if (!I || !I.earth) return false; if (!bern || !bern.g) bern = { g: buildBernhard(), frags: [] }; bern.frags = bern.frags || []; bern.g.visible = true; L._ivaKeep = true; startIvaEnd(); return true; };
   L._iva = () => iva; L._bernT = () => (bern ? bern.t : 0);
   L._moonDbg = { setT: (v) => { bTimer = v; }, bern: () => bern, isl: () => moonIsl };

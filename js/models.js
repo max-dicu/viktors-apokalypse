@@ -1195,7 +1195,7 @@
     return { root, hull: pelvis, torso, arms, thin, neck, head, mouth, core, legs, beam, legA: 19, legB: 21, hipR: 5, footR: 17 };
   };
 
-  // ---------- GIGA-CAPY: riesiges, aufrecht stehendes Capybara, das MAMA IVA in die Tiefe zieht ----------
+  // ---------- GIGA-CAPY: riesiges, aufrecht stehendes Capybara, das BIG MAMA in die Tiefe zieht ----------
   L.buildGigaCapy = function () {
     const root = new T.Group(), sph = G().sph, box = G().box, cone = G().cone;
     const FUR = '#7d5434', DARK = '#5a3a22', LIGHT = '#a07450', NOSE = '#3a2416', PLATE = '#3e2a1c';

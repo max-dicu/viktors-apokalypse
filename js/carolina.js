@@ -272,7 +272,7 @@
   };
   // andere Monster kommen nicht in die Basis
   // Zaun um die Basis (jedes Bild): wer an die Grenze kommt, bleibt außen stehen und verliert die Spur.
-  // Gilt für alle Monster, Laser-Roboter, Tentakel-Maschinen, MAMA IVA und den Walross-Boss.
+  // Gilt für alle Monster, Laser-Roboter, Tentakel-Maschinen, BIG MAMA und den Walross-Boss.
   function fence(m, pad) {
     if (!m || m.dead || m === C || typeof m.x !== 'number' || !L.inMil(m.x, m.z, pad)) return false;
     const M = L.MIL, dl = m.x - (M.x1 - pad), dr = M.x2 + pad - m.x, dt2 = m.z - (M.z1 - pad), db = M.z2 + pad - m.z, mn = Math.min(dl, dr, dt2, db);

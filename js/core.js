@@ -426,7 +426,7 @@
       drum(t, 8000, 7000, 0.04, 0.03, 7000);
       if (s % 16 === 0) mn({ t, m: L.pick([69, 70, 72]), dur: 1.2, vol: 0.035, type: 'square', lp: 2000 });
     } },
-    // Bosskampf: treibender Bass, schwere Trommeln, Bläser-Stöße, Chor und eine Melodie. Wird mit jeder Stufe von MAMA IVA schneller
+    // Bosskampf: treibender Bass, schwere Trommeln, Bläser-Stöße, Chor und eine Melodie. Wird mit jeder Stufe von BIG MAMA schneller
     boss: { bpm: 138, play(t, s) {
       const bar = Math.floor(s / 16) % 4, ch = [CH.Dm, CH.Dm, [46, 50, 53], CH.E][bar], root = ch[0] - 24;
       const lvl = Math.min(6, L.bossMusicLvl || 0);
