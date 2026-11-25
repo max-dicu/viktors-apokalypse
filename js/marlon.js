@@ -17,6 +17,15 @@
   let vibT = null, adaT = null;
   function vibTex() { if (vibT) return vibT; const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); g.fillStyle = '#17131f'; g.fillRect(0, 0, 128, 128); g.strokeStyle = '#7a4ad0'; g.lineWidth = 2; const r = 10; for (let y = 0; y < 150; y += r * 1.5) for (let x = 0; x < 150; x += r * 1.732) { const ox = x + ((y / (r * 1.5)) % 2 ? r * 0.866 : 0); g.beginPath(); for (let k = 0; k < 7; k++) { const an = Math.PI / 3 * k + Math.PI / 6; g.lineTo(ox + Math.cos(an) * r, y + Math.sin(an) * r); } g.stroke(); } vibT = new T.CanvasTexture(c); vibT.wrapS = vibT.wrapT = T.RepeatWrapping; vibT.repeat.set(2, 2); return vibT; }
   function adaTex() { if (adaT) return adaT; const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d'); for (let y = 0; y < 128; y++) { const v = 170 + Math.floor(Math.random() * 60); g.fillStyle = 'rgb(' + v + ',' + (v + 4) + ',' + (v + 10) + ')'; g.fillRect(0, y, 128, 1); } for (let i = 0; i < 40; i++) { g.fillStyle = 'rgba(255,255,255,0.25)'; g.fillRect(Math.random() * 128, Math.random() * 128, 20 + Math.random() * 60, 1); } adaT = new T.CanvasTexture(c); adaT.wrapS = adaT.wrapT = T.RepeatWrapping; return adaT; }
+  let sdT = null, sgT = null;
+  function sidePaint(g, glow) {
+    g.clearRect(0, 0, 128, 150); g.fillStyle = glow ? '#000' : '#8a9098'; g.fillRect(0, 0, 128, 150);
+    if (!glow) { const gr = g.createLinearGradient(0, 0, 128, 150); gr.addColorStop(0, '#b8bec6'); gr.addColorStop(0.5, '#7a8088'); gr.addColorStop(1, '#a4aab2'); g.fillStyle = gr; g.beginPath(); g.moveTo(64, 6); g.lineTo(122, 40); g.lineTo(122, 110); g.lineTo(64, 144); g.lineTo(6, 110); g.lineTo(6, 40); g.closePath(); g.fill(); g.strokeStyle = '#4a4e56'; g.lineWidth = 4; g.stroke(); }
+    g.strokeStyle = glow ? '#b080ff' : '#3e4249'; g.lineWidth = glow ? 3 : 5; g.beginPath(); g.moveTo(64, 20); g.lineTo(96, 58); g.lineTo(74, 75); g.lineTo(100, 128); g.moveTo(64, 20); g.lineTo(32, 58); g.lineTo(54, 75); g.lineTo(28, 128); g.stroke();
+    g.beginPath(); g.ellipse(52, 75, 12, 8, 0, 0, 6.3); g.ellipse(76, 75, 12, 8, 0, 0, 6.3); g.stroke();
+  }
+  function sideTex() { if (sdT) return sdT; const c = document.createElement('canvas'); c.width = 128; c.height = 150; sidePaint(c.getContext('2d'), false); sdT = new T.CanvasTexture(c); return sdT; }
+  function sideGlow() { if (sgT) return sgT; const c = document.createElement('canvas'); c.width = 128; c.height = 150; sidePaint(c.getContext('2d'), true); sgT = new T.CanvasTexture(c); return sgT; }
   const obh = L.buildHuman;
   L.buildHuman = function (app, force) {
     if (!app || app.special !== 'h_' + ID) return obh(app, force);
@@ -30,19 +39,25 @@
     const blk = SM(0x111111, { roughness: 0.6 }), sock = SM(0xf2f2f2, { roughness: 1 }), grey = SM(0x9a9ca2, { metalness: 0.6, roughness: 0.35 }), zip = SM(0xcfd2d8, { metalness: 0.9, roughness: 0.3 });
     const G = L.GEO;
     const P3 = (geo, m, sx, sy, sz, x, y, z, par) => { const o = new T.Mesh(geo, m); o.scale.set(sx, sy, sz); o.position.set(x, y, z); o.castShadow = true; par.add(o); return o; };
-    const fz = 0.14;
+    const fz = 0.18;
     // --- Athletischer Sleeper-Build: breite Schultern, Rücken, Schlüsselbeine (unter dem Hoodie) ---
-    P3(G.box, hood, 0.54, 0.2, 0.28, 0, 0.5, 0, r.torso);
-    P3(G.box, hood, 0.47, 0.14, 0.275, 0, 0.36, 0, r.torso);
+    P3(G.box, hood, 0.68, 0.2, 0.3, 0, 0.5, 0, r.torso);
+    P3(G.box, hood, 0.62, 0.14, 0.3, 0, 0.36, 0, r.torso);
     P3(G.box, hood, 0.42, 0.24, 0.3, 0, 0.18, 0, r.torso);
     for (const sd of [-1, 1]) { const cl = P3(G.box, hoodD, 0.16, 0.012, 0.012, sd * 0.1, 0.6, fz + 0.005, r.torso); cl.rotation.z = sd * -0.18; }
-    // Quarter-Zip: leicht offen, weißes T-Shirt sichtbar, Stehkragen, Kapuze
-    P3(G.box, tee, 0.075, 0.1, 0.01, 0, 0.56, fz + 0.004, r.torso);
-    for (const sd of [-1, 1]) { const f = P3(G.box, hood, 0.045, 0.13, 0.012, sd * 0.045, 0.56, fz + 0.007, r.torso); f.rotation.z = sd * 0.25; P3(G.box, zip, 0.006, 0.12, 0.006, sd * 0.03, 0.56, fz + 0.012, r.torso).rotation.z = sd * 0.25; const k = P3(G.box, hood, 0.07, 0.07, 0.03, sd * 0.08, 0.66, 0.08, r.torso); k.rotation.z = sd * 0.35; }
-    P3(G.box, zip, 0.006, 0.12, 0.006, 0, 0.44, fz + 0.006, r.torso); P3(G.box, zip, 0.02, 0.03, 0.008, 0, 0.5, fz + 0.012, r.torso);
+    // Reißverschluss bis etwa zur Brustmitte offen (etwas weiter offen als ein Quarter-Zip), weißes T-Shirt sichtbar
+    P3(G.box, tee, 0.12, 0.2, 0.01, 0, 0.52, fz + 0.004, r.torso);
+    for (const sd of [-1, 1]) {
+      const f = P3(G.box, hood, 0.075, 0.24, 0.014, sd * 0.07, 0.52, fz + 0.008, r.torso); f.rotation.z = sd * 0.2;
+      P3(G.box, zip, 0.007, 0.22, 0.007, sd * 0.042, 0.52, fz + 0.016, r.torso).rotation.z = sd * 0.2;
+      const k = P3(G.box, hood, 0.08, 0.08, 0.03, sd * 0.1, 0.66, 0.08, r.torso); k.rotation.z = sd * 0.45;
+    }
+    P3(G.box, zip, 0.007, 0.32, 0.007, 0, 0.26, fz + 0.007, r.torso);
+    P3(G.box, zip, 0.024, 0.04, 0.008, 0, 0.405, fz + 0.014, r.torso); P3(G.box, SM(0x222222), 0.012, 0.035, 0.006, 0, 0.375, fz + 0.016, r.torso);
     P3(G.sph, hoodD, 0.2, 0.12, 0.1, 0, 0.62, -0.17, r.torso);
     // Kängurutasche verdecken, zwei normale Seitentaschen
-    for (const sd of [-1, 1]) { const p = P3(G.box, hoodD, 0.012, 0.13, 0.01, sd * 0.15, 0.2, 0.152, r.torso); p.rotation.z = sd * 0.35; }
+    P3(G.box, hood, 0.4, 0.24, 0.012, 0, 0.18, fz + 0.002, r.torso); P3(G.box, hood, 0.5, 0.36, 0.01, 0, 0.4, fz - 0.004, r.torso);
+    for (const sd of [-1, 1]) { const p = P3(G.box, hoodD, 0.012, 0.13, 0.01, sd * 0.2, 0.2, fz + 0.016, r.torso); p.rotation.z = sd * 0.35; }
     P3(G.box, hoodD, 0.42, 0.05, 0.27, 0, 0.06, 0, r.torso);
     // Ärmel: oversized, Bündchen fallen über die Hände
     (r.arms || []).forEach((a2) => {
@@ -62,18 +77,27 @@
       P3(G.box, blk, 0.155, 0.055, 0.12, 0, -0.455, 0.11, lg.knee);
       for (let k = 0; k < 3; k++) P3(G.box, SM(0x2a2a2a), 0.157, 0.006, 0.02, 0, -0.44 - k * 0.015, 0.11, lg.knee);
     });
-    // Knieorthese rechts – über der Hose, so lang wie ein Schienbein, mittig am Knie
+    // Knieorthese rechts – doppelt so groß, über der Hose, mittig am Knie, Grautöne + Seiten-Design
     const lg = r.legs && r.legs[0];
     if (lg) {
-      const cuff = (par, y) => { const m = new T.Mesh(new T.CylinderGeometry(1, 1, 1, 18, 1, true), vib); m.scale.set(0.105, 0.11, 0.105); m.position.set(0, y, 0); m.material.side = T.DoubleSide; m.castShadow = true; par.add(m); P3(G.box, blk, 0.2, 0.03, 0.2, 0, y - 0.04, 0, par); return m; };
-      cuff(lg.leg, -0.34); cuff(lg.knee, -0.14);
+      const g1 = SM(0x6a6e76, { map: vibTex(), metalness: 0.8, roughness: 0.32, emissive: 0x2a1a48, emissiveMap: vibTex(), emissiveIntensity: 0.35 });
+      const g2 = SM(0x8e939c, { map: adaTex(), metalness: 1, roughness: 0.25 }), g3 = SM(0x44474e, { metalness: 0.7, roughness: 0.4 }), g4 = SM(0xb8bcc4, { map: adaTex(), metalness: 1, roughness: 0.18 });
+      const side = SM(0x9aa0a8, { map: sideTex(), metalness: 0.85, roughness: 0.3, emissive: 0x6040c0, emissiveMap: sideGlow(), emissiveIntensity: 0.9, transparent: true });
+      const cuff = (par, y, h) => { const m = new T.Mesh(new T.CylinderGeometry(1, 1, 1, 22, 1, true), g1); m.scale.set(0.118, h, 0.118); m.position.set(0, y, 0); m.material.side = T.DoubleSide; m.castShadow = true; par.add(m); P3(G.box, g3, 0.245, 0.03, 0.245, 0, y + h / 2 - 0.015, 0, par); P3(G.box, g3, 0.245, 0.03, 0.245, 0, y - h / 2 + 0.015, 0, par); return m; };
+      cuff(lg.leg, -0.3, 0.22); cuff(lg.knee, -0.17, 0.22);
       for (const sd of [-1, 1]) {
-        P3(G.box, ada, 0.022, 0.24, 0.04, sd * 0.11, -0.32, 0, lg.leg);
-        P3(G.box, ada, 0.022, 0.24, 0.04, sd * 0.11, -0.1, 0, lg.knee);
-        const h = P3(G.cyl, ada, 0.055, 0.03, 0.055, sd * 0.115, 0.01, 0, lg.knee); h.rotation.z = Math.PI / 2;
-        const h2 = P3(G.cyl, vib, 0.03, 0.035, 0.03, sd * 0.12, 0.01, 0, lg.knee); h2.rotation.z = Math.PI / 2;
+        P3(G.box, g2, 0.03, 0.4, 0.06, sd * 0.125, -0.27, 0, lg.leg);
+        P3(G.box, g2, 0.03, 0.36, 0.06, sd * 0.125, -0.14, 0, lg.knee);
+        P3(G.box, g4, 0.012, 0.36, 0.02, sd * 0.142, -0.27, 0.02, lg.leg);
+        const h = P3(G.cyl, g4, 0.09, 0.04, 0.09, sd * 0.13, 0.0, 0, lg.knee); h.rotation.z = Math.PI / 2;
+        const h2 = P3(G.cyl, g3, 0.055, 0.046, 0.055, sd * 0.135, 0.0, 0, lg.knee); h2.rotation.z = Math.PI / 2;
+        const h3 = P3(G.cyl, g1, 0.03, 0.05, 0.03, sd * 0.14, 0.0, 0, lg.knee); h3.rotation.z = Math.PI / 2;
+        // cooles Seiten-Design: Platten mit eingeprägtem Muster und leuchtender Linie
+        for (const [par, y] of [[lg.leg, -0.3], [lg.knee, -0.17]]) { const pl = new T.Mesh(new T.PlaneGeometry(0.17, 0.2), side); pl.position.set(sd * 0.158, y, 0); pl.rotation.y = sd * Math.PI / 2; par.add(pl); }
       }
-      P3(G.sph, ada, 0.085, 0.095, 0.045, 0, 0.0, 0.095, lg.knee); const fr = P3(new T.TorusGeometry(0.085, 0.012, 6, 20), vib, 1, 1.1, 1, 0, 0, 0.1, lg.knee); void fr;
+      P3(G.sph, g4, 0.13, 0.14, 0.06, 0, 0.0, 0.11, lg.knee);
+      P3(new T.TorusGeometry(0.13, 0.016, 6, 24), g3, 1, 1.08, 1, 0, 0, 0.115, lg.knee);
+      for (let k = 0; k < 3; k++) P3(G.box, g3, 0.2 - k * 0.04, 0.012, 0.01, 0, 0.06 - k * 0.06, 0.17, lg.knee);
     }
     // Krücken: grau, schwarze Griffe und Stopper, Steine kreisen um den Griff
     r.crutches = (r.arms || []).map((a2, i) => {
