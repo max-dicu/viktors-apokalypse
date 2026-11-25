@@ -1,5 +1,5 @@
 'use strict';
-// Kurzfilm beim Klick auf „Spielen“: Die Katze Massig wird überfahren, fliegt in den Himmel, wird zu Loki und hält die Zeitlinien zusammen –
+// Kurzfilm beim Klick auf „Spielen“: Die Katze Masik wird überfahren, fliegt in den Himmel, wird zu Loki und hält die Zeitlinien zusammen –
 // „Deswegen kannst du spielen.“ Antippen = überspringen.
 (function () {
   const L = window.L, T = THREE;
@@ -101,7 +101,7 @@
       const t = performance.now() / 1000 - t0;
       S.background = sky.clone().lerp(sky2, ease((t - 4) / 2));
       if (t < 3.05) {
-        // Massig läuft über die Straße, das Auto kommt
+        // Masik läuft über die Straße, das Auto kommt
         const u = t / 3.05; cat.g.position.set(0, 0, lerp(4.5, 0, u)); cat.g.rotation.set(0, Math.PI, 0); cat.legs.forEach((l, i) => { l.rotation.x = Math.sin(t * 12 + (i % 2 ? Math.PI : 0) + (i > 1 ? Math.PI : 0)) * 0.6; }); cat.tail.rotation.x = Math.sin(t * 3) * 0.2;
         car.position.set(lerp(-60, 0, ease(u * 1.02)), 0, 0); cam.position.set(4, 1.2, 6); cam.lookAt(0, 0.4, 0);
       } else if (t < 4.2) {
@@ -116,7 +116,7 @@
         if (u > 0.7) { cat.cape.visible = true; cat.horns.visible = true; }
         cam.position.set(cat.g.position.x + 5, lerp(1.5, cat.g.position.y - 2, u), 7); cam.lookAt(cat.g.position.x, cat.g.position.y, 0);
       } else if (t < 9.3) {
-        // Zoom auf Loki-Massig
+        // Zoom auf Loki-Masik
         const u = (t - 6.6) / 2.7; beam.material.opacity = Math.max(0, 0.35 - u * 0.4); cat.g.rotation.set(0, Math.PI * 2, 0); cat.g.position.y = 18 + Math.sin(t * 2) * 0.1;
         cat.cape.rotation.x = 1.4 + Math.sin(t * 4) * 0.08; cat.body.rotation.x = -0.1 * u; cat.g.rotation.x = -0.5 * ease(u);
         cam.position.set(cat.g.position.x + lerp(4, 0.2, ease(u)), cat.g.position.y + lerp(1, 0.75, u), lerp(6, 1.4, ease(u))); cam.lookAt(cat.g.position.x, cat.g.position.y + 0.5, 0);
@@ -127,7 +127,7 @@
         cam.position.set(cat.g.position.x + 0.6, cat.g.position.y + 1.2, 3.6); cam.lookAt(cat.g.position.x, cat.g.position.y + 0.7, 0);
         if (!spoke && u > 1.2) { spoke = true; talk('„Deswegen kannst du spielen.“', 'Deswegen kannst du spielen.'); }
       } else if (t < 16.5) {
-        // Massig wird größer – Übergang in eine andere Dimension
+        // Masik wird größer – Übergang in eine andere Dimension
         const u = (t - 14.5) / 2;
         if (!dim.visible && u > 0.45) { dim.visible = true; worldObjs.forEach((o) => { o.visible = false; }); stars.visible = false; S.fog.color.set(0x0a0418); S.fog.near = 40; S.fog.far = 260; cat.g.position.set(0, 0, 0); cat.g.rotation.set(0, Math.PI, 0); flashOn(); say.style.opacity = '0'; }
         S.background = new T.Color(dim.visible ? 0x0a0418 : 0x05050f); cat.g.scale.setScalar(1 + ease(u) * 3); tlM.opacity = 0.9;
@@ -151,7 +151,7 @@
         const hy = 3.1 + 0.45 * 4 + 0.5; cam.position.set(0.9, hy + 0.9, -44 + 6.5 - Math.min(1, u * 0.4) * 1.5); cam.lookAt(0, hy + 0.3, -44);
         say.style.bottom = 'auto'; say.style.top = '8%';
         if (!sp1) { sp1 = true; talk('🐈‍⬛ „Ich beschütze dich für immer.“', 'Ich beschütze dich für immer.'); }
-        if (u > 2.4 && !sp2) { sp2 = true; talk('„Töte 100 Monster – dann bekommst du MASSIGS SCHUTZ:<br>kein Schaden mehr und den Zeitstein – das Auge des Agamotto.“', 'Töte hundert Monster. Dann bekommst du meinen Schutz. Du nimmst keinen Schaden mehr, und du bekommst den Zeitstein.'); }
+        if (u > 2.4 && !sp2) { sp2 = true; talk('„Töte 100 Monster – dann bekommst du MASIKS SCHUTZ:<br>kein Schaden mehr und den Zeitstein – das Auge des Agamotto.“', 'Töte hundert Monster. Dann bekommst du meinen Schutz. Du nimmst keinen Schaden mehr, und du bekommst den Zeitstein.'); }
       }
       R.render(S, cam); if (L._cfSnap) L._cfSnap(t, R.domElement);
       if (t > D) { end(); return; }
@@ -159,7 +159,7 @@
     }
     frame();
   }
-  L.playCatFilm = play; L.buildMassig = buildCat;
+  L.playCatFilm = play; L.buildMasik = buildCat;
   // vor jedem Spielstart abspielen
   document.addEventListener('click', (e) => {
     const b = e.target && e.target.closest && e.target.closest('#btnPlay');

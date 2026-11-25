@@ -67,8 +67,8 @@
     // ---------- Darsteller vorab bauen (kein Nachladen während der Aufnahme) ----------
     const A0 = {};
     const W = { kill: 0 };
-    // Massig mit Zauberkreis
-    A0.massig = L.buildMassig ? L.buildMassig() : null; if (A0.massig) { A0.massig.cape.visible = A0.massig.horns.visible = true; prop(A0.massig.g, SP.m[0], 6, SP.m[1], 6); }
+    // Masik mit Zauberkreis
+    A0.massig = L.buildMasik ? L.buildMasik() : null; if (A0.massig) { A0.massig.cape.visible = A0.massig.horns.visible = true; prop(A0.massig.g, SP.m[0], 6, SP.m[1], 6); }
     A0.mring = new T.Mesh(new T.TorusGeometry(9, 0.25, 8, 64), new T.MeshBasicMaterial({ color: 0x60ff90, transparent: true, opacity: 0.8, blending: T.AdditiveBlending, depthWrite: false })); A0.mring.rotation.x = Math.PI / 2; A0.mring.position.set(SP.m[0], 0.3, SP.m[1]); L.scene.add(A0.mring); props.push(A0.mring);
     // fliegende Walrosse
     A0.wal = []; for (let i = 0; i < 6; i++) { const w = L.buildWalross(); prop(w, SP.w[0] + (i - 2.5) * 14, 30 + (i % 2) * 8, SP.w[1] - i * 10, 3 + (i % 3)); A0.wal.push(w); }
@@ -83,7 +83,7 @@
     // ---------- Szenen ----------
     const omniXZ = () => (L.omni ? [L.omni.x, L.omni.z] : [SP.u[0], SP.u[1] + 70]);
     const SH = [
-      // Massig – Loki-Katze mit Zauberkreis
+      // Masik – Loki-Katze mit Zauberkreis
       { d: 1.5, place() { tpS('m'); sky(21, 'klar'); }, cam(u) { const M = A0.massig; if (M) { M.g.position.y = 6 + Math.sin(u * 3) * 0.4; M.g.rotation.y = Math.sin(u) * 0.3; M.cape.rotation.x = 1.3 + Math.sin(u * 6) * 0.1; } A0.mring.rotation.z += 0.05; return { x: SP.m[0] + lerp(2, 1.2, u / 1.5), y: 9.5, z: SP.m[1] + lerp(10, 6, u / 1.5), lx: SP.m[0], ly: 8.5, lz: SP.m[1] }; } },
       // Viktor & Daniel rennen auf die Kamera zu
       { d: 1.3, place() { tpS('v'); sky(23.5, 'nebel'); P.camYaw = 0; }, spawn() { ['viktor', 'daniel', 'viktor', 'daniel', 'rollerviktor'].forEach((k, i) => mon(k, P.x + (i - 2) * 4, P.z + 20 + (i % 2) * 4)); }, cam(u) { return { x: P.x + 1, y: 1.2, z: P.z + 2 + u * 0.5, lx: P.x, ly: 1.8, lz: P.z + 20 }; } },

@@ -1,5 +1,5 @@
 'use strict';
-// Massigs Schutz: nach 100 getöteten Monstern (über alle Runden) nimmst du keinen Schaden mehr und bekommst
+// Masiks Schutz: nach 100 getöteten Monstern (über alle Runden) nimmst du keinen Schaden mehr und bekommst
 // das „Auge des Agamotto“ – einen mächtigeren Zeitstein: Zeit anhalten, zurückspulen (heilen), grüne Zauberkreise.
 (function () {
   const L = window.L, T = THREE, P = L.player, GOAL = 100;
@@ -8,13 +8,13 @@
   L.onMonsterKill = function () {
     if (!L.save || has()) return;
     L.save.massigKills = (L.save.massigKills || 0) + 1; const n = L.save.massigKills;
-    if (n % 10 === 0 && n < GOAL) L.msg('🐈‍⬛ Massig: ' + n + ' / ' + GOAL + ' Monster – sein Schutz kommt näher …', 2500);
+    if (n % 10 === 0 && n < GOAL) L.msg('🐈‍⬛ Masik: ' + n + ' / ' + GOAL + ' Monster – sein Schutz kommt näher …', 2500);
     if (n >= GOAL) unlock();
     L.persist && L.persist();
   };
   function unlock() {
     L.save.massig = 1; L.persist && L.persist();
-    L.banner('🐈‍⬛ MASSIGS SCHUTZ', 'Du nimmst keinen Schaden mehr – und du hast das Auge des Agamotto!');
+    L.banner('🐈‍⬛ MASIKS SCHUTZ', 'Du nimmst keinen Schaden mehr – und du hast das Auge des Agamotto!');
     L.tn && L.tn({ f: 300, fTo: 1200, dur: 1.2, type: 'triangle', vol: 0.25 });
     giveEye(); ring(P.x, (P.y || 0) + 1.2, P.z, 6, 1.2, true);
   }
@@ -65,21 +65,21 @@
     return true;
   };
   let tintEl = null; function tint(on) { if (!tintEl) { tintEl = document.createElement('div'); tintEl.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:11;background:radial-gradient(circle,rgba(40,255,120,0) 40%,rgba(40,255,120,.22));transition:opacity .6s;opacity:0'; document.body.appendChild(tintEl); } tintEl.style.opacity = on ? '1' : '0'; }
-  // Kein Schaden mit Massigs Schutz
+  // Kein Schaden mit Masiks Schutz
   const ohp = L.hurtPlayer;
   let shieldT = 0;
   L.hurtPlayer = function (dmg, why) {
     if (has() && P.alive) { const now = performance.now(); if (now - shieldT > 600) { shieldT = now; ring(P.x, (P.y || 0) + 1.1, P.z, 2.2, 0.5, false); } return; }
     return ohp(dmg, why);
   };
-  // Geist-Massig schwebt über dir
+  // Geist-Masik schwebt über dir
   let spirit = null;
-  L.updateMassig = function (dt) {
+  L.updateMasik = function (dt) {
     for (let i = rings.length - 1; i >= 0; i--) { const r = rings[i]; r.t += dt; r.m.rotation.z += dt * r.spin; if (r.follow) { const fx = Math.sin(P.camYaw), fz = Math.cos(P.camYaw); r.m.position.set(P.x + fx * 0.8 + fz * r.follow.side * 0.4, (P.y || 0) + 1.3, P.z + fz * 0.8 - fx * r.follow.side * 0.4); r.m.lookAt(P.x + fx * 10, (P.y || 0) + 1.3, P.z + fz * 10); }
       const k = r.t / r.life; r.m.material.opacity = 0.95 * (k < 0.85 ? 1 : (1 - k) / 0.15); if (k >= 1) { L.scene.remove(r.m); r.m.geometry.dispose(); rings.splice(i, 1); } }
     if (freezeT > 0) { freezeT -= dt; for (const f of frozen) { if (f.e.dead) continue; f.e.x = f.x; f.e.z = f.z; f.e.stunT = Math.max(f.e.stunT || 0, 0.3); } if (freezeT <= 0) frozen = []; }
     if (!has() || L.state !== 'game') { if (spirit) spirit.g.visible = false; return; }
-    if (!spirit && L.buildMassig) { spirit = L.buildMassig(); spirit.cape.visible = true; spirit.horns.visible = true; spirit.g.scale.setScalar(0.7); spirit.g.traverse((o) => { if (o.isMesh) { o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = 0.85; } }); L.scene.add(spirit.g); }
+    if (!spirit && L.buildMasik) { spirit = L.buildMasik(); spirit.cape.visible = true; spirit.horns.visible = true; spirit.g.scale.setScalar(0.7); spirit.g.traverse((o) => { if (o.isMesh) { o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = 0.85; } }); L.scene.add(spirit.g); }
     if (spirit) { const t = performance.now() / 1000; spirit.g.visible = !P.vehicle; spirit.g.position.set(P.x + Math.cos(P.camYaw) * 0.9, (P.y || 0) + 2.6 + Math.sin(t * 2) * 0.12, P.z - Math.sin(P.camYaw) * 0.9); spirit.g.rotation.y = P.camYaw; spirit.cape.rotation.x = 1.3 + Math.sin(t * 4) * 0.1; spirit.tail.rotation.x = Math.sin(t * 2) * 0.3; }
   };
 })();

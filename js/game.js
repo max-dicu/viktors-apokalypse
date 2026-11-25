@@ -3245,7 +3245,7 @@
     if (L.updateAim) L.updateAim(dt);
     if (L.updateRealism) L.updateRealism(dt);
     if (L.updateHeroes) L.updateHeroes(dt);
-    if (L.updateMassig) L.updateMassig(dt);
+    if (L.updateMasik) L.updateMasik(dt);
     if (L.updateTitan) L.updateTitan(dt);
     if (L.updateTitanArmor) L.updateTitanArmor(dt);
     if (L.updateRuslan) L.updateRuslan(dt);
