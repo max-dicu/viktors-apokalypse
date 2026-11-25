@@ -423,6 +423,7 @@
     if (e.dead) return;
     e.dead = true; e.deadT = 0;
     if (src === P) P.kills++;
+    if (src === P && MK[e.kind] && L.onMonsterKill) L.onMonsterKill(e);
     if (!isClient()) { killReward(e, src); if (MK[e.kind]) queueRespawn(e); }
     if (MK[e.kind]) {
       if (MK[e.kind].metal) { L.fx('#ffb040', e.x, e.fly ? 16 : 2, e.z, 30, 8, { basic: true, size: 0.3, life: 1 }); L.snd.explosion({ x: e.x, y: 2, z: e.z }); }
@@ -3244,6 +3245,7 @@
     if (L.updateAim) L.updateAim(dt);
     if (L.updateRealism) L.updateRealism(dt);
     if (L.updateHeroes) L.updateHeroes(dt);
+    if (L.updateMassig) L.updateMassig(dt);
     if (L.updateTitan) L.updateTitan(dt);
     if (L.updateTitanArmor) L.updateTitanArmor(dt);
     if (L.updateRuslan) L.updateRuslan(dt);

@@ -45,12 +45,15 @@
     [261.6, 329.6, 392, 523.3].forEach((f, i) => osc('triangle', f, 4 + i * 0.25, 5, 0.05)); // Himmel-Chor
     noise(5.6, 1.2, 0.25, 'highpass', 4000, 9000); // Funkeln
     [146.8, 220, 293.7, 349.2].forEach((f) => osc('sawtooth', f, 9.5, 4.5, 0.025)); osc('sine', 55, 9.5, 4.5, 0.25); // Zeitlinien-Brummen
+    noise(14.9, 1.5, 0.5, 'bandpass', 200, 6000); osc('sine', 60, 15.2, 2, 0.6, 30); // Dimensionssprung
+    [110, 164.8, 220, 261.6].forEach((f) => osc('triangle', f, 16.5, 8.5, 0.04)); for (let k = 0; k < 10; k++) osc('sine', 70, 16.5 + k * 0.5, 0.4, 0.25, 45); // Schritte zum Thron
+    [146.8, 185, 220, 293.7, 370].forEach((f, i) => osc('triangle', f, 21.5 + i * 0.3, 9, 0.05)); osc('sine', 55, 21.5, 9, 0.3); // Baum des Wissens
     return out;
   }
   function play(done) {
-    const D = 14.5;
+    const D = 30.5;
     const wrap = document.createElement('div'); wrap.style.cssText = 'position:fixed;inset:0;z-index:300;background:#000;cursor:pointer';
-    wrap.innerHTML = '<div id="cfSay" style="position:absolute;left:50%;bottom:14%;transform:translateX(-50%);font:900 clamp(20px,4vw,44px) Arial;color:#fff;-webkit-text-stroke:1px #000;text-shadow:0 3px 0 #000,0 0 20px #3a8a3a;opacity:0;transition:opacity .5s;text-align:center;white-space:nowrap"></div><div style="position:absolute;right:14px;bottom:10px;color:#fff;opacity:.5;font:12px Arial">Tippen = überspringen</div><div id="cfFade" style="position:absolute;inset:0;background:#000;opacity:1;transition:opacity .8s;pointer-events:none"></div>';
+    wrap.innerHTML = '<div id="cfSay" style="position:absolute;left:50%;bottom:14%;transform:translateX(-50%);max-width:92vw;white-space:normal!important;font:900 clamp(20px,4vw,44px) Arial;color:#fff;-webkit-text-stroke:1px #000;text-shadow:0 3px 0 #000,0 0 20px #3a8a3a;opacity:0;transition:opacity .5s;text-align:center;white-space:nowrap"></div><div style="position:absolute;right:14px;bottom:10px;color:#fff;opacity:.5;font:12px Arial">Tippen = überspringen</div><div id="cfFade" style="position:absolute;inset:0;background:#000;opacity:1;transition:opacity .8s;pointer-events:none"></div>';
     document.body.appendChild(wrap);
     const R = new T.WebGLRenderer({ antialias: true }); R.setPixelRatio(Math.min(devicePixelRatio, 1.5)); R.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%'; wrap.insertBefore(R.domElement, wrap.firstChild);
     const S = new T.Scene(), cam = new T.PerspectiveCamera(50, 1, 0.05, 2000); S.fog = new T.Fog(0x2a2a48, 30, 120);
@@ -70,9 +73,27 @@
     const tl = new T.Group(); S.add(tl); const tlM = new T.MeshBasicMaterial({ color: 0x60ff80, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false });
     for (let k = 0; k < 26; k++) { const pts = []; let x = 0, y = 0, z = 0; const a = k / 26 * 6.283; for (let i = 0; i < 14; i++) { pts.push(new T.Vector3(x, y, z)); x += Math.cos(a) * 0.6 + (Math.random() - 0.5) * 0.3; y += Math.sin(a) * 0.6 + (Math.random() - 0.5) * 0.3; z += (Math.random() - 0.5) * 0.4; } const tube = new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 40, 0.02 + Math.random() * 0.02, 5, false), tlM); tl.add(tube); }
     const sky = new T.Color(0x2a2a48), sky2 = new T.Color(0x05050f);
+    const keep = new Set([hemi, dl, cat.g, tl]); const worldObjs = S.children.filter((o) => !keep.has(o));
+    const dim = new T.Group(); dim.visible = false; S.add(dim);
+    const dimP = new T.Points((() => { const gg = new T.BufferGeometry(), p = new Float32Array(2500 * 3); for (let i = 0; i < 2500; i++) { p[i * 3] = (Math.random() - 0.5) * 300; p[i * 3 + 1] = Math.random() * 120 - 20; p[i * 3 + 2] = (Math.random() - 0.5) * 300; } gg.setAttribute('position', new T.BufferAttribute(p, 3)); return gg; })(), new T.PointsMaterial({ color: 0x80ffb0, size: 0.35, transparent: true, opacity: 0.8 })); dim.add(dimP);
+    const path = new T.Mesh(new T.PlaneGeometry(6, 60), new T.MeshBasicMaterial({ color: 0x1a4a2a, transparent: true, opacity: 0.85 })); path.rotation.x = -Math.PI / 2; path.position.set(0, -0.01, -22); dim.add(path);
+    for (let k = 0; k < 14; k++) { const l = new T.Mesh(new T.PlaneGeometry(6.2, 0.15), new T.MeshBasicMaterial({ color: 0x80ffb0 })); l.rotation.x = -Math.PI / 2; l.position.set(0, 0, -k * 4); dim.add(l); }
+    const goldT = new T.MeshStandardMaterial({ color: 0xd8a830, metalness: 0.9, roughness: 0.25, emissive: 0x2a1a00 }), greenT = new T.MeshStandardMaterial({ color: 0x1f6a2a, metalness: 0.4, roughness: 0.5 });
+    const throne = new T.Group(); throne.position.set(0, 0, -44); dim.add(throne);
+    const bx = (m, w, h, d, x, y, z) => { const o = new T.Mesh(new T.BoxGeometry(w, h, d), m); o.position.set(x, y, z); throne.add(o); return o; };
+    bx(goldT, 6, 1.2, 5, 0, 0.6, 0); bx(goldT, 5, 1.6, 4, 0, 1.9, 0); bx(greenT, 4.2, 0.4, 3.4, 0, 2.9, 0.2); bx(goldT, 5, 9, 0.8, 0, 6.4, -1.8); bx(greenT, 3.8, 7.4, 0.3, 0, 6.6, -1.35);
+    for (const sd of [-1, 1]) { bx(goldT, 0.7, 2.4, 3.8, sd * 2.4, 3.4, 0); for (let k = 0; k < 5; k++) { const h = new T.Mesh(new T.CylinderGeometry(0.3 - k * 0.04, 0.34 - k * 0.04, 1.4, 8), goldT); h.position.set(sd * (1.8 + k * 0.35), 10.8 + k * 1.1, -1.8 - k * 0.2); h.rotation.z = -sd * (0.3 + k * 0.12); throne.add(h); } }
+    const tree = new T.Group(); tree.position.set(0, 0, -50); tree.scale.setScalar(0.01); dim.add(tree);
+    const treeM = new T.MeshBasicMaterial({ color: 0x60ff80, transparent: true, opacity: 0.85, blending: T.AdditiveBlending, depthWrite: false });
+    tree.add(new T.Mesh(new T.CylinderGeometry(1.2, 2.2, 60, 12, 1, true), treeM)); tree.children[0].position.y = 30;
+    for (let k = 0; k < 46; k++) { const a = k / 46 * 6.283 * 3.1, h0 = 12 + (k / 46) * 44, pts = [new T.Vector3(0, h0, 0)]; let x = 0, y = h0, z = 0; for (let i = 0; i < 9; i++) { x += Math.cos(a) * (2.4 + i * 0.3) + (Math.random() - 0.5); z += Math.sin(a) * (2.4 + i * 0.3) + (Math.random() - 0.5); y += 1.4 - i * 0.12 + (Math.random() - 0.5) * 0.6; pts.push(new T.Vector3(x, y, z)); } tree.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 30, 0.15 + Math.random() * 0.12, 5, false), treeM)); }
+    for (let k = 0; k < 20; k++) { const a = k / 20 * 6.283, pts = [new T.Vector3(0, 0, 0)]; let x = 0, z = 0; for (let i = 0; i < 6; i++) { x += Math.cos(a) * 3; z += Math.sin(a) * 3; pts.push(new T.Vector3(x, -0.2 - i * 0.1, z)); } tree.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 20, 0.3, 5, false), treeM)); }
+    const glowL = new T.PointLight(0x80ffb0, 0, 200, 1.5); glowL.position.set(0, 30, -50); dim.add(glowL);
     let A = null, out = null; try { L.initAudio && L.initAudio(); A = L.audio && L.audio.ctx; if (A) out = sound(A, A.currentTime + 0.05); } catch (e) { /* ohne Ton */ }
     const say = wrap.querySelector('#cfSay'), fade = wrap.querySelector('#cfFade'); requestAnimationFrame(() => { fade.style.opacity = '0'; });
-    const t0 = performance.now() / 1000; let ended = false, spoke = false, fly = null;
+    const t0 = performance.now() / 1000; let ended = false, spoke = false, fly = null, treeSaid = false, sp1 = false, sp2 = false;
+    const talk = (html, text) => { say.innerHTML = html; say.style.opacity = '1'; try { speechSynthesis.cancel(); const s = new SpeechSynthesisUtterance(text); s.lang = 'de-DE'; s.pitch = 1.4; s.rate = 1; speechSynthesis.speak(s); } catch (e) { /* egal */ } };
+    const flashOn = () => { fade.style.transition = 'none'; fade.style.background = '#fff'; fade.style.opacity = '1'; requestAnimationFrame(() => { fade.style.transition = 'opacity .8s'; fade.style.opacity = '0'; setTimeout(() => { fade.style.background = '#000'; }, 900); }); };
     const end = () => { if (ended) return; ended = true; try { if (out) out.gain.setTargetAtTime(0, A.currentTime, 0.2); speechSynthesis.cancel(); } catch (e) { /* egal */ } fade.style.opacity = '1'; setTimeout(() => { wrap.remove(); R.dispose(); done(); }, 700); };
     wrap.addEventListener('pointerdown', end);
     function frame() {
@@ -99,12 +120,38 @@
         const u = (t - 6.6) / 2.7; beam.material.opacity = Math.max(0, 0.35 - u * 0.4); cat.g.rotation.set(0, Math.PI * 2, 0); cat.g.position.y = 18 + Math.sin(t * 2) * 0.1;
         cat.cape.rotation.x = 1.4 + Math.sin(t * 4) * 0.08; cat.body.rotation.x = -0.1 * u; cat.g.rotation.x = -0.5 * ease(u);
         cam.position.set(cat.g.position.x + lerp(4, 0.2, ease(u)), cat.g.position.y + lerp(1, 0.75, u), lerp(6, 1.4, ease(u))); cam.lookAt(cat.g.position.x, cat.g.position.y + 0.5, 0);
-      } else {
+      } else if (t < 14.5) {
         // hält die Zeitlinien zusammen
         const u = t - 9.3; beam.visible = false; tl.position.set(cat.g.position.x, cat.g.position.y + 0.45, 0.35); tl.rotation.z += 0.004; tlM.opacity = Math.min(0.9, u * 0.8); tl.scale.setScalar(Math.min(1, u * 0.7) * (1 + Math.sin(t * 3) * 0.02));
         cat.g.rotation.x = -0.9; cat.legs[0].rotation.x = cat.legs[1].rotation.x = -2.2; cat.cape.rotation.x = 1.4 + Math.sin(t * 4) * 0.08;
         cam.position.set(cat.g.position.x + 0.6, cat.g.position.y + 1.2, 3.6); cam.lookAt(cat.g.position.x, cat.g.position.y + 0.7, 0);
-        if (!spoke && u > 1.2) { spoke = true; say.textContent = '„Deswegen kannst du spielen.“'; say.style.opacity = '1'; try { const s = new SpeechSynthesisUtterance('Deswegen kannst du spielen.'); s.lang = 'de-DE'; s.pitch = 1.4; s.rate = 0.95; speechSynthesis.speak(s); } catch (e) { /* egal */ } }
+        if (!spoke && u > 1.2) { spoke = true; talk('„Deswegen kannst du spielen.“', 'Deswegen kannst du spielen.'); }
+      } else if (t < 16.5) {
+        // Massig wird größer – Übergang in eine andere Dimension
+        const u = (t - 14.5) / 2;
+        if (!dim.visible && u > 0.45) { dim.visible = true; worldObjs.forEach((o) => { o.visible = false; }); stars.visible = false; S.fog.color.set(0x0a0418); S.fog.near = 40; S.fog.far = 260; cat.g.position.set(0, 0, 0); cat.g.rotation.set(0, Math.PI, 0); flashOn(); say.style.opacity = '0'; }
+        S.background = new T.Color(dim.visible ? 0x0a0418 : 0x05050f); cat.g.scale.setScalar(1 + ease(u) * 3); tlM.opacity = 0.9;
+        tl.position.set(cat.g.position.x, cat.g.position.y + 0.45 * cat.g.scale.x, cat.g.position.z + (dim.visible ? 0.8 : 0.35)); tl.scale.setScalar(cat.g.scale.x * 0.6);
+        cam.position.set(cat.g.position.x + 3 + u * 6, cat.g.position.y + 2 + u * 3, cat.g.position.z + 6 + u * 6); cam.lookAt(cat.g.position.x, cat.g.position.y + 1.2 * cat.g.scale.x, cat.g.position.z);
+      } else if (t < 21.5) {
+        // läuft auf den Thron zu und trägt die Zeitlinien mit
+        const u = (t - 16.5) / 5; S.background = new T.Color(0x0a0418); cat.g.scale.setScalar(4); cat.g.rotation.set(0, Math.PI, 0); cat.g.position.set(0, 0, lerp(0, -38, u));
+        cat.legs.forEach((l, i) => { l.rotation.x = Math.sin(t * 7 + (i % 2 ? Math.PI : 0) + (i > 1 ? Math.PI : 0)) * 0.5; }); cat.cape.rotation.x = 1.3 + Math.sin(t * 3) * 0.1;
+        tl.position.set(0, 1.6, cat.g.position.z + 3.5); tl.rotation.set(0, 0, t * 0.2); tl.scale.setScalar(2.2); tlM.opacity = 0.85; dimP.rotation.y += 0.001;
+        cam.position.set(7, 4.5, cat.g.position.z + 9); cam.lookAt(0, 2.5, cat.g.position.z - 4);
+      } else if (t < 25) {
+        // setzt sich auf den Thron – die Zeitlinien wachsen zum Baum des Wissens
+        const u = (t - 21.5) / 3.5; cat.g.position.set(0, 3.1, -44 + 0.4); cat.g.rotation.set(0, 0, 0); cat.g.scale.setScalar(4); cat.legs.forEach((l) => { l.rotation.x = -0.6; });
+        tl.position.set(0, 4.8, -43); tl.scale.setScalar(2.2 * (1 - ease(u))); tree.scale.setScalar(Math.max(0.01, ease(u))); glowL.intensity = ease(u) * 3; tree.rotation.y += 0.002;
+        cam.position.set(lerp(30, 22, u), lerp(10, 30, u), -10); cam.lookAt(0, lerp(6, 26, u), -46);
+        if (u > 0.2 && !treeSaid) { treeSaid = true; sky2.set(0x0a0418); }
+      } else {
+        // Nahaufnahme – das Versprechen
+        const u = t - 25; tl.visible = false; tree.scale.setScalar(1); tree.rotation.y += 0.002;
+        const hy = 3.1 + 0.45 * 4 + 0.5; cam.position.set(0.9, hy + 0.9, -44 + 6.5 - Math.min(1, u * 0.4) * 1.5); cam.lookAt(0, hy + 0.3, -44);
+        say.style.bottom = 'auto'; say.style.top = '8%';
+        if (!sp1) { sp1 = true; talk('🐈‍⬛ „Ich beschütze dich für immer.“', 'Ich beschütze dich für immer.'); }
+        if (u > 2.4 && !sp2) { sp2 = true; talk('„Töte 100 Monster – dann bekommst du MASSIGS SCHUTZ:<br>kein Schaden mehr und den Zeitstein – das Auge des Agamotto.“', 'Töte hundert Monster. Dann bekommst du meinen Schutz. Du nimmst keinen Schaden mehr, und du bekommst den Zeitstein.'); }
       }
       R.render(S, cam); if (L._cfSnap) L._cfSnap(t, R.domElement);
       if (t > D) { end(); return; }
@@ -112,7 +159,7 @@
     }
     frame();
   }
-  L.playCatFilm = play;
+  L.playCatFilm = play; L.buildMassig = buildCat;
   // vor jedem Spielstart abspielen
   document.addEventListener('click', (e) => {
     const b = e.target && e.target.closest && e.target.closest('#btnPlay');
