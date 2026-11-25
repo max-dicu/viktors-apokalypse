@@ -54,7 +54,9 @@
     }
     P3(G.box, zip, 0.007, 0.32, 0.007, 0, 0.26, fz + 0.007, r.torso);
     P3(G.box, zip, 0.024, 0.04, 0.008, 0, 0.405, fz + 0.014, r.torso); P3(G.box, SM(0x222222), 0.012, 0.035, 0.006, 0, 0.375, fz + 0.016, r.torso);
-    P3(G.sph, hoodD, 0.2, 0.12, 0.1, 0, 0.62, -0.17, r.torso);
+    // Kapuze: fällt sauber nach hinten bis zu den Schultern
+    { const hb = P3(G.box, hood, 0.4, 0.26, 0.07, 0, 0.5, -0.2, r.torso); hb.rotation.x = -0.18; const rl = P3(G.cyl, hood, 0.075, 0.42, 0.06, 0, 0.64, -0.17, r.torso); rl.rotation.z = Math.PI / 2; P3(G.box, hoodD, 0.3, 0.16, 0.012, 0, 0.53, -0.162, r.torso).rotation.x = -0.18; P3(G.sph, hoodD, 0.2, 0.08, 0.05, 0, 0.38, -0.21, r.torso);
+      for (const sd of [-1, 1]) { const dr = P3(G.box, hood, 0.08, 0.05, 0.22, sd * 0.19, 0.65, -0.06, r.torso); dr.rotation.set(0, sd * -0.25, sd * -0.35); } }
     // Kängurutasche verdecken, zwei normale Seitentaschen
     P3(G.box, hood, 0.4, 0.24, 0.012, 0, 0.18, fz + 0.002, r.torso); P3(G.box, hood, 0.5, 0.36, 0.01, 0, 0.4, fz - 0.004, r.torso);
     for (const sd of [-1, 1]) { const p = P3(G.box, hoodD, 0.012, 0.13, 0.01, sd * 0.2, 0.2, fz + 0.016, r.torso); p.rotation.z = sd * 0.35; }
@@ -101,13 +103,13 @@
     }
     // Krücken: grau, schwarze Griffe und Stopper, Steine kreisen um den Griff
     r.crutches = (r.arms || []).map((a2, i) => {
-      const c = new T.Group(); c.position.set(0, -0.35, 0.02); a2.elbow.add(c);
-      const tor = P3(new T.TorusGeometry(0.075, 0.014, 8, 16, Math.PI * 1.3), grey, 1, 1, 1, 0, 0.27, -0.01, c); tor.rotation.set(Math.PI / 2, 0, Math.PI * 0.85);
-      P3(G.cyl, grey, 0.022, 0.3, 0.022, 0, 0.13, -0.035, c);
+      const c = new T.Group(); c.position.set(i ? 0.05 : -0.05, -0.35, 0.02); a2.elbow.add(c);
+      const tor = P3(new T.TorusGeometry(0.098, 0.016, 8, 18, Math.PI * 1.35), grey, 1, 1, 1, i ? -0.05 : 0.05, 0.34, -0.01, c); tor.rotation.set(Math.PI / 2, 0, Math.PI * 0.85);
+      P3(G.cyl, grey, 0.022, 0.36, 0.022, 0, 0.16, -0.035, c);
       P3(G.cyl, grey, 0.024, 1.04, 0.024, 0, -0.52, -0.035, c);
-      const gp = P3(G.cyl, blk, 0.03, 0.16, 0.03, 0, 0, 0.04, c); gp.rotation.x = Math.PI / 2;
+      const gp = P3(G.cyl, blk, 0.03, 0.2, 0.03, 0, 0, 0.06, c); gp.rotation.x = Math.PI / 2;
       P3(G.cyl, blk, 0.045, 0.09, 0.045, 0, -1.08, -0.035, c);
-      const orb = new T.Group(); orb.position.set(0, 0, 0.04); c.add(orb); c.userData.orb = orb;
+      const orb = new T.Group(); orb.position.set(0, 0, 0.19); c.add(orb); c.userData.orb = orb;
       for (let k = 0; k < 6; k++) { const an = k / 6 * 6.283, st = new T.Mesh(new T.OctahedronGeometry(0.022), new T.MeshBasicMaterial({ color: STONES[(k + i * 3) % 6] })); st.scale.y = 1.4; st.position.set(Math.cos(an) * 0.075, Math.sin(an) * 0.075, 0); orb.add(st); }
       return c;
     });
