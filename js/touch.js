@@ -39,9 +39,10 @@
       <button id="tHorn" data-k="KeyH" title="Hupe">📯</button>
       <button id="tExit" data-k="KeyF" title="Aussteigen">🚪</button>
     </div>
-    <div class="tgrp" id="tAdm" hidden style="position:absolute;left:12px;top:34%;display:flex;flex-direction:column;gap:8px"><button id="tFly2" data-k="KeyV" title="Fliegen an/aus">🦸</button><button id="tUp2" data-k="Space" title="Hoch">⬆️</button><button id="tDn2" data-k="KeyC" title="Runter">⬇️</button><button id="tTp2" data-k="KeyT" title="Teleport">🌀</button></div>
+    <div class="tgrp" id="tAdm" hidden style="position:absolute;left:10px;top:22%;display:flex;flex-direction:column;gap:7px;z-index:5"><button id="tFly2" class="adm" data-k="KeyV" title="Fliegen an/aus">🦸<i>FLIEG</i></button><button id="tUp2" class="adm" data-k="Space" title="Hoch">⬆️<i>HOCH</i></button><button id="tDn2" class="adm" data-k="KeyC" title="Runter">⬇️<i>RUNTER</i></button><button id="tTp2" class="adm" data-k="KeyT" title="Teleport">🌀<i>TELEPORT</i></button><button id="tMp2" class="adm" data-k="KeyM" title="Karte">🗺️<i>PORTAL</i></button></div><div id="tSpd" hidden style="position:absolute;left:84px;top:22%;display:flex;flex-direction:column;gap:7px;z-index:5"><button class="adm" data-k="Equal" title="Schneller">➕<i>TEMPO</i></button><button class="adm" data-k="Minus" title="Langsamer">➖<i>TEMPO</i></button><button class="adm" data-k="ShiftLeft" data-toggle="1" title="Turbo">⚡<i>100er</i></button></div>
     <div id="rotateHint">📱 ↻<br>Bitte das Handy quer halten</div>`;
   document.body.appendChild(root);
+  { const st = document.createElement('style'); st.textContent = '#tAdm button.adm,#tSpd button.adm{width:64px;height:60px;font-size:24px;border-radius:14px;background:rgba(20,16,40,.72);border:2px solid #e8c040;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;line-height:1}#tAdm button.adm i,#tSpd button.adm i{font:800 9px Arial;font-style:normal;margin-top:3px;letter-spacing:.5px}#tAdm button.on,#tSpd button.on{background:#e8c040;color:#000}'; document.head.appendChild(st); }
 
   // ---------- Knöpfe ----------
   const fireKey = (code, key) => {
@@ -156,7 +157,7 @@
     $('tTele').hidden = !inV || !P.vehicle.t.teleport || P.seat > 0;
     $('tWheel').hidden = !inV || !P.vehicle.t.wheelie || P.seat > 0;
     $('tFly').hidden = true;
-    { const suit = !!(L.suitOn && L.suitOn()), adm = !inV && (suit || !!(L.titanOn && L.titanOn()) || !!(L.heroFly && L.heroFly())); $('tTp2').hidden = !suit; $('tAdm').hidden = !adm; $('tAdm').style.display = adm ? 'flex' : 'none'; $('tUp2').hidden = !P.flying; $('tDn2').hidden = !P.flying; }
+    { const suit = !!(L.suitOn && L.suitOn()), adm = !inV && (suit || !!(L.titanOn && L.titanOn()) || !!(L.heroFly && L.heroFly())); $('tTp2').hidden = !suit; $('tAdm').hidden = !adm; $('tAdm').style.display = adm ? 'flex' : 'none'; $('tUp2').hidden = !P.flying; $('tDn2').hidden = !P.flying; $('tMp2').hidden = !suit; $('tFly2').classList.toggle('on', !!P.flying); $('tSpd').hidden = !(adm && P.flying); $('tSpd').style.display = adm && P.flying ? 'flex' : 'none'; const fs2 = document.getElementById('flySpd'); if (fs2) { fs2.style.bottom = 'auto'; fs2.style.top = '8px'; } }
     $('tCust').hidden = !(L.wsHint && L.wsHint());
     $('tDown').hidden = !inV || !(P.vehicle.t.fly || P.vehicle.t.plane || P.vehicle.t.sub) || P.seat > 0;
     $('tUp').hidden = !inV || !(P.vehicle.t.fly || P.vehicle.t.plane || P.vehicle.t.sub || P.vehicle.t.jetFly) || P.seat > 0;
