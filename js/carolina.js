@@ -1,5 +1,5 @@
 'use strict';
-// Militärbasis: 9 m hohe Glaswände (mit dem Auto zerbrechlich – sehr laut!) und DIE WAHRE CAROLINA.
+// Militärbasis: 9 m hohe Glaswände (mit dem Auto zerbrechlich – sehr laut!) und THE TRUE CAROLINA.
 // Sie ist das einzige Monster in der Basis und kann nicht hinaus. Sie hört Laufen nur aus der Nähe, Rennen weiter,
 // Schleichen gar nicht – Autos, Schüsse und Glas dagegen sehr weit. Wenn sie dich erwischt: ein Schlag, tot (außer Admin).
 (function () {
@@ -176,7 +176,7 @@
   function startEat() {
     C.eat = { t: 0, cam: { x: 0, y: 0, z: 0, lx: 0, ly: 0, lz: 0 }, from: { x: P.x, y: P.y || 0, z: P.z } };
     P.vx = P.vz = 0;
-    L.startCine('🖤 DIE WAHRE CAROLINA HAT DICH', 6.4, () => (C && C.eat ? C.eat.cam : null));
+    L.startCine('🖤 THE TRUE CAROLINA HAT DICH', 6.4, () => (C && C.eat ? C.eat.cam : null));
     if (!L.cine) { C.eat = null; L.hurtPlayer(99999, 'Die wahre Carolina hat dich gefunden'); return; }
     L.snd.bossRoar ? L.snd.bossRoar({ x: C.x, y: 8, z: C.z }) : null;
   }
@@ -262,10 +262,10 @@
   L.carolinaHit = function (dmg, src) {
     if (!C || C.dead || !(dmg > 0)) return;
     C.hp -= dmg; L.blood && L.blood(C.x, 7, C.z, 10);
-    if (L.showBossHp) L.showBossHp('🖤 DIE WAHRE CAROLINA', C.hp, HP);
+    if (L.showBossHp) L.showBossHp('🖤 THE TRUE CAROLINA', C.hp, HP);
     if (src) alertTo(src.x, src.z, true);
     if (C.hp <= 0) {
-      C.dead = true; C.deadT = 0; L.banner('🖤 DIE WAHRE CAROLINA IST BESIEGT', 'In 4 Minuten ist sie wieder da …');
+      C.dead = true; C.deadT = 0; L.banner('🖤 THE TRUE CAROLINA IST BESIEGT', 'In 4 Minuten ist sie wieder da …');
       if (src === P && L.gotBossCoins) L.gotBossCoins(400, 'die wahre Carolina');
       for (const t of ['sniper', 'scharfmuni', 'lmg', 'medkit']) L.spawnItem(t, C.x + L.rand(-3, 3), C.z + L.rand(-3, 3), 1);
     }
@@ -299,7 +299,7 @@
     if (!L._isClient || !L._isClient()) keepMonstersOut();
     updateC(dt);
     toldT -= dt;
-    if (toldT <= 0 && L.inMil(P.x, P.z, 4) && P.alive) { toldT = 120; L.banner('🖤 HIER LEBT DIE WAHRE CAROLINA', 'Sie hört dich laufen – aber nicht schleichen (C). Nicht rennen, nicht schießen!'); }
+    if (toldT <= 0 && L.inMil(P.x, P.z, 4) && P.alive) { toldT = 120; L.banner('🖤 HIER LEBT THE TRUE CAROLINA', 'Sie hört dich laufen – aber nicht schleichen (C). Nicht rennen, nicht schießen!'); }
   };
   L.clearCarolina = function () { restoreWalls(); if (C) { L.scene.remove(C.rig.root); C = null; } toldT = 0; };
 })();

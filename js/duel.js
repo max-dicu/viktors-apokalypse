@@ -1,5 +1,5 @@
 'use strict';
-// Boss-Ende für Riesen-Viktor bzw. Riesen-Daniel: der andere kommt und besiegt ihn (etwa 35 Sekunden, jedes Mal anders)
+// Boss-Ende für Giant Viktor bzw. Riesen-Daniel: der andere kommt und besiegt ihn (etwa 35 Sekunden, jedes Mal anders)
 (function () {
   const L = window.L, T = THREE, P = L.player;
   function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
@@ -24,7 +24,7 @@
     const end = ENDS[Math.floor(R() * ENDS.length)];
     const axis = R() * Math.PI * 2, gap = (sL + sW) * 0.5;
     D = { t: 0, x, z, loser, winner, sL, sW, r: { loser: rl, winner: rw }, moves, end, axis, gap, ph: 0, cam: [R(), R(), R()], landed: false, endHit: false, won: false };
-    const nameW = winner === 'viktor' ? 'RIESEN-VIKTOR' : 'RIESEN-DANIEL', nameL = loser === 'viktor' ? 'RIESEN-VIKTOR' : 'RIESEN-DANIEL';
+    const nameW = winner === 'viktor' ? 'GIANT VIKTOR' : 'GIANT DANIEL', nameL = loser === 'viktor' ? 'GIANT VIKTOR' : 'GIANT DANIEL';
     ((a, b) => { if (!L.atHome || L.atHome()) L.banner(a, b); })(nameW + ' GEGEN ' + nameL, nameW.replace('RIESEN-', '') + ' kommt, um ' + nameL.replace('RIESEN-', '') + ' zu stoppen!');
     const side = axis + Math.PI / 2 * (D.cam[0] < 0.5 ? 1 : -1), sz = Math.max(sL, sW);
     L.startCine(nameW + ' GEGEN ' + nameL, T_TOTAL - 0.5, (t) => {

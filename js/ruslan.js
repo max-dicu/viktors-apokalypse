@@ -268,7 +268,7 @@
     w.root.traverse((o) => { o.frustumCulled = false; });
     B.wal = { w, wx, wz, rich: null, light: null, aura: null, boom: false, half: Math.max(sz.x, sz.z) * 0.5 };
     B.state = 'walrus'; B.t = 0;
-    L.startCine('🦭 DAS RIESEN-WALROSS', 19, () => B.cam);
+    L.startCine('🦭 THE GIANT WALRUS', 19, () => B.cam);
   }
   function updWalrusEnd(dt) {
     const t = B.t, V = B.wal, w = V.w, R = B.rig, RS = 14, END = 19;

@@ -26,7 +26,7 @@
   const MSG = [[/Willkommen/g, ['Welcome', 'Bun venit', 'Добре дошъл', 'Hoş geldin', 'Добро пожаловать']], [/Sekunden Schutz nach dem Start/g, ['seconds of protection after start', 'secunde de protecție după start', 'секунди защита след старта', 'saniye başlangıç koruması', 'секунд защиты после старта']], [/Münzen/g, ['coins', 'monede', 'монети', 'jeton', 'монет']], [/Neue Runde/g, ['New round', 'Rundă nouă', 'Нов рунд', 'Yeni tur', 'Новый раунд']]];
   let lang = 'de'; const LI = { en: 0, ro: 1, bg: 2, tr: 3, ru: 4 };
   L.lang = () => lang;
-  const tr = (t) => { const k = t.trim(); const e = D[k]; return e ? t.replace(k, e[LI[lang] || 0]) : t; };
+  const tr = (t) => { const k = t.trim(); const e = D[k] || (L.T4 && L.T4[k]); return e ? t.replace(k, e[LI[lang] || 0]) : t; };
   function translateDom(root) {
     if (lang === 'de') return;
     const w = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT);
@@ -121,7 +121,7 @@
   }
   function pick() {
     const p = document.createElement('div'); p.id = 'langPick';
-    p.innerHTML = '<h1>🌍 Sprache · Language · Limbă · Език · Dil · Язык</h1><button data-l="de">🇩🇪 Deutsch</button><button data-l="en">🇬🇧 English</button><button data-l="ro">🇷🇴 Română</button><button data-l="bg">🇧🇬 Български</button><button data-l="tr">🇹🇷 Türkçe</button><button data-l="ru">🇷🇺 Русский</button>';
+    p.innerHTML = '<h1>🌍 Choose your language</h1><button data-l="de">🇩🇪 Deutsch</button><button data-l="en">🇬🇧 English</button><button data-l="ro">🇷🇴 Română</button><button data-l="bg">🇧🇬 Български</button><button data-l="tr">🇹🇷 Türkçe</button><button data-l="ru">🇷🇺 Русский</button>';
     document.body.appendChild(p);
     p.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; lang = b.dataset.l; document.documentElement.lang = lang; try { localStorage.setItem('leise.lang', lang); } catch (x) { /* egal */ } p.remove(); translateDom(); intro(() => {}); });
   }

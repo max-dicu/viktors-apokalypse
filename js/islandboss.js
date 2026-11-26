@@ -9,24 +9,24 @@
 
   // ---------- Bosse ----------
   const B = {
-    thor: { name: 'THOR', title: 'Gott des Donners', icon: '⚡', kind: 'human', scale: 13, speed: 9, abil: ['bolt', 'stomp'], prop: 'hammer',
+    thor: { name: 'THOR', title: 'God of Thunder', icon: '⚡', kind: 'human', scale: 13, speed: 9, abil: ['bolt', 'stomp'], prop: 'hammer',
       app: { skin: '#e3b48f', hair: 'lang', hairColor: '#a83a1c', beard: 'vollbart', brows: 'buschig', mouth: 'ernst', top: 'weste', topColor: '#5a3a20', pants: 'cargo', pantsColor: '#3a3a2a', shoeType: 'stiefel', shoes: '#3a2a1a', build: 'extrem', height: 'sehr_gross', hat: 'stirnband', hatColor: '#8a8a8a' }, cape: '#7a1a1a' },
-    odin: { name: 'ODIN', title: 'Der Allvater', icon: '🦅', kind: 'human', scale: 14, speed: 7, abil: ['throw', 'stomp'], prop: 'speer', proj: 'speer', ravens: true,
+    odin: { name: 'ODIN', title: 'The Allfather', icon: '🦅', kind: 'human', scale: 14, speed: 7, abil: ['throw', 'stomp'], prop: 'speer', proj: 'speer', ravens: true,
       app: { skin: '#d8b090', hair: 'lang', hairColor: '#b8b8b8', beard: 'langbart', brows: 'buschig', glasses: 'augenklappe', mouth: 'ernst', top: 'mantel', topColor: '#2a2a3a', pants: 'anzughose', pantsColor: '#1a1a24', shoeType: 'stiefel', shoes: '#1a1a1a', build: 'kraeftig', height: 'sehr_gross', hat: 'sonnenhut', hatColor: '#2a2a33' }, cape: '#1a1a2a' },
-    loki: { name: 'LOKI', title: 'Der Gestaltwandler', icon: '🎭', kind: 'human', scale: 12, speed: 10, abil: ['clones', 'throw'], prop: 'dolch', proj: 'dolch',
+    loki: { name: 'LOKI', title: 'The Shapeshifter', icon: '🎭', kind: 'human', scale: 12, speed: 10, abil: ['clones', 'throw'], prop: 'dolch', proj: 'dolch',
       app: { skin: '#e8c8a8', hair: 'zurueck', hairColor: '#111111', beard: 'kinnbart', brows: 'boese', mouth: 'grinsen', top: 'mantel', topColor: '#3a2a4a', pants: 'skinny', pantsColor: '#141414', shoeType: 'stiefel', shoes: '#141414', build: 'schmal', height: 'sehr_gross', hat: 'keine' }, cape: '#2a1a3a' },
-    ymir: { name: 'YMIR', title: 'Der Frostriese', icon: '🧊', kind: 'human', scale: 15, speed: 8.5, abil: ['frost', 'stomp'], spikes: '#dff2ff',
+    ymir: { name: 'YMIR', title: 'The Frost Giant', icon: '🧊', kind: 'human', scale: 15, speed: 8.5, abil: ['frost', 'stomp'], spikes: '#dff2ff',
       app: { skin: '#bcd8f0', hair: 'wuschel', hairColor: '#f4f8ff', beard: 'langbart', brows: 'buschig', mouth: 'offen', top: 'tanktop', topColor: '#8aa8c8', pants: 'zerrissen', pantsColor: '#6a80a0', shoeType: 'barfuss', build: 'extrem', height: 'sehr_gross', hat: 'keine' } },
-    lava: { name: 'LAVATITAN', title: 'Herz des Vulkans', icon: '🌋', kind: 'human', scale: 14, speed: 6.5, abil: ['erupt', 'throw'], proj: 'lava', glow: '#ff6a10',
+    lava: { name: 'LAVA TITAN', title: 'Heart of the Volcano', icon: '🌋', kind: 'human', scale: 14, speed: 6.5, abil: ['erupt', 'throw'], proj: 'lava', glow: '#ff6a10',
       app: { skin: '#3a2a24', hair: 'glatze', mouth: 'zaehne', brows: 'boese', top: 'tanktop', topColor: '#2a1a14', pants: 'zerrissen', pantsColor: '#2a1a14', shoeType: 'barfuss', build: 'extrem', height: 'sehr_gross', hat: 'keine', eyes: '#ff8a20' } },
-    geist: { name: 'GEISTERKÖNIGIN', title: 'Herrin der Gruft', icon: '👻', kind: 'human', scale: 12, speed: 8, abil: ['teleport', 'scream'], ghost: true,
+    geist: { name: 'GHOST QUEEN', title: 'Mistress of the Crypt', icon: '👻', kind: 'human', scale: 12, speed: 8, abil: ['teleport', 'scream'], ghost: true,
       app: { skin: '#e8eef4', hair: 'lang', hairColor: '#f2f2f2', mouth: 'offen', top: 'mantel', topColor: '#d8e0e8', pants: 'rock', pantsColor: '#c8d0d8', shoeType: 'barfuss', build: 'schmal', height: 'sehr_gross', hat: 'krone', hatColor: '#9aa8b8', eyes: '#40e0ff' } },
-    wurm: { name: 'SANDWURM', title: 'Schrecken der Dünen', icon: '🪱', kind: 'worm', speed: 14, abil: ['burrow'] },
-    urwald: { name: 'URWALDWÄCHTER', title: 'Hüter des Dschungels', icon: '🌿', kind: 'beast', scale: 7, speed: 8, abil: ['throw', 'stomp'], proj: 'stein' },
-    sporen: { name: 'SPORENKÖNIG', title: 'Der giftige Riese', icon: '🍄', kind: 'mush', speed: 6, abil: ['cloud', 'stomp'] },
-    golem: { name: 'KRISTALLGOLEM', title: 'Wächter der Kristalle', icon: '💎', kind: 'crystal', speed: 7, abil: ['shards', 'stomp'], proj: 'splitter' }
+    wurm: { name: 'SANDWORM', title: 'Terror of the Dunes', icon: '🪱', kind: 'worm', speed: 14, abil: ['burrow'] },
+    urwald: { name: 'JUNGLE GUARDIAN', title: 'Keeper of the Jungle', icon: '🌿', kind: 'beast', scale: 7, speed: 8, abil: ['throw', 'stomp'], proj: 'stein' },
+    sporen: { name: 'SPORE KING', title: 'The Toxic Giant', icon: '🍄', kind: 'mush', speed: 6, abil: ['cloud', 'stomp'] },
+    golem: { name: 'CRYSTAL GOLEM', title: 'Guardian of the Crystals', icon: '💎', kind: 'crystal', speed: 7, abil: ['shards', 'stomp'], proj: 'splitter' }
   };
-  B.nina = { name: 'NINA', title: 'Die Walross-Oma', icon: '👵', kind: 'human', scale: 11, speed: 5, abil: ['summon', 'sweep', 'sweep'], prop: 'besen', oma: true, life: 300,
+  B.nina = { name: 'NINA', title: 'The Walrus Granny', icon: '👵', kind: 'human', scale: 11, speed: 5, abil: ['summon', 'sweep', 'sweep'], prop: 'besen', oma: true, life: 300,
     app: { skin: '#e8c0a0', hair: 'wellig', hairColor: '#d8d8dc', beard: 'kein', brows: 'dick', mouth: 'grinsen', nose: 'knubbel', eyes: '#4a2f1c', glasses: 'rund', glassesColor: '#8a6a3a', top: 'pullover', topColor: '#a04a6a', pants: 'rock', pantsColor: '#5a4a6a', shoeType: 'lackschuh', shoes: '#3a2a2a', build: 'kraeftig', height: 'mittel', hat: 'keine' } };
   const BIG = 2.5; // alle Insel-Bosse viel größer
   const BY_ISL = { oma: ['nina'], asgard: ['thor', 'odin', 'loki'], eis: ['ymir'], wueste: ['wurm'], dschungel: ['urwald'], vulkan: ['lava'], pilz: ['sporen'], kristall: ['golem'], geist: ['geist'] };
@@ -345,7 +345,7 @@
   function ninaIntro() {
     const b0 = boss; b0.ct = 0; b0.intro = true;
     b0.lakeX = b0.x + Math.sin(b0.yaw) * 40; b0.lakeZ = b0.z + Math.cos(b0.yaw) * 40;
-    L.banner('👵 NINA', 'Die Walross-Oma ist da! Schleich – die Walrosse hören dich sonst!');
+    L.banner('👵 NINA', 'Die Walrus Granny ist da! Schleich – die Walrosse hören dich sonst!');
     L.startCine('👵 NINA – DIE WALROSS-OMA', 11.5, (t) => {
       const B0 = boss || b0, fx2 = Math.sin(B0.yaw), fz2 = Math.cos(B0.yaw);
       if (t < 2.4) { const a = B0.yaw + 0.5 + t * 0.15; return { x: B0.x + Math.sin(a) * 80, y: 30, z: B0.z + Math.cos(a) * 80, lx: B0.x, ly: 38, lz: B0.z }; }

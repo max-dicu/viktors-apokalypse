@@ -70,7 +70,7 @@
     if (L.showBossHp) L.showBossHp('♾️ INFINITY-OMNITRON', Math.max(0, O.hp), O.max);
     if (O.hp <= 0) die(src);
   };
-  // ---------- Kurzfilm: INFINITY-KOLOSS (eigener Entwurf, grüner Riese mit Stein-Faust) ----------
+  // ---------- Kurzfilm: INFINITY COLOSSUS (eigener Entwurf, grüner Riese mit Stein-Faust) ----------
   function buildHulk() {
     const root = new T.Group(), body = new T.Group(); root.add(body); body.scale.setScalar(11);
     const sk = new T.MeshStandardMaterial({ color: 0x6d8656, roughness: 0.85, metalness: 0.02 }), rot = L.mat('#3a3a24'), bone = L.mat('#d8cfae'), eyeM = new T.MeshBasicMaterial({ color: 0xe8ff40 }), sh = new T.MeshStandardMaterial({ color: 0x4a2a6a, roughness: 0.9 }), hr = L.mat('#151515'), gd = new T.MeshStandardMaterial({ color: 0xe0b030, metalness: 0.9, roughness: 0.3 });
@@ -121,7 +121,7 @@
     const ox = O.x, oz = O.z, a = O.yaw, hx = ox + Math.sin(a) * 170, hz = oz + Math.cos(a) * 170;
     const H = buildHulk(); O.hulk = { H, x: hx, z: hz, y: 700, sx: hx, sz: hz, yaw: Math.atan2(ox - hx, oz - hz), ev: {}, flung: null };
     O.rig.root.rotation.order = 'YXZ'; O.yaw = Math.atan2(hx - ox, hz - oz); O.rig.root.rotation.y = O.yaw;
-    L.startCine && L.startCine('🧟 INFINITY-KOLOSS', 28, (t) => hulkCam(t));
+    L.startCine && L.startCine('🧟 INFINITY COLOSSUS', 28, (t) => hulkCam(t));
   }
   const lerp = (a, b, k) => a + (b - a) * Math.max(0, Math.min(1, k));
   function hulkCam(t) {
@@ -163,7 +163,7 @@
     H.arms.forEach((a) => { a.ar.rotation.set(0, 0, a.s * 0.15); a.fo.rotation.x = -0.3; }); H.legs.forEach((l) => { l.lg.rotation.x = 0; l.sn.rotation.x = 0; }); H.head.rotation.x = 0; H.body.rotation.x = 0;
     if (t < 2.5) { U.y = 700 * Math.pow(1 - t / 2.5, 2); H.arms.forEach((a) => { a.ar.rotation.z = a.s * 1.2; }); H.legs[0].lg.rotation.x = -0.6; H.legs[0].sn.rotation.x = 0.8; }
     else { U.y = Math.max(0, U.y); }
-    if (t >= 2.5 && once('land')) { U.y = 0; hit(U.x, 2, U.z, true); for (let k = 0; k < 40; k++) { const a = k / 40 * 6.283; L.fx('#8a7a60', U.x + Math.sin(a) * 50, 3, U.z + Math.cos(a) * 50, 8, 25, { size: 3, life: 1.6 }); } L.banner('😡 INFINITY-KOLOSS', 'Der grüne Riese mit der Stein-Faust ist gelandet …'); }
+    if (t >= 2.5 && once('land')) { U.y = 0; hit(U.x, 2, U.z, true); for (let k = 0; k < 40; k++) { const a = k / 40 * 6.283; L.fx('#8a7a60', U.x + Math.sin(a) * 50, 3, U.z + Math.cos(a) * 50, 8, 25, { size: 3, life: 1.6 }); } L.banner('😡 INFINITY COLOSSUS', 'Der grüne Riese mit der Stein-Faust ist gelandet …'); }
     if (false) { const k = 0; H.arms.forEach((a) => { a.ar.rotation.z = a.s * 1.3 * k; a.fo.rotation.x = -1.2 * k; }); H.head.rotation.x = -0.5 * k; H.mouth.scale.y = 0.06 + 0.2 * k; H.body.rotation.x = -0.15 * k; if (once('roar1')) roar(); }
     else H.mouth.scale.y = 0.06;
     if (t >= 4.5 && t < 7) { const k = (t - 4.5) / 2.5, d0 = 170, d1 = 55; const d = lerp(d0, d1, k); U.x = ox + Math.sin(O.yaw) * d; U.z = oz + Math.cos(O.yaw) * d; const ph = t * 9; H.legs.forEach((l, i) => { const s = Math.sin(ph + i * Math.PI); l.lg.rotation.x = s * 0.8; l.sn.rotation.x = Math.max(0, -s) * 1.1; }); H.arms.forEach((a, i) => { a.ar.rotation.x = Math.sin(ph + (i ? 0 : Math.PI)) * 0.9; }); H.body.rotation.x = 0.3; if (Math.random() < dt * 8) L.shake = Math.max(L.shake, 0.6); }

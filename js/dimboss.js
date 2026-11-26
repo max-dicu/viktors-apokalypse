@@ -1,5 +1,5 @@
 'use strict';
-// Der Leerenwurm: Boss der Dimension (eigener Entwurf), 50-mal so groß wie früher.
+// Der Void Worm: Boss der Dimension (eigener Entwurf), 50-mal so groß wie früher.
 // Allein 250 Leben, zu zweit bis viert 500. Verwundbar ist sein leuchtendes Maul, wenn er auftaucht –
 // und besonders, wenn er brüllt. Solange er lebt, ist das Portal nach Hause versiegelt.
 (function () {
@@ -40,7 +40,7 @@
     W.ent = { kind: 'dwurm', x: W.head.x, z: W.head.z, hp: W.hp, dead: false, sph: [] };
     L.dimWorm = W.ent;
     if (inDim()) {
-      L.banner('🪱 DER LEERENWURM', 'Riesig! Er versiegelt das Portal. Schieß auf das leuchtende Maul, wenn er auftaucht!');
+      L.banner('🪱 THE VOID WORM', 'Riesig! Er versiegelt das Portal. Schieß auf das leuchtende Maul, wenn er auftaucht!');
       if (L.snd.bossRoar) L.snd.bossRoar({ x: P.x, y: 0, z: P.z });
       L.shake = Math.max(L.shake, 1.4);
       giveCrate();
@@ -61,9 +61,9 @@
   };
   function die() {
     W.state = 'die'; W.st = 0; W.ent.dead = true; W.wasKilled = true;
-    if (inDim()) L.banner('🪱 LEERENWURM BESIEGT!', 'Das Portal ist wieder offen – flieh nach Hause!');
+    if (inDim()) L.banner('🪱 VOID WORM BESIEGT!', 'Das Portal ist wieder offen – flieh nach Hause!');
     if (L.snd.bossRoar) L.snd.bossRoar({ x: P.x, y: 5, z: P.z });
-    if (inDim() && P.alive && L.gotBossCoins) L.gotBossCoins(1000, 'den Leerenwurm');
+    if (inDim() && P.alive && L.gotBossCoins) L.gotBossCoins(1000, 'den Void Worm');
   }
 
   // ---------- Angriffe ----------
@@ -126,7 +126,7 @@
       W.ang += dt * 0.11;
       moveHead(D.x + Math.sin(W.ang) * 2600, 150 + Math.sin(W.t * 0.4) * 650, D.z + Math.cos(W.ang) * 2600, 420, dt);
       if (Math.random() < dt * 0.4) L.shake = Math.max(L.shake, 0.25);
-      if (W.st > 9 + Math.random() * 3) { W.state = 'rise'; W.st = 0; const a = Math.atan2(W.head.x - P.x, W.head.z - P.z); W.rx = P.x + Math.sin(a) * 620; W.rz = P.z + Math.cos(a) * 620; L.msg('🪱 Der Leerenwurm taucht auf – schieß auf das leuchtende Maul!', 2500); if (L.snd.screech) L.snd.screech({ x: P.x, y: 10, z: P.z }); }
+      if (W.st > 9 + Math.random() * 3) { W.state = 'rise'; W.st = 0; const a = Math.atan2(W.head.x - P.x, W.head.z - P.z); W.rx = P.x + Math.sin(a) * 620; W.rz = P.z + Math.cos(a) * 620; L.msg('🪱 Der Void Worm taucht auf – schieß auf das leuchtende Maul!', 2500); if (L.snd.screech) L.snd.screech({ x: P.x, y: 10, z: P.z }); }
     } else if (W.state === 'rise') {
       const d = moveHead(W.rx, 300, W.rz, 650, dt);
       W.lookAt = { x: P.x, y: P.y, z: P.z };
@@ -134,7 +134,7 @@
     } else if (W.state === 'spit') {
       W.lookAt = { x: P.x, y: P.y, z: P.z }; W.head.y = 300 + Math.sin(W.t * 1.5) * 12;
       if (W.st > 1 * (W.spits + 1) && W.spits < 5) { W.spits++; orb(P.x + P.vx * 1.4 + L.rand(-4, 4), P.z + P.vz * 1.4 + L.rand(-4, 4)); }
-      if (W.st > 6) { W.state = 'roar'; W.st = 0; L.msg('💫 Er brüllt – das Maul steht weit offen: JETZT feuern!', 2500); if (L.snd.bossRoar) L.snd.bossRoar({ x: P.x, y: 5, z: P.z }); L.shake = 1.5; for (let k = 0; k < 3; k++) { const x = P.x + L.rand(-14, 14), z = P.z + L.rand(-14, 14); tele(x, z, 10, 1.6 + k * 0.4, 0x9a50ff, () => { L.fx('#9a50ff', x, 1, z, 40, 14, { basic: true, size: 0.7, life: 1 }); hurt(x, z, 10, 30, 'Vom Beben des Leerenwurms erwischt'); }); } }
+      if (W.st > 6) { W.state = 'roar'; W.st = 0; L.msg('💫 Er brüllt – das Maul steht weit offen: JETZT feuern!', 2500); if (L.snd.bossRoar) L.snd.bossRoar({ x: P.x, y: 5, z: P.z }); L.shake = 1.5; for (let k = 0; k < 3; k++) { const x = P.x + L.rand(-14, 14), z = P.z + L.rand(-14, 14); tele(x, z, 10, 1.6 + k * 0.4, 0x9a50ff, () => { L.fx('#9a50ff', x, 1, z, 40, 14, { basic: true, size: 0.7, life: 1 }); hurt(x, z, 10, 30, 'Vom Beben des Void Worms erwischt'); }); } }
     } else if (W.state === 'roar') {
       W.lookAt = { x: P.x, y: P.y + 40, z: P.z }; W.head.y = 290 + Math.sin(W.st * 9) * 8;
       if (W.st > 4) { W.state = 'retreat'; W.st = 0; }
@@ -162,19 +162,19 @@
     if (!W.alive) { if (here) W.seen = true; if (W.seen) { W.timer -= dt; if (W.timer <= 0 && !L.cine) spawn(); } }
     else if (here && !L.cine) update(dt);
     else if (!here && W.state === 'die') { W.st += dt; if (W.st > 11) { W.alive = false; W.loot = false; remove(); W.timer = RESPAWN; } }
-    if (here !== lastIn) { lastIn = here; if (here && W.alive && W.state !== 'die') L.msg('🪱 Der Leerenwurm lauert hier – das Portal ist versiegelt!', 5000); }
+    if (here !== lastIn) { lastIn = here; if (here && W.alive && W.state !== 'die') L.msg('🪱 Der Void Worm lauert hier – das Portal ist versiegelt!', 5000); }
     updateBar(here);
     if (L.dimPortal && L.dimPortal.disc) L.dimPortal.disc.material.color.setHex(L.dimPortalSealed() ? 0xff2040 : 0x40e0ff);
   };
   L.dimPortalSealed = () => W.alive && W.state !== 'die';
   const bar = document.createElement('div'); bar.id = 'wormBar'; bar.hidden = true;
   bar.style.cssText = 'position:fixed;left:50%;top:52px;transform:translateX(-50%);width:min(420px,80vw);z-index:7;text-align:center;color:#fff;font-weight:800;text-shadow:0 0 4px #000;pointer-events:none';
-  bar.innerHTML = '<div>🪱 LEERENWURM <span></span></div><div style="height:12px;background:#0009;border:2px solid #ff40d0;border-radius:6px;overflow:hidden"><i style="display:block;height:100%;background:linear-gradient(90deg,#ff40d0,#9a50ff)"></i></div>';
+  bar.innerHTML = '<div>🪱 VOID WORM <span></span></div><div style="height:12px;background:#0009;border:2px solid #ff40d0;border-radius:6px;overflow:hidden"><i style="display:block;height:100%;background:linear-gradient(90deg,#ff40d0,#9a50ff)"></i></div>';
   document.body.appendChild(bar);
   function updateBar(here) {
     bar.hidden = !(here && W.alive && W.state !== 'die');
     if (!bar.hidden) { bar.querySelector('span').textContent = Math.ceil(W.hp) + ' / ' + W.max; bar.querySelector('i').style.width = (W.hp / W.max * 100).toFixed(1) + '%'; }
   }
-  L.dimBossText = () => (W.alive && W.state !== 'die' ? '🪱 Leerenwurm: Portal versiegelt' : W.seen ? '🪱 Leerenwurm kommt ' + (W.wasKilled ? 'wieder ' : '') + 'in ' + L.fmt(Math.max(0, W.timer)) : '');
+  L.dimBossText = () => (W.alive && W.state !== 'die' ? '🪱 Void Worm: Portal versiegelt' : W.seen ? '🪱 Void Worm kommt ' + (W.wasKilled ? 'wieder ' : '') + 'in ' + L.fmt(Math.max(0, W.timer)) : '');
   L.clearDimBoss = function () { remove(); for (const f of fx) L.scene.remove(f.m); fx.length = 0; W.alive = false; W.seen = false; W.timer = FIRST; W.loot = false; bar.hidden = true; lastIn = false; };
 })();

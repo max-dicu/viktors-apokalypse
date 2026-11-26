@@ -91,13 +91,13 @@
       // Gewitter + Tornado
       { place() { tpo('s', H.x + 300, H.z + 200, 40); sky(17.5, 'gewitter'); }, spawn() { L.spawnTornado && L.spawnTornado(P.x + 70, P.z + 40); ['viktor', 'blockling', 'rollerviktor', 'marsianer'].forEach((k, i) => mon(k, Math.sin(i * 1.6) * 7, Math.cos(i * 1.6) * 7)); setTimeout(() => fire(1, 'kr_tornado'), 200); },
         cam(u) { return { x: P.x - 28 + u * 2, y: 10, z: P.z - 22, lx: P.x + 25, ly: 14, lz: P.z + 20 }; } },
-      // Infinity-Koloss hebt die Hand – Ultron bricht zusammen
+      // Infinity Colossus hebt die Hand – Ultron bricht zusammen
       { place() { tpo('u', H.x - 260, H.z + 160, 70); sky(19.5, 'klar'); }, spawn() {},
         cam(u) { const O = L.omni, H2 = O && O.hulk; const hx = H2 ? H2.x : P.x, hz = H2 ? H2.z : P.z, ox = O ? O.x : P.x, oz = O ? O.z : P.z; const fx = ox - hx, fz = oz - hz, d = Math.hypot(fx, fz) || 1; return { x: hx - fx / d * 70 + fz / d * 90, y: 45, z: hz - fz / d * 70 - fx / d * 90, lx: (hx + ox) / 2, ly: 70, lz: (hz + oz) / 2 }; } },
-      // Riesen-Walross
+      // Giant Walrus
       { place() { tpo('b', H.x + 100, H.z - 120, 130); sky(16, 'regen'); P.camYaw = Math.PI / 2; }, spawn() { const G0 = L.GBT && L.GBT.walross; if (G0) this.b = prop(G0.build(), P.x, P.z + 70, G0.S); },
         cam(u) { if (this.b) { this.b.rotation.y = Math.PI + Math.sin(u * 3) * 0.2; this.b.position.y = Math.abs(Math.sin(u * 5)) * 2; } return { x: P.x + lerp(-35, -15, u / 2), y: 8 + u * 2, z: P.z + 5, lx: P.x, ly: 14, lz: P.z + 70 }; } },
-      // Riesen-Viktor
+      // Giant Viktor
       { place() { tpo('v', H.x - 300, H.z - 250, 130); sky(13, 'wolkig'); P.camYaw = Math.PI / 2; }, spawn() { const G0 = L.GBT && L.GBT.viktor; if (G0) this.b = prop(G0.build(), P.x, P.z + 80, G0.S); },
         cam(u) { if (this.b) { this.b.rotation.y = Math.PI + Math.sin(u * 2) * 0.15; } return { x: P.x + lerp(25, 10, u / 2), y: 5 + u * 3, z: P.z + 8, lx: P.x, ly: 25, lz: P.z + 80 }; } },
       // Admin-Skin fliegt
@@ -115,7 +115,7 @@
       { place() { const O2 = L.ASGARD.obs || L.ASGARD; tp(O2.x + 4, O2.z + 4, L.ASGARD.y); sky(19, 'klar'); }, spawn() { try { const cyl = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.2, 400, 24, 1, true), new THREE.MeshBasicMaterial({ map: L.rainbowTex ? L.rainbowTex() : null, color: 0xffffff, transparent: true, opacity: 0.75, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false })); cyl.position.set(P.x, (P.y || 0) + 200, P.z); L.scene.add(cyl); props.push(cyl); this.cyl = cyl; } catch (e) { this.cyl = null; } },
         cam(u) { if (this.cyl) this.cyl.rotation.y += 0.08; const lift = Math.max(0, u - 1.2) * 18; P.y = L.ASGARD.y + lift; return { x: P.x + 26, y: L.ASGARD.y + 9 + lift * 0.6, z: P.z + 20, lx: P.x, ly: L.ASGARD.y + 3 + lift, lz: P.z }; },
         end() { U.flash(1); } },
-      // Infinity-Koloss SMASH + Krater
+      // Infinity Colossus SMASH + Krater
       { place() { tpo('u', H.x - 260, H.z + 160, 70); sky(19.5, 'klar'); }, spawn() {},
         cam(u) { const O = L.omni, H2 = O && O.hulk; const cx = H2 && H2.cx ? H2.cx : (O ? O.x : P.x), cz = H2 && H2.cz ? H2.cz : (O ? O.z : P.z); return { x: cx + 170 - u * 10, y: 30 + u * 40, z: cz + 120, lx: cx, ly: 20, lz: cz }; } },
       // Backrooms

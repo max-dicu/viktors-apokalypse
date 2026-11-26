@@ -2259,7 +2259,7 @@
   };
   const ease3 = (k) => 1 - Math.pow(1 - L.clamp(k, 0, 1), 3);
   const bump = (u, a, b) => (u < a || u > b ? 0 : Math.sin((u - a) / (b - a) * Math.PI));
-  // ---------- Daniel reitet auf GIGA-CAPY. Danach springt er ab, kämpft gegen Riesen-Viktor, und beide gehen weg ----------
+  // ---------- Daniel reitet auf GIGA-CAPY. Danach springt er ab, kämpft gegen Giant Viktor, und beide gehen weg ----------
   const DUEL_MOVES = ['schlag', 'kratzen', 'ringen', 'tritt', 'anspringen'], DUEL_ENDS = ['wuergen', 'suplex', 'wurf'];
   const J0 = C_GRAB + 0.8, V0 = J0 + 1.4, D_FIGHT = V0 + 2.6, D_MOVE = 2.6, D_NM = 2, D_END = D_FIGHT + D_MOVE * D_NM, D_ENDLEN = 4, W0 = D_END + D_ENDLEN + 1;
   L.CAPY_TOTAL = J0 + 1.6 + 7;
@@ -2330,7 +2330,7 @@
     }
     // (alt) Viktor steigt aus dem Boden
     let vRise = 0;
-    if (t < V0 + 2.6) { vRise = -(1 - ease3(L.clamp((t - V0) / 2.4, 0, 1))) * sv * 3.2; if (t > V0 && !D.rose) { D.rose = true; L.snd.viktor({ x: D.x, y: 20, z: D.z }); homeMsg('👁️ Riesen-Viktor stellt sich Daniel!', 3000); } if (Math.random() < dt * 14) L.fx('#5a4630', D.x - ax * D.gap / 2 + L.rand(-8, 8), gy + 1, D.z - az * D.gap / 2 + L.rand(-8, 8), 3, 10, { size: 1, life: 2 }); }
+    if (t < V0 + 2.6) { vRise = -(1 - ease3(L.clamp((t - V0) / 2.4, 0, 1))) * sv * 3.2; if (t > V0 && !D.rose) { D.rose = true; L.snd.viktor({ x: D.x, y: 20, z: D.z }); homeMsg('👁️ Giant Viktor stellt sich Daniel!', 3000); } if (Math.random() < dt * 14) L.fx('#5a4630', D.x - ax * D.gap / 2 + L.rand(-8, 8), gy + 1, D.z - az * D.gap / 2 + L.rand(-8, 8), 3, 10, { size: 1, life: 2 }); }
     vik.root.visible = t > V0;
     if (t >= D_FIGHT && t < D_END) {
       const i = Math.floor((t - D_FIGHT) / D_MOVE), u = (t - D_FIGHT - i * D_MOVE) / D_MOVE, mv = D.moves[i];
@@ -2664,16 +2664,16 @@
   }
 
 
-  // ---------- Riesen-Bosse: DAS RIESEN-WALROSS, RIESEN-VIKTOR, RIESEN-DANIEL (wechseln sich mit BIG MAMA ab) ----------
+  // ---------- Riesen-Bosse: THE GIANT WALRUS, GIANT VIKTOR, GIANT DANIEL (wechseln sich mit BIG MAMA ab) ----------
   // Steigen aus dem Boden, hören alle, die nicht schleichen, und greifen mit einem Bodenschlag an. Am Ende kommt jemand und besiegt sie.
   function wbVoice(p) { for (let k = 0; k < 3; k++) { L.tn({ f: 70, fTo: 52, dur: 0.45, type: 'sawtooth', vol: 0.45, pos: p, delay: k * 0.5, rev: true, ref: 60 }); L.nz({ dur: 0.4, f: 240, type: 'bandpass', q: 2, vol: 0.35, pos: p, delay: k * 0.5, ref: 60 }); } }
   L.wbVoice = wbVoice;
   const GBT = {
-    walross: { name: 'DAS RIESEN-WALROSS', short: 'RIESEN-WALROSS', icon: '🦭', lvl: 'walLvl', S: 9, speed: 7, hp: 7000, front: 2, top: 1.3,
-      build: () => L.buildWalross(), voice: wbVoice, cause: 'Vom Riesen-Walross platt gemacht' },
-    viktor: { name: 'RIESEN-VIKTOR', short: 'RIESEN-VIKTOR', icon: '👁️', lvl: 'vikLvl', S: 18, speed: 9, hp: 6000, front: 0.7, top: 2.4,
-      build: () => L.buildViktor('grey'), voice: (p) => { L.snd.viktor(p); L.snd.viktor(Object.assign({}, p, { y: p.y + 5 })); }, cause: 'Von Riesen-Viktor zerquetscht' },
-    daniel: { name: 'RIESEN-DANIEL', short: 'RIESEN-DANIEL', icon: '💪', lvl: 'danLvl', S: 17, speed: 6.5, hp: 9000, front: 0.8, top: 2.2,
+    walross: { name: 'THE GIANT WALRUS', short: 'GIANT WALRUS', icon: '🦭', lvl: 'walLvl', S: 9, speed: 7, hp: 7000, front: 2, top: 1.3,
+      build: () => L.buildWalross(), voice: wbVoice, cause: 'Vom Giant Walrus platt gemacht' },
+    viktor: { name: 'GIANT VIKTOR', short: 'GIANT VIKTOR', icon: '👁️', lvl: 'vikLvl', S: 18, speed: 9, hp: 6000, front: 0.7, top: 2.4,
+      build: () => L.buildViktor('grey'), voice: (p) => { L.snd.viktor(p); L.snd.viktor(Object.assign({}, p, { y: p.y + 5 })); }, cause: 'Von Giant Viktor zerquetscht' },
+    daniel: { name: 'GIANT DANIEL', short: 'GIANT DANIEL', icon: '💪', lvl: 'danLvl', S: 17, speed: 6.5, hp: 9000, front: 0.8, top: 2.2,
       build: () => L.buildDaniel(), voice: (p) => { L.snd.daniel(p); L.snd.daniel(Object.assign({}, p, { y: p.y + 5 })); }, cause: 'Von Riesen-Daniel zertrümmert' }
   };
   L.GBT = GBT;

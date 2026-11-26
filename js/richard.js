@@ -1,5 +1,5 @@
 'use strict';
-// Nach dem GIGA-CAPY-Kampf: Bosskampf-Kurzfilm „RICHARD gegen DAS RIESEN-WALROSS“ – jedes Mal anders
+// Nach dem GIGA-CAPY-Kampf: Bosskampf-Kurzfilm „RICHARD gegen THE GIANT WALRUS“ – jedes Mal anders
 (function () {
   const L = window.L, T = THREE, P = L.player;
   const G = () => L.GEO;
@@ -12,7 +12,7 @@
   const ease = (k) => 1 - Math.pow(1 - L.clamp(k, 0, 1), 3);
   const bump = (u, a, b) => (u < a || u > b ? 0 : Math.sin((u - a) / (b - a) * Math.PI));
 
-  // ---------- Riesen-Walross (eigener Entwurf): massiger Körper, lange Stoßzähne, Flossen, Schnurrhaare ----------
+  // ---------- Giant Walrus (eigener Entwurf): massiger Körper, lange Stoßzähne, Flossen, Schnurrhaare ----------
   L.buildWalross = function () {
     const root = new T.Group(), body = grp(root, 0, 1.1, 0), sph = G().sph, box = G().box, cone = G().cone;
     const sk = '#7a5a4c', lt = '#b08a78', dk = '#4e362c', pale = '#c8a89a';
@@ -92,7 +92,7 @@
     const r1 = R(), r2 = R(), end = opts.win || r1 < 0.72 ? (r2 < 0.5 ? 'schleudern' : 'ko') : 'platt';
     const axis = R() * Math.PI * 2, gap = sw * 3.6 + sr * 0.9;
     F = { t: 0, x, z, seed, R, rich, wal, sr, sw, moves, end, axis, gap, ph: 0, landed: false, endHit: false, cam: [R(), R(), R()], said: false, noRise: !!opts.win };
-    ((a, b) => { if (!L.atHome || L.atHome()) L.banner(a, b); })('RICHARD GEGEN DAS RIESEN-WALROSS', opts.win ? 'Richard kommt, um das Walross zu besiegen!' : 'Ein neuer Kampf beginnt!');
+    ((a, b) => { if (!L.atHome || L.atHome()) L.banner(a, b); })('RICHARD GEGEN THE GIANT WALRUS', opts.win ? 'Richard kommt, um das Walross zu besiegen!' : 'Ein neuer Kampf beginnt!');
     // Kurzfilm
     const side = axis + Math.PI / 2 * (F.cam[0] < 0.5 ? 1 : -1), size = Math.max(sr * 2.2, sw * 3);
     L.startCine('RICHARD GEGEN DAS WALROSS', T_TOTAL - 0.5, (t) => {

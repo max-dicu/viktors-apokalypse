@@ -198,7 +198,7 @@
       if (L.dimPortalSealed && L.dimPortalSealed()) {
         // versiegelt: zurückgestoßen
         const a = Math.atan2(P.x - L.DIM_PORTAL.x, P.z - L.DIM_PORTAL.z); P.x = L.DIM_PORTAL.x + Math.sin(a) * 12; P.z = L.DIM_PORTAL.z + Math.cos(a) * 12; P.vx = Math.sin(a) * 8; P.vz = Math.cos(a) * 8;
-        if (!(L.sealMsgT > performance.now())) { L.sealMsgT = performance.now() + 3000; L.msg('🔒 Das Portal ist versiegelt – besiege zuerst den Leerenwurm!', 3000); L.snd.codeBad(); }
+        if (!(L.sealMsgT > performance.now())) { L.sealMsgT = performance.now() + 3000; L.msg('🔒 Das Portal ist versiegelt – besiege zuerst den Void Worm!', 3000); L.snd.codeBad(); }
       } else travel(false);
     }
   }

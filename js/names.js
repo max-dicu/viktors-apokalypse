@@ -8,12 +8,12 @@
     ['starrende', 'Starrende', '👁️'], ['walross', 'Walross', '🦭'], ['flieger', 'Flugmaschine', '🛸']
   ].map(([k, n, e]) => ({ k, n, e, cat: 'Monster', price: Math.round((200 + ((L.MK && L.MK[k] && L.MK[k].hp) || 150)) / 50) * 50, build: () => L.MK[k].build() }));
   const BOS = [
-    ['BIG MAMA', '👹', 3000], ['RIESEN-WALROSS', '🦭', 2000, () => L.buildWalross()], ['RIESEN-VIKTOR', '🧟', 2000, () => L.buildViktor()], ['GIGA-CAPY', '🦫', 2200, () => L.buildGigaCapy()],
-    ['URZEIT-ECHSE', '🦖', 2600, () => L.buildEchse()], ['CAROLINA', '🖤', 1800], ['RUSLAN', '🛡️', 2200], ['THOR', '⚡', 1800], ['ODIN', '🔱', 1800], ['LOKI', '🐍', 1600],
-    ['YMIR', '❄️', 1800], ['LAVATITAN', '🌋', 2000], ['GEISTERKÖNIGIN', '👻', 1800], ['SANDWURM', '🪱', 1800], ['URWALDWÄCHTER', '🌳', 1800], ['SPORENKÖNIG', '🍄', 1600],
-    ['KRISTALLGOLEM', '💎', 2000], ['NINA', '🧹', 1500]
+    ['BIG MAMA', '👹', 3000], ['GIANT WALRUS', '🦭', 2000, () => L.buildWalross()], ['GIANT VIKTOR', '🧟', 2000, () => L.buildViktor()], ['GIGA-CAPY', '🦫', 2200, () => L.buildGigaCapy()],
+    ['PRIMEVAL LIZARD', '🦖', 2600, () => L.buildEchse()], ['CAROLINA', '🖤', 1800], ['RUSLAN', '🛡️', 2200], ['THOR', '⚡', 1800], ['ODIN', '🔱', 1800], ['LOKI', '🐍', 1600],
+    ['YMIR', '❄️', 1800], ['LAVA TITAN', '🌋', 2000], ['GHOST QUEEN', '👻', 1800], ['SANDWORM', '🪱', 1800], ['JUNGLE GUARDIAN', '🌳', 1800], ['SPORE KING', '🍄', 1600],
+    ['CRYSTAL GOLEM', '💎', 2000], ['NINA', '🧹', 1500]
   ].map(([n, e, price, build]) => ({ k: n, n, e, cat: 'Bosse', price, build }));
-  const END = [['BERNHARD', '😈', 9000], ['OMNITRON', '♾️', 12000], ['THANATOS', '🟣', 8000], ['LEERENWURM', '🪱', 7000], ['WAHRE CAROLINA', '🖤', 6000]]
+  const END = [['BERNHARD', '😈', 9000], ['OMNITRON', '♾️', 12000], ['THANATOS', '🟣', 8000], ['VOID WORM', '🪱', 7000], ['TRUE CAROLINA', '🖤', 6000]]
     .map(([n, e, price]) => ({ k: n, n, e, cat: 'Endbosse', price }));
   const ALL = MON.concat(BOS, END);
   const names = () => { L.save.names = L.save.names || {}; return L.save.names; };

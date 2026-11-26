@@ -1,7 +1,7 @@
 'use strict';
-// DIE URZEIT-ECHSE: Riesen-Boss der Heimat (eigener Entwurf). Steigt aus dem Boden, stampft durch die Stadt,
+// THE PRIMEVAL LIZARD: Riesen-Boss der Heimat (eigener Entwurf). Steigt aus dem Boden, stampft durch die Stadt,
 // lädt ihre leuchtenden Rückenstacheln auf und feuert einen blauen Strahl aus dem Maul.
-// Läuft in der Boss-Reihe mit BIG MAMA, Riesen-Viktor, Riesen-Walross und Riesen-Daniel.
+// Läuft in der Boss-Reihe mit BIG MAMA, Giant Viktor, Giant Walrus und Riesen-Daniel.
 (function () {
   const L = window.L, T = THREE, P = L.player;
   const G = () => L.GEO;
@@ -114,9 +114,9 @@
     leaving = { rig: w.rig, x: w.x, z: w.z, yaw: w.yaw, S: w.S, t: 0, killed, ph: w.ph };
     if (w.rig.beam) w.rig.beam.visible = w.rig.core.visible = false;
     voice({ x: w.x, y: 30, z: w.z });
-    const txt = killed ? ['🦖 DIE URZEIT-ECHSE IST BESIEGT!', 'Sie bricht zusammen und versinkt in der Erde.'] : ['🦖 DIE URZEIT-ECHSE ZIEHT SICH ZURÜCK', 'Mit einem letzten Brüllen versinkt sie wieder im Boden …'];
+    const txt = killed ? ['🦖 THE PRIMEVAL LIZARD IST BESIEGT!', 'Sie bricht zusammen und versinkt in der Erde.'] : ['🦖 THE PRIMEVAL LIZARD ZIEHT SICH ZURÜCK', 'Mit einem letzten Brüllen versinkt sie wieder im Boden …'];
     if (L.atHome && L.atHome()) L.banner(txt[0], txt[1]);
-    if (killed && L.atHome && L.atHome() && L.gotBossCoins) L.gotBossCoins(900, 'die Urzeit-Echse');
+    if (killed && L.atHome && L.atHome() && L.gotBossCoins) L.gotBossCoins(900, 'die Primeval Lizard');
   }
   L.updateKaiju = function (dt) {
     if (!leaving) return;
@@ -129,6 +129,6 @@
   };
   L.clearKaiju = function () { if (leaving) { L.scene.remove(leaving.rig.root); if (leaving.rig.beam) { L.scene.remove(leaving.rig.beam); L.scene.remove(leaving.rig.core); } leaving = null; } };
   // Boss-Eintrag
-  L.GBT.echse = { name: 'DIE URZEIT-ECHSE', short: 'URZEIT-ECHSE', icon: '🦖', lvl: 'echLvl', S: 15, speed: 6, hp: 10000, front: 2.6, top: 3.4,
-    build: () => L.buildEchse(), voice: (p) => voice(p), cause: 'Vom Strahl der Urzeit-Echse getroffen', pose, end };
+  L.GBT.echse = { name: 'THE PRIMEVAL LIZARD', short: 'PRIMEVAL LIZARD', icon: '🦖', lvl: 'echLvl', S: 15, speed: 6, hp: 10000, front: 2.6, top: 3.4,
+    build: () => L.buildEchse(), voice: (p) => voice(p), cause: 'Vom Strahl der Primeval Lizard getroffen', pose, end };
 })();
