@@ -46,36 +46,55 @@
   #introV .c{font:italic 700 clamp(14px,3vw,26px) Georgia,serif;letter-spacing:5px;opacity:0;transition:opacity 1.4s;color:#c8a0ff;margin-top:8px}#introV small{position:absolute;bottom:16px;opacity:.5;font-size:12px}`;
   document.head.appendChild(css);
   function sound() {
-    // Trailer-Musik: dunkles Ostinato, Pauken, Riser, BRAAM beim Titel, Schlussschlag
+    // Horror-Intro: tiefes Dröhnen, verstimmte Spieluhr, Herzschlag, Flüstern, Kreischen, großer Schlag beim Titel
     try {
-      L.initAudio && L.initAudio(); const A = L.audio && L.audio.ctx; if (!A) return; const t0 = A.currentTime + 0.05;
-      const out = A.createGain(); out.gain.value = 0.9; const comp = A.createDynamicsCompressor(); out.connect(comp); comp.connect(A.destination);
-      const rv = A.createConvolver(), ir = A.createBuffer(2, A.sampleRate * 2.5, A.sampleRate); for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2.5); } rv.buffer = ir; const rg = A.createGain(); rg.gain.value = 0.35; rv.connect(rg); rg.connect(out);
-      const note = (f, s, d, v, type, cut, rev) => { const o = A.createOscillator(), g = A.createGain(), fl = A.createBiquadFilter(); o.type = type || 'sawtooth'; o.frequency.value = f; fl.type = 'lowpass'; fl.frequency.value = cut || 900; g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(v, s + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, s + d); o.connect(fl); fl.connect(g); g.connect(out); if (rev) g.connect(rv); o.start(s); o.stop(s + d + 0.05); return fl; };
-      const noiseBuf = A.createBuffer(1, A.sampleRate * 3, A.sampleRate), nd = noiseBuf.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-      const drum = (s, v) => { const o = A.createOscillator(), g = A.createGain(); o.type = 'sine'; o.frequency.setValueAtTime(110, s); o.frequency.exponentialRampToValueAtTime(38, s + 0.35); g.gain.setValueAtTime(v, s); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.9); o.connect(g); g.connect(out); g.connect(rv); o.start(s); o.stop(s + 1);
-        const n = A.createBufferSource(), nf = A.createBiquadFilter(), ng = A.createGain(); n.buffer = noiseBuf; nf.type = 'lowpass'; nf.frequency.value = 700; ng.gain.setValueAtTime(v * 0.6, s); ng.gain.exponentialRampToValueAtTime(0.0001, s + 0.25); n.connect(nf); nf.connect(ng); ng.connect(out); n.start(s, Math.random()); n.stop(s + 0.3); };
-      // Ostinato in d-Moll (Sechzehntel), wird lauter
-      const pat = [73.4, 73.4, 87.3, 73.4, 82.4, 73.4, 65.4, 73.4], sb = 0.13;
-      for (let k = 0; k < 82; k++) { const s = t0 + 0.4 + k * sb; if (s > t0 + 10.9) break; const up = s > t0 + 5 ? 1 : (s - t0) / 5; note(pat[k % 8] * (k % 16 > 11 ? 1.189 : 1), s, 0.12, 0.05 + 0.08 * up, 'sawtooth', 500 + up * 1400); if (s > t0 + 5) note(pat[k % 8] * 2, s, 0.1, 0.035, 'square', 1800); }
-      // Pauken
-      [0.4, 1.44, 2.48, 3.0, 3.52, 4.04, 4.3, 4.56, 4.82].forEach((x, i) => drum(t0 + x, 0.35 + i * 0.05));
-      for (let k = 0; k < 12; k++) drum(t0 + 5.6 + k * 0.52, k % 4 === 0 ? 0.8 : 0.45);
-      // Riser vor dem Titel
-      const rs = A.createBufferSource(), rf = A.createBiquadFilter(), rgn = A.createGain(); rs.buffer = noiseBuf; rf.type = 'bandpass'; rf.Q.value = 3; rf.frequency.setValueAtTime(300, t0 + 2.8); rf.frequency.exponentialRampToValueAtTime(6000, t0 + 5); rgn.gain.setValueAtTime(0.0001, t0 + 2.8); rgn.gain.exponentialRampToValueAtTime(0.35, t0 + 4.95); rgn.gain.exponentialRampToValueAtTime(0.0001, t0 + 5.05); rs.connect(rf); rf.connect(rgn); rgn.connect(out); rs.start(t0 + 2.8); rs.stop(t0 + 5.1);
-      // BRAAM beim Titel + Schlussschlag
-      const braam = (s, d, v) => { [36.7, 55, 73.4, 87.3, 110].forEach((f, i) => { const fl = note(f, s, d, v / (1 + i * 0.4), 'sawtooth', 200, true); fl.frequency.setValueAtTime(200, s); fl.frequency.exponentialRampToValueAtTime(2200, s + 0.25); fl.frequency.exponentialRampToValueAtTime(300, s + d); }); drum(s, 1); };
-      braam(t0 + 5, 3.5, 0.3); braam(t0 + 9.8, 2.2, 0.32);
-      // hohe Streicher-Fläche über dem Titel
-      [293.7, 349.2, 440].forEach((f) => { const o = A.createOscillator(), g = A.createGain(); o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t0 + 5.2); g.gain.exponentialRampToValueAtTime(0.03, t0 + 6.5); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 11.5); o.connect(g); g.connect(out); g.connect(rv); o.start(t0 + 5.2); o.stop(t0 + 11.6); });
+      L.initAudio && L.initAudio(); const A = L.audio && L.audio.ctx; if (!A) return; if (A.state === 'suspended' && A.resume) A.resume();
+      const t0 = A.currentTime + 0.08;
+      const out = A.createGain(); out.gain.value = 0.9; const comp = A.createDynamicsCompressor(); out.connect(comp); comp.connect(A.destination); L._introOut = out;
+      const rv = A.createConvolver(), ir = A.createBuffer(2, A.sampleRate * 3.5, A.sampleRate); for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2.2); } rv.buffer = ir; const rg = A.createGain(); rg.gain.value = 0.55; rv.connect(rg); rg.connect(out);
+      const nb = A.createBuffer(1, A.sampleRate * 4, A.sampleRate), nd = nb.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+      const env = (g, s, a, hold, rel, v) => { g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(v, s + a); g.gain.setValueAtTime(v, s + a + hold); g.gain.exponentialRampToValueAtTime(0.0001, s + a + hold + rel); };
+      const tone = (type, f, s, a, hold, rel, v, opt) => { const o = A.createOscillator(), g = A.createGain(), fl = A.createBiquadFilter(); o.type = type; o.frequency.setValueAtTime(f, s); if (opt && opt.to) o.frequency.exponentialRampToValueAtTime(opt.to, s + a + hold + rel); if (opt && opt.det) o.detune.value = opt.det; fl.type = (opt && opt.ft) || 'lowpass'; fl.frequency.value = (opt && opt.cut) || 6000; fl.Q.value = (opt && opt.q) || 0.7; o.connect(fl); fl.connect(g); g.connect(out); if (!opt || opt.rev !== false) g.connect(rv); env(g, s, a, hold, rel, v); o.start(s); o.stop(s + a + hold + rel + 0.1); return { o, g, fl }; };
+      const noise = (s, a, hold, rel, v, ft, f, f2, q) => { const n = A.createBufferSource(), fl = A.createBiquadFilter(), g = A.createGain(); n.buffer = nb; n.loop = true; fl.type = ft; fl.frequency.setValueAtTime(f, s); if (f2) fl.frequency.exponentialRampToValueAtTime(f2, s + a + hold + rel); fl.Q.value = q || 1; n.connect(fl); fl.connect(g); g.connect(out); g.connect(rv); env(g, s, a, hold, rel, v); n.start(s, Math.random() * 2); n.stop(s + a + hold + rel + 0.1); return g; };
+      const T = (x) => t0 + x;
+      // tiefes, schwebendes Dröhnen (verstimmt = unheimlich)
+      for (const [f, d] of [[41.2, 0], [43.6, 0], [61.7, -12], [82.4, 9]]) tone('sawtooth', f, T(0), 3.5, 6, 2.5, 0.07, { cut: 220, det: d });
+      tone('sine', 30, T(0.5), 4, 5.5, 2, 0.35, { rev: false });
+      // Wind / Atmen
+      noise(T(0), 2.5, 7, 2.5, 0.08, 'bandpass', 300, 900, 0.8);
+      // verstimmte Spieluhr (e-Moll, mit Tritonus) – leiert immer mehr aus
+      const box = [659.3, 784, 932.3, 880, 659.3, 622.3, 587.3, 466.2, 493.9, 659.3];
+      box.forEach((f, i) => { const s = T(0.7 + i * 0.42), wob = 1 - i * 0.004; tone('triangle', f * wob, s, 0.005, 0.02, 1.4, 0.07, { cut: 5000 }); tone('sine', f * 2.01 * wob, s, 0.005, 0.01, 0.8, 0.025); });
+      [659.3, 622.3, 587.3, 554.4, 523.3].forEach((f, i) => { const s = T(6.4 + i * 0.75), wob = 0.97 - i * 0.012; tone('triangle', f * wob, s, 0.005, 0.02, 1.8, 0.05, { cut: 4000 }); });
+      // Herzschlag, der schneller wird
+      let hb = 2.2, gap = 0.95; while (hb < 4.75) { tone('sine', 62, T(hb), 0.01, 0.05, 0.22, 0.55, { to: 40, rev: false }); tone('sine', 55, T(hb + 0.2), 0.01, 0.04, 0.2, 0.4, { to: 38, rev: false }); hb += gap; gap = Math.max(0.42, gap * 0.86); }
+      // Flüstern
+      for (let k = 0; k < 7; k++) { const s = T(1.2 + k * 0.6 + Math.random() * 0.3); noise(s, 0.15, 0.25 + Math.random() * 0.3, 0.3, 0.05, 'bandpass', 1800 + Math.random() * 1500, 2600 + Math.random() * 1500, 6); }
+      // Ansaugen vor dem Titel + kreischende Geigen
+      noise(T(3.4), 1.55, 0.02, 0.05, 0.4, 'bandpass', 200, 6500, 2);
+      for (const f of [1180, 1251, 1325, 1404]) tone('sawtooth', f, T(3.9), 1.05, 0.02, 0.08, 0.035, { cut: 3000, ft: 'bandpass', q: 3, to: f * 1.12 });
+      // TITEL: großer Schlag – Boom, Metall, verzerrtes Blech
+      const H = T(5.0);
+      tone('sine', 70, H, 0.005, 0.1, 2.6, 1, { to: 26, rev: false }); noise(H, 0.005, 0.05, 1.6, 0.8, 'lowpass', 3000, 120, 0.7);
+      [220, 331, 467, 589, 834].forEach((f) => tone('triangle', f, H, 0.003, 0.02, 3.2, 0.05, { cut: 7000 }));
+      for (const [f, d] of [[36.7, 0], [55, 7], [73.4, -7], [82.4, 0], [110, 5]]) { const n = tone('sawtooth', f, H, 0.02, 0.6, 3.6, 0.09, { cut: 2400, det: d }); n.fl.frequency.setValueAtTime(2400, H); n.fl.frequency.exponentialRampToValueAtTime(260, H + 4); }
+      // danach: dunkler, langsamer Nachhall, Knarzen
+      for (const [f, d] of [[38.9, 0], [41.2, 14], [58.3, -9]]) tone('sawtooth', f, T(5.4), 2, 3.5, 2.4, 0.06, { cut: 180, det: d });
+      tone('sawtooth', 210, T(7.2), 0.4, 0.6, 0.6, 0.03, { cut: 900, to: 140 });
+      noise(T(8.4), 0.3, 0.4, 0.8, 0.06, 'bandpass', 2400, 1400, 5);
+      // leiser Schluss-Schlag
+      tone('sine', 55, T(9.7), 0.005, 0.08, 1.6, 0.6, { to: 28, rev: false }); noise(T(9.7), 0.005, 0.03, 1.2, 0.35, 'lowpass', 1800, 100, 0.7);
     } catch (e) { /* ohne Ton */ }
   }
   function intro(done) {
     const v = document.createElement('div'); v.id = 'introV';
     v.innerHTML = '<div class="a">MAXI D. STUDIO PRESENTS</div><div class="b" style="margin-top:28px">VIKTORS APOKALYPSE</div><div class="c">in the Sina Sina Multiverse</div><small>tap to skip</small>';
     document.body.appendChild(v); sound();
+    // während des Intros: keine Spielmusik, keine Wind-/Umgebungsgeräusche
+    L.introOn = true; const AU = L.audio; let keepVol = 1; try { if (AU && AU.master) { keepVol = AU.master.gain.value || 1; AU.master.gain.setTargetAtTime(0.0001, AU.ctx.currentTime, 0.05); } } catch (e) { /* egal */ }
+    const unmute = () => { L.introOn = false; try { if (AU && AU.master) AU.master.gain.setTargetAtTime(keepVol, AU.ctx.currentTime, 0.6); } catch (e) { /* egal */ } };
     const [a, b, c] = v.children; let fin = false;
-    const end = () => { if (fin) return; fin = true; v.style.transition = 'opacity .8s'; v.style.opacity = '0'; setTimeout(() => { v.remove(); done(); }, 800); };
+    const end = () => { if (fin) return; fin = true; unmute(); try { if (L._introOut) L._introOut.gain.setTargetAtTime(0.0001, L.audio.ctx.currentTime, 0.5); } catch (e) { /* egal */ } v.style.transition = 'opacity .8s'; v.style.opacity = '0'; setTimeout(() => { v.remove(); done(); }, 800); };
     setTimeout(() => { a.style.opacity = '1'; }, 300); setTimeout(() => { a.style.opacity = '0'; }, 4200);
     setTimeout(() => { b.style.opacity = '1'; b.style.transform = 'scale(1)'; }, 5000); setTimeout(() => { c.style.opacity = '1'; }, 6600); setTimeout(end, 11500);
     v.addEventListener('pointerdown', end);

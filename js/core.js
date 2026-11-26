@@ -462,7 +462,7 @@
       this.next = t + 0.7;
     },
     update() {
-      if (!A.ctx || !this.state || !STY[this.state]) return;
+      if (L.introOn || !A.ctx || !this.state || !STY[this.state]) return;
       const c = A.ctx, sty = STY[this.state];
       if (this.next < c.currentTime) this.next = c.currentTime + 0.05;
       while (this.next < c.currentTime + 0.3) {
