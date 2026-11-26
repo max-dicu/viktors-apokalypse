@@ -350,6 +350,12 @@
       B.wal = null; cleanupModels(); B.state = 'pause'; B.pauseT = 600;
     }
   }
+  // einmalig, nur auf dem Gerät mit dem Krücken-Code: direkt auf Mystery Island – Ruslan stirbt sofort, das Walross kommt
+  { const ohs0 = L.heroStart; L.heroStart = function () { if (ohs0) ohs0.apply(this, arguments);
+    if (!L.save || L.save.rusWalOnce || !(L.heroToken && L.heroToken('marlon'))) return;
+    L.save.rusWalOnce = 1; L.persist && L.persist();
+    setTimeout(() => { try { if (P.vehicle && L._leaveVehicle) L._leaveVehicle(true); P.x = I.x + 60; P.z = I.z + 60; P.y = 0; P.vx = P.vz = P.vy = 0; P.spawnProt = Math.max(P.spawnProt || 0, 30); cleanupModels(); B.x = I.x + 110; B.z = I.z + 110; B.yaw = Math.atan2(P.x - B.x, P.z - B.z); L.banner('🛡️ RUSLAN IST BESIEGT', '… doch da kommt etwas Riesiges.'); setTimeout(() => startWalrusEnd(), 1500); } catch (e) { /* egal */ } }, 2500);
+  }; }
   L._ruslanWalrus = () => { if (!B.x && B.x !== 0) return; startWalrusEnd(); };
   function startEnding() {
     B.state = 'ending'; B.t = 0;
