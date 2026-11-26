@@ -9,6 +9,7 @@
   const REALM = { id: 'shadow', x: RX, z: RZ, r: RR, dim: true };
   const SH = { built: false, M: null, R: null, inCave: false, parts: null, beastT: 0 };
   // ---------- Hilfen ----------
+  const HN = (x, y, z) => { const v = Math.sin(x * 12.9898 + y * 78.233 + z * 37.719) * 43758.5453; return v - Math.floor(v); };
   const rnd = (() => { let s = 1337; return () => { s = (s * 16807) % 2147483647; return s / 2147483647; }; })();
   function rockTex(dark) {
     const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
@@ -24,7 +25,7 @@
   // halbe Kuppel (Berg) mit Öffnung; Vertices verrauscht → natürlicher Fels
   function dome(r, h, phiStart, phiLen, mat) {
     const g = new T.SphereGeometry(r, 40, 18, phiStart, phiLen, 0, Math.PI / 2); const p = g.attributes.position;
-    for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i); const n = 1 + (Math.sin(x * 0.21) * Math.cos(z * 0.17) + Math.sin(y * 0.33 + x * 0.05)) * 0.06 + (Math.random() - 0.5) * 0.05; p.setXYZ(i, x * n, y * n * (h / r), z * n); }
+    for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i); const n = 1 + (Math.sin(x * 0.21) * Math.cos(z * 0.17) + Math.sin(y * 0.33 + x * 0.05)) * 0.06 + (HN(Math.round(x * 10), Math.round(y * 10), Math.round(z * 10)) - 0.5) * 0.05; p.setXYZ(i, x * n, y * n * (h / r), z * n); }
     g.computeVertexNormals(); const m = new T.Mesh(g, mat); m.castShadow = true; m.receiveShadow = true; return m;
   }
   // ---------- Platz für den Berg finden (Land, keine Straße, keine Häuser) ----------
@@ -132,7 +133,7 @@
     const fw = { x: Math.sin(S.yaw), z: Math.cos(S.yaw) }, rt = { x: Math.cos(S.yaw), z: -Math.sin(S.yaw) };
     const W = (lx, lz) => ({ x: S.x + rt.x * lx + fw.x * lz, z: S.z + rt.z * lx + fw.z * lz }); // lokal → Welt (z = nach vorne/Stadt)
     const RM = rockM();
-    const R = 48, OF = 0.3, OB = 0.15, OPEN = OF; // Kammer-Radius, halbe Öffnungsbreite vorne/hinten (rad)
+    const R = 48, OF = 0.18, OB = 0.115, OPEN = OF; // Kammer-Radius, halbe Öffnungsbreite vorne/hinten (rad)
     // Kuppel in zwei Teilen: vorne (Bergeingang) und hinten (Tunnel) offen. Lokal: +z = vorne (phi = π/2 zeigt nach +z)
     const front = Math.PI / 2, back = -Math.PI / 2;
     const segA = dome(R, 44, front + OF, (back + 2 * Math.PI - OB) - (front + OF), RM); g.add(segA);
@@ -141,14 +142,14 @@
     for (let k = 0; k < 22; k++) { const a = k / 22 * 6.283; const ca = Math.cos(a), sa = Math.sin(a); const d = R + 12 + rnd() * 18; if (sa > 0.9 || sa < -0.9) continue; const m = lump(Math.min(16 + rnd() * 14, d - R - 3), RM, 1.2 + rnd() * 0.8); m.position.set(ca * d, 6 + rnd() * 10, sa * d); m.rotation.set(rnd() * 3, rnd() * 3, 0); g.add(m); }
     for (let k = 0; k < 6; k++) { const ch = 45 + rnd() * 45; const c = new T.Mesh(new T.ConeGeometry(10 + rnd() * 10, ch, 7), RM); c.position.set((rnd() - 0.5) * 50, 41 + ch / 2 - 4, (rnd() - 0.5) * 50); c.rotation.set((rnd() - 0.5) * 0.4, rnd() * 3, (rnd() - 0.5) * 0.4); c.castShadow = true; g.add(c); }
     // Bergeingang: kurzer Felsgang nach vorne (Bogen aus Halbzylindern)
-    const arch = (z0, z1, rad, mat, parent) => { const len = z1 - z0; const geo = new T.CylinderGeometry(rad, rad, len, 20, 4, true, -Math.PI / 2, Math.PI); const p = geo.attributes.position; for (let i = 0; i < p.count; i++) { const f = 1 + (Math.random() - 0.5) * 0.12; p.setXYZ(i, p.getX(i) * f, p.getY(i), p.getZ(i) * f); } geo.computeVertexNormals(); const m = new T.Mesh(geo, mat); m.rotation.x = Math.PI / 2; m.position.set(0, 0, (z0 + z1) / 2); m.rotation.order = 'XYZ'; (parent || g).add(m); return m; };
+    const arch = (z0, z1, rad, mat, parent) => { const len = z1 - z0; const geo = new T.CylinderGeometry(rad, rad, len, 22, Math.max(4, Math.round(len / 3)), true, -Math.PI / 2, Math.PI); const p = geo.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), zz = p.getZ(i), ang = Math.atan2(x, zz), edge = Math.min(1, Math.abs(Math.abs(ang) - Math.PI / 2) * 3); const f = 1 + (Math.sin(ang * 5 + (y + z0) * 0.35) * 0.05 + (HN(Math.round(ang * 20), Math.round((y + z0) * 3), 1) - 0.5) * 0.05) * edge; p.setXYZ(i, x * f, y, zz * f); } geo.computeVertexNormals(); const m = new T.Mesh(geo, mat); m.rotation.x = Math.PI / 2; m.position.set(0, 0, (z0 + z1) / 2); m.rotation.order = 'XYZ'; (parent || g).add(m); return m; };
     // Halbzylinder: Achse nach z, Bogen oben (y ≥ 0)
     const archZ = (z0, z1, rad, mat, ox) => { const m = arch(z0, z1, rad, mat); m.rotation.set(-Math.PI / 2, 0, 0); m.position.x = ox || 0; return m; };
     archZ(R - 6, R + 16, 9, RM);
     for (let k = 0; k < 7; k++) { const a = -0.9 + k * 0.3; const m = lump(5 + rnd() * 3, RM, 1.3); m.position.set(Math.sin(a) * 11, 3 + Math.cos(a) * 9, R + 14 + rnd() * 2); g.add(m); }
     // Tunnel nach hinten (unter einem Erdwall), Höhleneingang am Ende
     const TL = 150, TR = 6;
-    for (let z = -R + 4; z > -TL; z -= 10) archZ(z - 10.5, z, TR, RM);
+    archZ(-TL, -R + 6, TR, RM);
     const earth = new T.MeshStandardMaterial({ color: 0x4e5e34, map: rockTex(false), roughness: 1, flatShading: true, side: T.DoubleSide });
     { const mw = archZ(-TL + 4, -R + 2, 12, earth); const p = mw.geometry.attributes.position; for (let i = 0; i < p.count; i++) { const f = 1 + (Math.sin(p.getY(i) * 0.25) * Math.cos(p.getX(i) * 0.4)) * 0.14 + (Math.random() - 0.5) * 0.18; p.setX(i, p.getX(i) * f); p.setZ(i, p.getZ(i) * f); } mw.geometry.computeVertexNormals(); for (let z = -R - 12; z > -TL + 8; z -= 9) { const m = lump(2 + rnd() * 3, RM, 0.8); m.position.set((rnd() - 0.5) * 16, 9 + rnd() * 3, z); g.add(m); const b = lump(1.6 + rnd() * 1.4, new T.MeshStandardMaterial({ color: 0x2e4a22, roughness: 1, flatShading: true }), 0.8); b.position.set((rnd() - 0.5) * 14, 11, z + 4); g.add(b); } } for (let z = -R - 8; z > -TL + 10; z -= 14) { const m = lump(4 + rnd() * 2, earth, 0.7); m.position.set((rnd() - 0.5) * 5, 11.5, z); g.add(m); }
     // Höhleneingang: Felsbrocken um das dunkle Loch
@@ -162,17 +163,17 @@
     const cry = [new T.MeshBasicMaterial({ color: 0x9a50ff }), new T.MeshBasicMaterial({ color: 0x40c8ff })];
     for (let k = 0; k < 26; k++) { const a = rnd() * 6.283, d = 8 + rnd() * (R - 14); if (Math.cos(a) > 0.8 && d > R - 20) continue; const m = new T.Mesh(new T.ConeGeometry(0.35 + rnd() * 0.8, 1.5 + rnd() * 4, 5), cry[k % 2]); m.position.set(Math.sin(a) * d, 0.8, Math.cos(a) * d - 4); m.rotation.set((rnd() - 0.5) * 0.6, 0, (rnd() - 0.5) * 0.6); g.add(m); }
     for (let k = 0; k < 40; k++) { const a = rnd() * 6.283, d = rnd() * (R - 8); const st = new T.Mesh(new T.ConeGeometry(0.6 + rnd() * 1.2, 3 + rnd() * 7, 6), RM); st.rotation.x = Math.PI; st.position.set(Math.sin(a) * d, 34 - d * 0.45 - rnd() * 4, Math.cos(a) * d); g.add(st); }
-    for (let z = -R - 10; z > -TL; z -= 24) { const c = new T.Mesh(new T.OctahedronGeometry(0.5), cry[0]); c.position.set(TR - 1.2, 2.2, z); g.add(c); const pl = new T.PointLight(0x9a50ff, 1.4, 22, 2); pl.position.set(TR - 2, 3, z); g.add(pl); }
-    const torch = (lx, lz) => { const f = new T.Mesh(new T.ConeGeometry(0.35, 1.1, 6), new T.MeshBasicMaterial({ color: 0xff8a30 })); f.position.set(lx, 3.4, lz); g.add(f); const l = new T.PointLight(0xff8a40, 1.6, 26, 2); l.position.set(lx, 3.8, lz); g.add(l); SH.torches = (SH.torches || []).concat([f]); };
+    for (let z = -R - 10; z > -TL; z -= 24) { const c = new T.Mesh(new T.OctahedronGeometry(0.5), cry[0]); c.position.set(TR - 1.2, 2.2, z); g.add(c); }
+    const torch = (lx, lz) => { const f = new T.Mesh(new T.ConeGeometry(0.35, 1.1, 6), new T.MeshBasicMaterial({ color: 0xff8a30 })); f.position.set(lx, 3.4, lz); g.add(f); SH.torches = (SH.torches || []).concat([f]); };
     torch(-7, R + 8); torch(7, R + 8); torch(-4, -TL + 4); torch(4, -TL + 4);
     // Portal in der Kammer (zum Bergeingang gedreht), mit Steinsockel
-    const portal = buildPortal(1.15); portal.position.set(0, 0, -10); g.add(portal); SH.portal = portal;
+    const portal = buildPortal(1.15); portal.position.set(0, 0, -2); g.add(portal); SH.portal = portal;
     g.updateMatrixWorld(true); solidPortal(portal, 1.15);
     g.traverse((o) => { if (o.isMesh) o.frustumCulled = false; });
     // Kollision: Kammerwand als Ring (mit 2 Öffnungen), Tunnelwände, Bergflanken
     const box = (lx, lz, hw, hd, h) => { const c = W(lx, lz); L.addBox(c.x - hw, c.z - hd, c.x + hw, c.z + hd, h, 'mountain'); };
     const ad = (a, b) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
-    for (let k = 0; k < 72; k++) { const a = k / 72 * 6.283; if (ad(a, front) < 0.19 || ad(a, back) < 0.12) continue; box(Math.cos(a) * (R + 1), Math.sin(a) * (R + 1), 2.6, 2.6, 60); }
+    for (let k = 0; k < 72; k++) { const a = k / 72 * 6.283; if (ad(a, front) < 0.17 || ad(a, back) < 0.11) continue; box(Math.cos(a) * (R + 1), Math.sin(a) * (R + 1), 2.6, 2.6, 60); }
     for (let z = R; z < R + 16; z += 3) { box(-9.5, z, 1.2, 2, 30); box(9.5, z, 1.2, 2, 30); }
     for (let z = -R; z > -TL; z -= 3) { box(-TR - 0.6, z, 1, 2, 30); box(TR + 0.6, z, 1, 2, 30); }
     // Kein Gras in Berg, Tunnel und Gang
@@ -181,10 +182,10 @@
     // Wo ist man? (für dunkles Licht drinnen)
     SH.local = (x, z) => { const dx = x - S.x, dz = z - S.z; return { lz: dx * fw.x + dz * fw.z, lx: dx * rt.x + dz * rt.z }; };
     SH.insideCave = (x, z) => { const q = SH.local(x, z); return Math.hypot(q.lx, q.lz) < R - 2 || (Math.abs(q.lx) < TR && q.lz < -R + 4 && q.lz > -TL + 6) || (Math.abs(q.lx) < 9 && q.lz > R - 6 && q.lz < R + 10); };
-    SH.portalPos = () => { const c = W(0, -10); return { x: c.x, z: c.z, y: 12.6 }; };
-    SH.chamberOut = () => { const c = W(0, 8); return { x: c.x, z: c.z }; };
+    SH.portalPos = () => { const c = W(0, -2); return { x: c.x, z: c.z, y: 12.6 }; };
+    SH.chamberOut = () => { const c = W(0, 22); return { x: c.x, z: c.z }; };
     // Karte/Wegpunkte
-    if (L.POIS) { const e = W(0, R + 16), cv = W(0, -TL - 6); L.POIS.push({ id: 'dunkelberg', name: 'Dunkelberg (Portal)', x: e.x, z: e.z, r: 8, icon: '🌑', sub: true }); L.POIS.push({ id: 'dunkelhoehle', name: 'Höhle zum Dunkelberg', x: cv.x, z: cv.z, r: 8, icon: '🕳️', sub: true }); }
+    if (L.POIS) { const e = W(0, R + 16), cv = W(0, -TL - 6); L.POIS.push({ id: 'dunkelberg', name: 'Dunkelberg – Eingang zum Portal', x: e.x, z: e.z, r: 8, icon: '🌑', sub: true }); L.POIS.push({ id: 'dunkelhoehle', name: 'Dunkelberg – Höhle (Tunnel zum Portal)', x: cv.x, z: cv.z, r: 8, icon: '🕳️', sub: true }); }
     SH.mGroup = g;
   }
   // ---------- Das Schattenreich ----------
@@ -301,7 +302,7 @@
     try {
       if (!cam) return; const E = L.env;
       if (L.inShadow(cam.position.x)) { L.scene.background.set('#07040c'); L.scene.fog.color.set('#140a22'); L.scene.fog.near = 30; L.scene.fog.far = 420; E.hemi.intensity = 0.42; E.hemi.color.set('#8a70c0'); E.hemi.groundColor.set('#1a0a20'); E.sun.intensity = 0.35; E.sun.color.set('#b0a0ff'); if (E.stars) E.stars.material.opacity = 0; if (E.sunDisc) E.sunDisc.material.opacity = 0; if (E.moon) E.moon.material.opacity = 0; if (E.rainMesh) E.rainMesh.visible = false; return; }
-      if (SH.inCave && SH.insideCave && SH.insideCave(cam.position.x, cam.position.z)) { L.scene.fog.color.set('#0a0810'); L.scene.fog.near = 8; L.scene.fog.far = 120; E.hemi.intensity = Math.min(E.hemi.intensity, 0.18); E.sun.intensity = Math.min(E.sun.intensity, 0.08); if (E.rainMesh) E.rainMesh.visible = false; }
+      if (SH.inCave && SH.insideCave && SH.insideCave(cam.position.x, cam.position.z)) { L.scene.fog.color.set('#0a0810'); L.scene.fog.near = 8; L.scene.fog.far = 120; E.hemi.intensity = Math.min(E.hemi.intensity, 0.3); E.hemi.color.set("#b8a8e0"); E.sun.intensity = Math.min(E.sun.intensity, 0.08); if (E.rainMesh) E.rainMesh.visible = false; }
     } catch (e) { /* egal */ }
   };
   L.shadowRealm = SH;
