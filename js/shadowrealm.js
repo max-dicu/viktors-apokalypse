@@ -53,33 +53,76 @@
     return new T.CanvasTexture(c);
   }
   function buildPortal(scale) {
+    // Steinernes Torportal (wie Bild 2), aber dunkel & mystisch: Säulen, Querbalken mit Emblem, tote Ranken,
+    // leuchtende Fläche, runde Stufen-Plattform – und überall rieseln Blöcke heraus.
     const g = new T.Group(); g.scale.setScalar(scale || 1);
-    const metal = new T.MeshStandardMaterial({ color: 0x1c1622, metalness: 0.85, roughness: 0.32, emissive: 0x1a0428 });
-    const gold = new T.MeshStandardMaterial({ color: 0x6a5020, metalness: 0.9, roughness: 0.3, emissive: 0x120800 });
-    const glow = new T.MeshBasicMaterial({ color: 0xb060ff });
-    g.add(new T.Mesh(new T.TorusGeometry(9, 0.95, 18, 80), metal)); const t2 = new T.Mesh(new T.TorusGeometry(10.2, 0.32, 8, 80), gold); g.add(t2);
-    // Dornen, Runen, kleine Zahnräder
-    for (let k = 0; k < 28; k++) { const a = k / 28 * 6.283, sp = new T.Mesh(new T.ConeGeometry(0.45, 2.6 + (k % 3) * 1.2, 6), metal); sp.position.set(Math.cos(a) * 10.8, Math.sin(a) * 10.8, 0); sp.rotation.z = a - Math.PI / 2; g.add(sp); const tip = new T.Mesh(new T.OctahedronGeometry(0.28), glow); tip.position.set(Math.cos(a) * (12 + (k % 3) * 1.1), Math.sin(a) * (12 + (k % 3) * 1.1), 0); g.add(tip); }
-    for (let k = 0; k < 16; k++) { const a = k / 16 * 6.283 + 0.1, r = new T.Mesh(new T.BoxGeometry(0.5, 0.9, 0.2), glow); r.position.set(Math.cos(a) * 9, Math.sin(a) * 9, 0.95); r.rotation.z = a; g.add(r); }
-    for (const [x, y, s] of [[-11, 6, 1.6], [11.5, -5, 1.3], [-8, -9, 1.1]]) { const gear = new T.Mesh(new T.TorusGeometry(s, 0.35, 6, 12), gold); gear.position.set(x, y, -0.3); g.add(gear); g.userData.gears = (g.userData.gears || []).concat([gear]); }
-    const vt = vortexTex(); const v1 = new T.Mesh(new T.CircleGeometry(8.4, 48), new T.MeshBasicMaterial({ map: vt, side: T.DoubleSide })); g.add(v1);
-    const v2 = new T.Mesh(new T.CircleGeometry(8.4, 48), new T.MeshBasicMaterial({ map: vt, transparent: true, opacity: 0.45, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide })); v2.position.z = 0.05; g.add(v2);
-    const light = new T.PointLight(0x9a40ff, 3, 70, 2); light.position.z = 3; g.add(light);
-    // Block-Partikel, die aus dem ganzen Portal heraussprühen
+    const stone = new T.MeshStandardMaterial({ color: 0x6a6472, map: rockTex(true), roughness: 0.9, metalness: 0.05, flatShading: true });
+    const stone2 = new T.MeshStandardMaterial({ color: 0x8a8494, map: rockTex(false), roughness: 0.9, flatShading: true });
+    const base = new T.MeshStandardMaterial({ color: 0x2a2630, roughness: 0.95, flatShading: true });
+    const metal = new T.MeshStandardMaterial({ color: 0x1c2230, metalness: 0.85, roughness: 0.3, emissive: 0x0a0418 });
+    const gold = new T.MeshStandardMaterial({ color: 0x8a6a28, metalness: 0.9, roughness: 0.3, emissive: 0x1a0c00 });
+    const vine = new T.MeshStandardMaterial({ color: 0x2a3a1c, roughness: 0.9 }), leafM = new T.MeshStandardMaterial({ color: 0x3a2a4a, roughness: 0.8, side: T.DoubleSide });
+    const glowM = new T.MeshBasicMaterial({ color: 0xb070ff });
+    const B = (w, h, d, x, y, z, m, ry) => { const o = new T.Mesh(new T.BoxGeometry(w, h, d), m); o.position.set(x, y, z); if (ry) o.rotation.y = ry; o.castShadow = true; o.receiveShadow = true; g.add(o); return o; };
+    // runde Plattform mit 3 Stufen
+    for (let k = 0; k < 3; k++) { const c = new T.Mesh(new T.CylinderGeometry(15.5 - k * 2.2, 16 - k * 2.2, 0.9, 40), k % 2 ? stone : base); c.position.y = 0.45 + k * 0.9; c.receiveShadow = true; g.add(c); for (let s = 0; s < 18; s++) { const a = s / 18 * 6.283; B(0.08, 0.92, 0.6, Math.sin(a) * (15.6 - k * 2.2), 0.45 + k * 0.9, Math.cos(a) * (15.6 - k * 2.2), base, a); } }
+    const Y0 = 2.7, GAP = 5, PH = 20;
+    // Säulen: dunkler Sockelblock, Schaft mit Ringen, Kapitell
+    for (const sx of [-1, 1]) {
+      const x = sx * (GAP + 1.6);
+      B(4.6, 2.6, 4.6, x, Y0 + 1.3, 0, base); B(4.0, 1.4, 4.0, x, Y0 + 3.2, 0, stone);
+      const sh = new T.Mesh(new T.CylinderGeometry(1.45, 1.6, PH - 5, 10), stone2); sh.position.set(x, Y0 + 3.9 + (PH - 5) / 2, 0); sh.castShadow = true; g.add(sh);
+      for (const yy of [Y0 + 7, Y0 + 11]) { const ring = new T.Mesh(new T.TorusGeometry(1.6, 0.22, 6, 14), metal); ring.rotation.x = Math.PI / 2; ring.position.set(x, yy, 0); g.add(ring); }
+      B(3.8, 1.2, 3.8, x, Y0 + PH - 0.6, 0, stone);
+    }
+    // Querbalken (zwei Blöcke) + Emblem mit Kristall
+    B(GAP * 2 + 8, 2.6, 4.2, 0, Y0 + PH + 1.3, 0, stone2); B(GAP * 2 + 6, 0.6, 3.6, 0, Y0 + PH + 2.9, 0, stone);
+    const em = new T.Group(); em.position.set(0, Y0 + PH + 1.6, 2.3); g.add(em);
+    const dia = new T.Mesh(new T.OctahedronGeometry(2.4), metal); dia.scale.set(1, 1.25, 0.35); em.add(dia);
+    const ring = new T.Mesh(new T.TorusGeometry(1.25, 0.28, 8, 24), gold); ring.position.z = 0.6; em.add(ring);
+    const core = new T.Mesh(new T.SphereGeometry(0.75, 16, 12), glowM); core.position.z = 0.6; em.add(core);
+    const spike = new T.Mesh(new T.ConeGeometry(0.6, 2.4, 6), metal); spike.position.set(0, 3.6, 0); em.add(spike);
+    // heruntergefallene Steinblöcke
+    for (const [x, z, r] of [[-5.5, 3.5, 0.3], [-3.2, 4.4, -0.4], [6.8, 4, 0.6]]) B(2 + Math.random(), 1.2, 1.6, x, Y0 + 0.6, z, stone2, r);
+    // tote Ranken über Balken und Säulen
+    const vineCurve = (pts) => { const t = new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts.map((p) => new T.Vector3(p[0], p[1], p[2]))), 40, 0.16, 5, false), vine); g.add(t); for (let k = 0; k < 10; k++) { const p = pts[Math.floor(Math.random() * pts.length)]; const lf = new T.Mesh(new T.PlaneGeometry(0.7, 0.45), leafM); lf.position.set(p[0] + (Math.random() - 0.5), p[1] + (Math.random() - 0.5), p[2] + 0.2); lf.rotation.set(Math.random(), Math.random() * 3, Math.random()); g.add(lf); } };
+    vineCurve([[-11, Y0 + PH + 2.6, 2.2], [-8, Y0 + PH + 3.1, 2.3], [-5, Y0 + PH + 1, 2.3], [-3, Y0 + PH + 2.8, 2.2]]);
+    vineCurve([[4, Y0 + PH + 2.6, 2.2], [7, Y0 + PH + 0.6, 2.3], [9.5, Y0 + PH + 2.4, 2.2], [10.5, Y0 + PH - 2, 1.8], [9.6, Y0 + 9, 1.7], [10.2, Y0 + 5, 1.6]]);
+    vineCurve([[-9.5, Y0 + PH, 1.7], [-8.6, Y0 + 11, 1.7], [-9.7, Y0 + 7, 1.6]]);
+    // leuchtende Portalfläche (zwei Schichten)
+    const c = document.createElement('canvas'); c.width = 128; c.height = 256; const cx = c.getContext('2d');
+    const gr = cx.createRadialGradient(64, 128, 8, 64, 128, 150); gr.addColorStop(0, '#f0e0ff'); gr.addColorStop(0.25, '#b070ff'); gr.addColorStop(0.6, '#4a1a8a'); gr.addColorStop(1, '#0a0418'); cx.fillStyle = gr; cx.fillRect(0, 0, 128, 256);
+    for (let k = 0; k < 40; k++) { cx.strokeStyle = 'rgba(' + (Math.random() < 0.5 ? '200,150,255' : '90,220,255') + ',' + (0.15 + Math.random() * 0.3).toFixed(2) + ')'; cx.lineWidth = 1 + Math.random() * 2; cx.beginPath(); let x = Math.random() * 128, y = 256; cx.moveTo(x, y); while (y > 0) { y -= 12; x += (Math.random() - 0.5) * 14; cx.lineTo(x, y); } cx.stroke(); }
+    const vt = new T.CanvasTexture(c); vt.wrapS = vt.wrapT = T.RepeatWrapping;
+    const PW = GAP * 2 - 0.3, PHh = PH - 3.2, PY = Y0 + 3.2 + PHh / 2 - 0.3;
+    const v1 = new T.Mesh(new T.PlaneGeometry(PW, PHh), new T.MeshBasicMaterial({ map: vt, side: T.DoubleSide })); v1.position.set(0, PY, 0); g.add(v1);
+    const vt2 = vt.clone(); vt2.needsUpdate = true; vt2.wrapS = vt2.wrapT = T.RepeatWrapping;
+    const v2 = new T.Mesh(new T.PlaneGeometry(PW, PHh), new T.MeshBasicMaterial({ map: vt2, transparent: true, opacity: 0.5, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide })); v2.position.set(0, PY, 0.08); g.add(v2);
+    const light = new T.PointLight(0xa060ff, 3, 70, 2); light.position.set(0, PY, 4); g.add(light);
+    // Block-Partikel aus der ganzen Portalfläche
     const N = 420, cubes = new T.InstancedMesh(new T.BoxGeometry(0.32, 0.32, 0.32), new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 }), N); cubes.instanceColor = new T.InstancedBufferAttribute(new Float32Array(N * 3), 3); cubes.frustumCulled = false; g.add(cubes);
     const ps = []; const COLS = [0x9a40ff, 0x5a1aa0, 0x2a0a40, 0x40c8ff, 0x000000, 0xd090ff];
-    const spawnP = (p) => { const a = Math.random() * 6.283, r = Math.sqrt(Math.random()) * 8.2; p.x = Math.cos(a) * r; p.y = Math.sin(a) * r; p.z = 0; const side = Math.random() < 0.5 ? -1 : 1; p.vx = Math.cos(a) * (0.3 + Math.random() * 0.9); p.vy = Math.sin(a) * (0.3 + Math.random() * 0.9) + 0.3; p.vz = side * (1 + Math.random() * 2.6); p.life = 0; p.max = 1.6 + Math.random() * 2.2; p.rx = Math.random() * 6; p.ry = Math.random() * 6; p.s = 0.5 + Math.random() * 1.2; };
+    const spawnP = (p) => { p.x = (Math.random() - 0.5) * PW; p.y = PY + (Math.random() - 0.5) * PHh; p.z = 0; const side = Math.random() < 0.5 ? -1 : 1; p.vx = (Math.random() - 0.5) * 1.6; p.vy = (Math.random() - 0.3) * 1.4; p.vz = side * (1 + Math.random() * 2.6); p.life = 0; p.max = 1.6 + Math.random() * 2.2; p.rx = Math.random() * 6; p.ry = Math.random() * 6; p.s = 0.5 + Math.random() * 1.2; };
     const tq = new T.Quaternion(), te = new T.Euler(), tm = new T.Matrix4(), tp = new T.Vector3(), ts = new T.Vector3(), tc = new T.Color();
     for (let i = 0; i < N; i++) { const p = {}; spawnP(p); p.life = Math.random() * p.max; ps.push(p); tc.setHex(COLS[i % COLS.length]); cubes.setColorAt(i, tc); }
     g.userData.update = (dt, t) => {
-      v1.rotation.z -= dt * 0.6; v2.rotation.z += dt * 0.9; t2.rotation.z -= dt * 0.08; (g.userData.gears || []).forEach((q, i) => { q.rotation.z += dt * (i % 2 ? 1 : -1.3); });
-      light.intensity = 2.6 + Math.sin(t * 3) * 0.6;
+      vt.offset.y -= dt * 0.15; vt2.offset.y += dt * 0.27; vt2.offset.x = Math.sin(t * 0.7) * 0.1; core.scale.setScalar(1 + Math.sin(t * 3) * 0.12); light.intensity = 2.6 + Math.sin(t * 3) * 0.6; em.rotation.z = Math.sin(t * 0.8) * 0.04;
       for (let i = 0; i < N; i++) { const p = ps[i]; p.life += dt; if (p.life > p.max) spawnP(p); p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; p.rx += dt * 2; p.ry += dt * 1.5; const k = 1 - p.life / p.max, s = p.s * Math.min(1, p.life * 4) * k; te.set(p.rx, p.ry, 0); tq.setFromEuler(te); tp.set(p.x, p.y, p.z); ts.set(s, s, s); tm.compose(tp, tq, ts); cubes.setMatrixAt(i, tm); }
       cubes.instanceMatrix.needsUpdate = true;
     };
     g.traverse((o) => { o.frustumCulled = false; });
     return g;
   }
+  const PLATS = [];
+  function solidPortal(p, sc) {
+    p.updateMatrixWorld(true); const c = new T.Vector3(0, 0, 0).applyMatrix4(p.matrixWorld); PLATS.push({ x: c.x, z: c.z, s: sc });
+    for (const sx of [-1, 1]) { const q = new T.Vector3(sx * 6.6, 0, 0).applyMatrix4(p.matrixWorld); const hw = 2.3 * sc; L.addBox(q.x - hw, q.z - hw, q.x + hw, q.z + hw, 30 * sc, 'pillar'); }
+  }
+  const ofa = L.floorAt;
+  L.floorAt = function (x, z, y) {
+    for (const q of PLATS) { const d = Math.hypot(x - q.x, z - q.z) / q.s; if (d > 16) continue; const h = (d < 11.8 ? 2.7 : d < 13.9 ? 1.8 : 0.9) * q.s; if ((y || 0) >= h - 1.2) return h; }
+    return ofa ? ofa(x, z, y) : null;
+  };
   // ---------- Berg mit Portalkammer, Bergeingang und Höhlentunnel ----------
   const NOGRASS = [];
   L.noGrass = (x, z) => { for (const f of NOGRASS) if (f(x, z)) return true; return false; };
@@ -123,8 +166,8 @@
     const torch = (lx, lz) => { const f = new T.Mesh(new T.ConeGeometry(0.35, 1.1, 6), new T.MeshBasicMaterial({ color: 0xff8a30 })); f.position.set(lx, 3.4, lz); g.add(f); const l = new T.PointLight(0xff8a40, 1.6, 26, 2); l.position.set(lx, 3.8, lz); g.add(l); SH.torches = (SH.torches || []).concat([f]); };
     torch(-7, R + 8); torch(7, R + 8); torch(-4, -TL + 4); torch(4, -TL + 4);
     // Portal in der Kammer (zum Bergeingang gedreht), mit Steinsockel
-    const portal = buildPortal(1.15); portal.position.set(0, 12.6, -10); g.add(portal); SH.portal = portal;
-    for (let k = 0; k < 3; k++) { const st = new T.Mesh(new T.CylinderGeometry(12 - k * 2.4, 12.5 - k * 2.4, 0.6, 24), floorM); st.position.set(0, 0.3 + k * 0.6, -10); g.add(st); }
+    const portal = buildPortal(1.15); portal.position.set(0, 0, -10); g.add(portal); SH.portal = portal;
+    g.updateMatrixWorld(true); solidPortal(portal, 1.15);
     g.traverse((o) => { if (o.isMesh) o.frustumCulled = false; });
     // Kollision: Kammerwand als Ring (mit 2 Öffnungen), Tunnelwände, Bergflanken
     const box = (lx, lz, hw, hd, h) => { const c = W(lx, lz); L.addBox(c.x - hw, c.z - hd, c.x + hw, c.z + hd, h, 'mountain'); };
@@ -169,7 +212,7 @@
     const moon = new T.Mesh(new T.SphereGeometry(120, 32, 20), new T.MeshBasicMaterial({ color: 0x7a1020, fog: false })); moon.position.set(500, 420, -1400); g.add(moon);
     const sg = new T.BufferGeometry(), sp = new Float32Array(1200 * 3); for (let i = 0; i < 1200; i++) { const a = rnd() * 6.283, b = rnd() * 1.4; sp[i * 3] = Math.cos(a) * Math.cos(b) * 2400; sp[i * 3 + 1] = Math.sin(b) * 2400; sp[i * 3 + 2] = Math.sin(a) * Math.cos(b) * 2400; } sg.setAttribute('position', new T.BufferAttribute(sp, 3)); g.add(new T.Points(sg, new T.PointsMaterial({ color: 0xc8a0ff, size: 3, fog: false })));
     // Rückkehr-Portal
-    const back = buildPortal(1.0); back.position.set(0, 11, -25); g.add(back); SH.backPortal = back;
+    const back = buildPortal(1.0); back.position.set(0, 0, -25); g.add(back); SH.backPortal = back; solidPortal(back, 1);
     g.traverse((o) => { if (o.isMesh) o.frustumCulled = false; });
     SH.floats = floats;
   }
