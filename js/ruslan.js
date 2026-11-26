@@ -252,7 +252,7 @@
     if (B.bag && B.bag.g) B.bag.g.visible = false;
     if (B.iva && B.iva.root) { L.scene.remove(B.iva.root); B.iva = null; }
     if (!B.rig) { B.rig = buildRuslan(); L.scene.add(B.rig.root); }
-    B.rig.root.scale.setScalar(14); B.rig.root.position.set(B.x, 0, B.z); B.rig.root.rotation.set(0, B.yaw, 0); B.rig.root.visible = true;
+    B.rig.root.scale.setScalar(27); B.rig.root.position.set(B.x, 0, B.z); B.rig.root.rotation.set(0, B.yaw, 0); B.rig.root.visible = true;
     const a = B.yaw + 2.2, wx = B.x + Math.sin(a) * 140, wz = B.z + Math.cos(a) * 140;
     const w = L.buildWalross(); w.root.scale.setScalar(16); w.root.position.set(wx, 0, wz); L.scene.add(w.root);
     // extrem viel Fell
@@ -271,10 +271,10 @@
     L.startCine('🦭 THE GIANT WALRUS', 19, () => B.cam);
   }
   function updWalrusEnd(dt) {
-    const t = B.t, V = B.wal, w = V.w, R = B.rig, RS = 14, END = 19;
+    const t = B.t, V = B.wal, w = V.w, R = B.rig, RS = 27, END = 19;
     const fx = Math.sin(B.yaw), fz = Math.cos(B.yaw);
     const front = { x: B.x + fx * 20, z: B.z + fz * 20 }, far = { x: B.x + fx * 150, z: B.z + fz * 150 };
-    if (R && t < 7.8) { R.root.visible = true; R.root.scale.setScalar(RS); R.root.position.set(B.x, 0, B.z); R.root.rotation.set(0, B.yaw, 0); }
+    if (R && t < 7.8) { R.root.visible = true; R.root.scale.setScalar(RS); R.root.position.set(B.x, 0, B.z); if (t < 3.4 || t >= 4.2) R.root.rotation.set(0, B.yaw, 0); }
     const look = (x, z) => { w.root.rotation.y = Math.atan2(x - w.root.position.x, z - w.root.position.z); };
     const arms = (x, z2) => { if (R && R.arms) R.arms.forEach((q) => { q.arm.rotation.set(x, 0, z2 || 0); q.elbow.rotation.x = 0; }); };
     if (t < 1.8) {
@@ -282,13 +282,34 @@
       const u = t / 1.8; w.root.position.set(L.lerp(V.wx, front.x, u), Math.abs(Math.sin(u * 9)) * 2, L.lerp(V.wz, front.z, u)); look(B.x, B.z);
       if (t - dt <= 0) { L.snd.bossRoar && L.snd.bossRoar({ x: V.wx, y: 10, z: V.wz }); L.banner('🦭 EIN RIESIGES WALROSS!', '… und es ist EXTREM behaart.'); }
       if (R) R.root.position.set(B.x, 0, B.z); arms(-0.4);
-    } else if (t < 3.4) {
-      // Ruslan packt es an den Stoßzähnen
-      w.root.position.set(front.x, 6 * Math.min(1, (t - 1.8) * 2), front.z); look(B.x, B.z); w.root.rotation.x = -0.3; arms(-1.55);
-      if (t - dt < 1.9) { L.shake = 1.2; L.msg('🛡️ Ruslan packt das Walross an den Stoßzähnen!', 2500); }
+    } else if (t < 4.2) {
+      // Ruslan packt es an den Stoßzähnen, hebt es hoch und schleudert es im Kreis
+      const G = 13 + (V.half || 20) * 0.95, grab = { x: B.x + fx * G, z: B.z + fz * G };
+      const lean = (v) => { if (R && R.torso) R.torso.rotation.x = v; };
+      if (t < 2.5) {
+        const k = (t - 1.8) / 0.7; w.root.position.set(L.lerp(front.x, grab.x, k), 0, L.lerp(front.z, grab.z, k)); look(B.x, B.z); w.root.rotation.x = 0;
+        arms(-0.6 - k * 0.9); lean(0.25 * k);
+      } else if (t < 3.4) {
+        const k = Math.min(1, (t - 2.5) / 0.6); w.root.position.set(grab.x, 16 * k, grab.z); look(B.x, B.z); w.root.rotation.x = -0.55 * k;
+        arms(-1.5 - k * 0.5); lean(0.25 - k * 0.5);
+        if (!V.grip) { V.grip = true; L.shake = 1.4; L.msg('🛡️ Ruslan packt das Walross an den Stoßzähnen!', 2500); L.snd.bossRoar && L.snd.bossRoar({ x: grab.x, y: 10, z: grab.z }); L.tn && L.tn({ f: 160, fTo: 90, dur: 0.6, type: 'sawtooth', vol: 0.22 });
+          const hx = B.x + fx * 8, hz = B.z + fz * 8; for (let n = 0; n < 30; n++) L.fx(L.pick(['#ffffff', '#ffe8a0', '#d8d0c0']), hx, 17, hz, 6, 12, { basic: true, size: 0.6, life: 0.6 }); }
+        if (Math.random() < dt * 8) L.fx('#5e4430', grab.x + L.rand(-8, 8), L.rand(2, 10), grab.z + L.rand(-8, 8), 2, 6, { size: 0.8, life: 0.8 });
+      } else {
+        // im Kreis schleudern (eine volle Drehung), dann loslassen in Blickrichtung
+        const k = (t - 3.4) / 0.8, spin = (k * k * (3 - 2 * k)) * Math.PI * 2, an = B.yaw + spin;
+        if (R) R.root.rotation.y = B.yaw + spin; arms(-1.65, 0); lean(-0.15);
+        w.root.position.set(B.x + Math.sin(an) * G, 17 + Math.sin(k * Math.PI) * 5, B.z + Math.cos(an) * G);
+        w.root.rotation.set(-0.5, an + Math.PI, Math.sin(k * Math.PI) * 0.6);
+        if (Math.random() < dt * 20) { L.fx('#8a7a60', B.x + Math.sin(an) * G, 1, B.z + Math.cos(an) * G, 3, 10, { size: 2, life: 1 }); L.shake = Math.max(L.shake, 0.6); }
+        if (!V.woosh) { V.woosh = true; L.nz && L.nz({ dur: 0.8, f: 300, fTo: 1400, type: 'bandpass', vol: 0.35 }); }
+      }
     } else if (t < 5.2) {
-      // … und wirft es weg
-      const u = (t - 3.4) / 1.8; w.root.position.set(L.lerp(front.x, far.x, u), Math.sin(u * Math.PI) * 70 + 6 * (1 - u), L.lerp(front.z, far.z, u)); w.root.rotation.x = -0.3 - u * 6; arms(-2.8 + u * 0.6);
+      // … loslassen: es fliegt weit weg
+      const G = 13 + (V.half || 20) * 0.95, rel = { x: B.x + fx * G, z: B.z + fz * G };
+      const u = (t - 4.2) / 1.0; w.root.position.set(L.lerp(rel.x, far.x, u), Math.sin(u * Math.PI) * 70 + 17 * (1 - u), L.lerp(rel.z, far.z, u)); w.root.rotation.set(-0.5 - u * 7, B.yaw + Math.PI, u * 3); arms(-2.6 + u * 0.8);
+      if (R) R.root.rotation.y = B.yaw;
+      if (!V.rel) { V.rel = true; L.shake = 1.6; L.tn && L.tn({ f: 220, fTo: 60, dur: 0.5, type: 'sawtooth', vol: 0.2 }); }
       if (u >= 0.95 && !V.land1) { V.land1 = true; L.shake = 2.5; L.snd.stomp && L.snd.stomp({ x: far.x, y: 0, z: far.z }); for (let k = 0; k < 30; k++) L.fx('#8a7a60', far.x + L.rand(-25, 25), 2, far.z + L.rand(-25, 25), 8, 30, { size: 3, life: 1.5 }); }
     } else if (t < 6.2) {
       w.root.position.set(far.x, 0, far.z); w.root.rotation.x = 0; look(B.x, B.z); arms(-0.5);
@@ -357,7 +378,8 @@
     // Kamera
     let cx = B.x + Math.sin(B.yaw) * 10, cz = B.z + Math.cos(B.yaw) * 10, cd = 85, cy = 20, ly = 16;
     if (t >= 6.2 && t < 11.2) { cd = 110; cy = 30; }
-    if (t >= 3.4 && t < 6.2) { cx = (B.x + far.x) / 2; cz = (B.z + far.z) / 2; cd = 170; cy = 34; }
+    if (t >= 1.8 && t < 4.2) { const G = 13 + (V.half || 20) * 0.95; cx = B.x + fx * G * 0.5; cz = B.z + fz * G * 0.5; cd = t < 3.4 ? 105 : 140; cy = t < 3.4 ? 24 : 38; ly = 20; }
+    if (t >= 4.2 && t < 6.2) { cx = (B.x + far.x) / 2; cz = (B.z + far.z) / 2; cd = 170; cy = 34; }
     const cA = B.yaw + 1.4 + t * 0.05;
     if (V.birth && t < 13.7) { const bx2 = Math.sin(V.back), bz2 = Math.cos(V.back), sx = Math.cos(V.back), sz2 = -Math.sin(V.back), dd = 52 - (t - 11.2) * 6; Object.assign(B.cam, { x: V.rear.x + bx2 * dd + sx * 18, y: 9, z: V.rear.z + bz2 * dd + sz2 * 18, lx: V.rear.x + bx2 * 6, ly: 5, lz: V.rear.z + bz2 * 6 }); }
     else if (V.birth) { const p = V.rich.root.position, a2 = V.back + 0.6 + (t - 13.7) * 0.12, dd = 30; Object.assign(B.cam, { x: p.x + Math.sin(a2) * dd, y: 7, z: p.z + Math.cos(a2) * dd, lx: p.x, ly: 7, lz: p.z }); }

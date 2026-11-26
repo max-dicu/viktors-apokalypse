@@ -45,15 +45,25 @@
     P3(G.box, hood, 0.62, 0.14, 0.3, 0, 0.36, 0, r.torso);
     P3(G.box, hood, 0.42, 0.24, 0.3, 0, 0.18, 0, r.torso);
     for (const sd of [-1, 1]) { const cl = P3(G.box, hoodD, 0.16, 0.012, 0.012, sd * 0.1, 0.6, fz + 0.005, r.torso); cl.rotation.z = sd * -0.18; }
-    // Reißverschluss bis etwa zur Brustmitte offen (etwas weiter offen als ein Quarter-Zip), weißes T-Shirt sichtbar
-    P3(G.box, tee, 0.12, 0.2, 0.01, 0, 0.52, fz + 0.004, r.torso);
-    for (const sd of [-1, 1]) {
-      const f = P3(G.box, hood, 0.075, 0.24, 0.014, sd * 0.07, 0.52, fz + 0.008, r.torso); f.rotation.z = sd * 0.2;
-      P3(G.box, zip, 0.007, 0.22, 0.007, sd * 0.042, 0.52, fz + 0.016, r.torso).rotation.z = sd * 0.2;
-      const k = P3(G.box, hood, 0.08, 0.08, 0.03, sd * 0.1, 0.66, 0.08, r.torso); k.rotation.z = sd * 0.45;
+    // Reißverschluss weit offen: echtes V (oben breit, unten spitz) bis fast zum Bauch – weißes T-Shirt gut sichtbar
+    {
+      const TOPY = 0.66, BOT = 0.27, HW = 0.115, ang = Math.atan2(HW, TOPY - BOT), len = Math.hypot(HW, TOPY - BOT);
+      const sh = new T.Shape(); sh.moveTo(-HW, TOPY); sh.lineTo(HW, TOPY); sh.lineTo(0, BOT); sh.lineTo(-HW, TOPY);
+      const teeV = new T.Mesh(new T.ShapeGeometry(sh), tee); teeV.position.z = fz + 0.004; r.torso.add(teeV);
+      // T-Shirt-Kragen (Rundhals) oben im V
+      P3(new T.TorusGeometry(0.06, 0.008, 6, 16, Math.PI), tee, 1, 0.8, 1, 0, TOPY - 0.005, fz + 0.006, r.torso).rotation.z = Math.PI;
+      for (const sd of [-1, 1]) {
+        const mx = sd * HW / 2, my = (TOPY + BOT) / 2;
+        // offene Hoodie-Ränder entlang des V (umgeschlagen) + Reißverschluss-Zähne
+        const lap = P3(G.box, hood, 0.05, len + 0.02, 0.016, mx + sd * 0.022, my, fz + 0.009, r.torso); lap.rotation.z = -sd * ang;
+        const teeth = P3(G.box, zip, 0.008, len, 0.008, mx + sd * 0.004, my, fz + 0.017, r.torso); teeth.rotation.z = -sd * ang;
+        // Stehkragen links/rechts, nach außen geklappt
+        const col = P3(G.box, hood, 0.085, 0.085, 0.035, sd * (HW + 0.03), TOPY + 0.01, 0.1, r.torso); col.rotation.z = sd * 0.55;
+      }
+      // unten geschlossener Reißverschluss bis zum Bund + Zipper an der Spitze des V
+      P3(G.box, zip, 0.008, BOT - 0.06, 0.008, 0, (BOT + 0.06) / 2, fz + 0.007, r.torso);
+      P3(G.box, zip, 0.026, 0.04, 0.009, 0, BOT - 0.01, fz + 0.015, r.torso); P3(G.box, SM(0x222222), 0.013, 0.036, 0.006, 0, BOT - 0.045, fz + 0.017, r.torso);
     }
-    P3(G.box, zip, 0.007, 0.32, 0.007, 0, 0.26, fz + 0.007, r.torso);
-    P3(G.box, zip, 0.024, 0.04, 0.008, 0, 0.405, fz + 0.014, r.torso); P3(G.box, SM(0x222222), 0.012, 0.035, 0.006, 0, 0.375, fz + 0.016, r.torso);
     // Kapuze: fällt sauber nach hinten bis zu den Schultern
     { const hb = P3(G.box, hood, 0.4, 0.26, 0.07, 0, 0.5, -0.2, r.torso); hb.rotation.x = -0.18; const rl = P3(G.cyl, hood, 0.075, 0.42, 0.06, 0, 0.64, -0.17, r.torso); rl.rotation.z = Math.PI / 2; P3(G.box, hoodD, 0.3, 0.16, 0.012, 0, 0.53, -0.162, r.torso).rotation.x = -0.18; P3(G.sph, hoodD, 0.2, 0.08, 0.05, 0, 0.38, -0.21, r.torso);
       for (const sd of [-1, 1]) { const dr = P3(G.box, hood, 0.08, 0.05, 0.22, sd * 0.19, 0.65, -0.06, r.torso); dr.rotation.set(0, sd * -0.25, sd * -0.35); } }
