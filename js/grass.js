@@ -38,7 +38,7 @@
     const k = cx * 100003 + cz; let v = cache.get(k); if (v !== undefined) return v;
     v = 0; const x = cx + 0.5, z = cz + 0.5;
     try {
-      const st = styleAt(x, z);
+      const st = (L.noGrass && L.noGrass(x, z)) ? null : styleAt(x, z);
       if (st && (x > 40000 ? (st !== ST.dim || (L.dimLand && L.dimLand(x, z))) : L.seaFloor(x, z) === 0) && !(L.onRoad && L.onRoad(x, z))) {
         const lk = L.lake; const inLake = lk && x > lk.x1 - 1 && x < lk.x2 + 1 && z > lk.z1 - 1 && z < lk.z2 + 1;
         const mh = L.mountainH ? L.mountainH(x, z) : 0;

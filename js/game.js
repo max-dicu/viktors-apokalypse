@@ -84,7 +84,7 @@
   const homeBossOn = () => !!((L.boss && !L.boss.dead) || L.wboss || L.frenzy);
   const onIsl = (x, z) => !!((L.islandAt && L.islandAt(x, z)) || L.inDim(x));
   // in welcher Welt liegt (x, z)? Monster jagen nur Spieler in derselben Welt
-  const worldOf = (x, z) => { if (L.inBack && L.inBack(x)) return 'back'; if (L.inFairy && L.inFairy(x, z)) return 'fairy'; if (L.inJupiter && L.inJupiter(x, z)) return 'jupiter'; if (L.inTitan && L.inTitan(x, z)) return 'titan'; if (L.inMoon && L.inMoon(x)) return 'moon'; if (L.inDim(x)) return 'dim'; const I = L.islandAt && L.islandAt(x, z); return I ? I.id : 'home'; };
+  const worldOf = (x, z) => { if (L.inShadow && L.inShadow(x)) return 'shadow'; if (L.inBack && L.inBack(x)) return 'back'; if (L.inFairy && L.inFairy(x, z)) return 'fairy'; if (L.inJupiter && L.inJupiter(x, z)) return 'jupiter'; if (L.inTitan && L.inTitan(x, z)) return 'titan'; if (L.inMoon && L.inMoon(x)) return 'moon'; if (L.inDim(x)) return 'dim'; const I = L.islandAt && L.islandAt(x, z); return I ? I.id : 'home'; };
   L.worldOf = worldOf;
   const atHome = (p) => worldOf(p.x, p.z) === 'home';
   L.atHome = () => atHome(P);
@@ -3246,6 +3246,7 @@
     if (L.updateRealism) L.updateRealism(dt);
     if (L.updateHeroes) L.updateHeroes(dt);
     if (L.updateMasik) L.updateMasik(dt);
+    if (L.updateShadowRealm) L.updateShadowRealm(dt);
     if (L.updateTitan) L.updateTitan(dt);
     if (L.updateTitanArmor) L.updateTitanArmor(dt);
     if (L.updateRuslan) L.updateRuslan(dt);
