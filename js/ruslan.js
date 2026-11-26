@@ -250,12 +250,12 @@
       w.root.add(m);
     }
     w.root.traverse((o) => { o.frustumCulled = false; });
-    B.wal = { w, wx, wz, rich: null, light: null, aura: null, boom: false };
+    B.wal = { w, wx, wz, rich: null, light: null, aura: null, boom: false, half: Math.max(sz.x, sz.z) * 0.5 };
     B.state = 'walrus'; B.t = 0;
-    L.startCine('🦭 DAS RIESEN-WALROSS', 16.5, () => B.cam);
+    L.startCine('🦭 DAS RIESEN-WALROSS', 19, () => B.cam);
   }
   function updWalrusEnd(dt) {
-    const t = B.t, V = B.wal, w = V.w, R = B.rig, RS = 14, END = 16.5;
+    const t = B.t, V = B.wal, w = V.w, R = B.rig, RS = 14, END = 19;
     const fx = Math.sin(B.yaw), fz = Math.cos(B.yaw);
     const front = { x: B.x + fx * 20, z: B.z + fz * 20 }, far = { x: B.x + fx * 150, z: B.z + fz * 150 };
     if (R && t < 7.8) { R.root.visible = true; R.root.scale.setScalar(RS); R.root.position.set(B.x, 0, B.z); R.root.rotation.set(0, B.yaw, 0); }
@@ -286,38 +286,67 @@
       const u = t - 7.8; w.root.position.set(B.x, 0, B.z); w.root.rotation.set(Math.sin(u * 3) * 0.12, w.root.rotation.y + dt * 2.4, Math.sin(u * 5) * 0.2);
       if (R) { R.root.scale.set(RS, RS * 0.1, RS); }
       if (Math.random() < dt * 5) { L.shake = Math.max(L.shake, 0.8); L.fx('#5e4430', B.x + L.rand(-25, 25), L.rand(2, 20), B.z + L.rand(-25, 25), 4, 12, { size: 1, life: 1 }); }
-    } else if (!V.rich) {
-      // … und Richard kommt hinten raus
-      w.root.rotation.set(0, w.root.rotation.y, 0); if (R) R.root.visible = false;
-      const back = w.root.rotation.y + Math.PI; V.back = back;
-      const rich = L.buildHuman(Object.assign({}, L.DEFAULT_CHAR, { special: 'richard' }), true); rich.root.scale.setScalar(7); rich.root.position.set(B.x + Math.sin(back) * 14, 6, B.z + Math.cos(back) * 14); rich.root.rotation.set(0, back, 0); L.scene.add(rich.root);
-      const aura = new T.Group(); rich.root.add(aura); aura.position.y = 1;
-      for (let k = 0; k < 22; k++) { const c = new T.Mesh(L.GEO.cone, new T.MeshBasicMaterial({ color: k % 2 ? 0xfff6c0 : 0xffd040, transparent: true, opacity: 0.35, blending: T.AdditiveBlending, depthWrite: false })); const ang = k / 22 * 6.283; c.scale.set(0.25, 1.6 + (k % 3) * 0.6, 0.25); c.position.set(Math.sin(ang) * 0.6, 0.8, Math.cos(ang) * 0.6); c.rotation.set(Math.cos(ang) * 0.3, 0, -Math.sin(ang) * 0.3); aura.add(c); }
-      const pl = new T.PointLight(0xfff0c0, 5, 200, 2); pl.position.set(B.x + Math.sin(back) * 20, 10, B.z + Math.cos(back) * 20); L.scene.add(pl);
-      rich.root.traverse((o) => { o.frustumCulled = false; });
-      V.rich = rich; V.aura = aura; V.pl = pl; L.env.bolt = 0.8;
-      L.tn && L.tn({ f: 300, fTo: 1400, dur: 0.5, type: 'sine', vol: 0.3 }); L.snd.explosion && L.snd.explosion({ x: B.x, y: 5, z: B.z });
-      for (let k = 0; k < 50; k++) L.fx(L.pick(['#fff4c0', '#ffd040', '#ffffff']), rich.root.position.x, 6, rich.root.position.z, 10, 25, { basic: true, size: 1, life: 1.2 });
-      setTimeout(() => L.banner('✨ RICHARD', '… mit purer Aura.'), 600);
     } else {
-      const u = t - 11.2, back = V.back, R2 = V.rich;
-      // rausrutschen und landen
-      const out = Math.min(1, u / 0.8); R2.root.position.set(B.x + Math.sin(back) * (14 + out * 22), Math.max(0, 6 * (1 - out) + Math.sin(out * Math.PI) * 10), B.z + Math.cos(back) * (14 + out * 22));
-      if (u > 1.4 && !V.boom) { V.boom = true; w.root.visible = false; L.shake = 3.5; L.snd.explosion && L.snd.explosion({ x: B.x, y: 10, z: B.z }); for (let k = 0; k < 110; k++) L.fx(L.pick(['#ffb030', '#ff6020', '#ffffff', '#5e4430', '#3a281a']), B.x + L.rand(-10, 10), L.rand(5, 40), B.z + L.rand(-10, 10), 14, 60, { basic: k % 3 !== 0, size: 3, life: 2 }); L.decal && L.decal(B.x, B.z, 30, '#1a120a'); }
-      V.aura.rotation.y += dt * 2; V.aura.children.forEach((c, k) => { c.scale.y = (1.6 + (k % 3) * 0.6) * (0.8 + Math.random() * 0.5); });
-      if (R2.arms && u > 2) { const f2 = Math.min(1, (u - 2) / 0.6); R2.arms[0].arm.rotation.set(0, 0, -1.5 * f2); R2.arms[1].arm.rotation.set(0, 0, 1.5 * f2); R2.arms[0].elbow.rotation.x = R2.arms[1].elbow.rotation.x = -1.9 * f2; }
-      if (Math.random() < dt * 10) L.fx(L.pick(['#fff4c0', '#ffd040']), R2.root.position.x + L.rand(-6, 6), L.rand(1, 20), R2.root.position.z + L.rand(-6, 6), 3, 8, { basic: true, size: 0.6, life: 1 });
+      // ===== Geburt: Richard kommt hinten aus dem Walross =====
+      const u = t - 11.2;
+      if (!V.birth) {
+        V.birth = true; if (R) R.root.visible = false;
+        w.root.rotation.set(0, w.root.rotation.y, 0); V.yaw = w.root.rotation.y; const back = V.yaw + Math.PI; V.back = back;
+        V.rear = { x: B.x + Math.sin(back) * V.half * 0.92, y: 7, z: B.z + Math.cos(back) * V.half * 0.92 };
+        // goldene Lichtstrahlen aus dem Hinterteil
+        V.rays = new T.Group(); V.rays.position.set(V.rear.x, V.rear.y, V.rear.z); V.rays.rotation.y = back; L.scene.add(V.rays);
+        for (let k = 0; k < 10; k++) { const c = new T.Mesh(new T.ConeGeometry(0.9, 1, 8, 1, true).translate(0, 0.5, 0), new T.MeshBasicMaterial({ color: k % 2 ? 0xfff2b0 : 0xffc840, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide })); const ang = k / 10 * 6.283; c.rotation.set(Math.PI / 2 + Math.cos(ang) * 0.55, 0, Math.sin(ang) * 0.55); c.scale.set(1, 0.01, 1); V.rays.add(c); }
+        V.pl = new T.PointLight(0xffe0a0, 0, 160, 2); V.pl.position.set(V.rear.x, V.rear.y + 2, V.rear.z); L.scene.add(V.pl);
+        const rich = L.buildHuman(Object.assign({}, L.DEFAULT_CHAR, { special: 'richard' }), true); rich.root.scale.setScalar(6.5); rich.root.visible = false; rich.root.rotation.set(0, back, 0); L.scene.add(rich.root);
+        const aura = new T.Group(); rich.root.add(aura); aura.position.y = 1; aura.visible = false;
+        for (let k = 0; k < 22; k++) { const c = new T.Mesh(L.GEO.cone, new T.MeshBasicMaterial({ color: k % 2 ? 0xfff6c0 : 0xffd040, transparent: true, opacity: 0.35, blending: T.AdditiveBlending, depthWrite: false })); const ang = k / 22 * 6.283; c.scale.set(0.25, 1.6 + (k % 3) * 0.6, 0.25); c.position.set(Math.sin(ang) * 0.6, 0.8, Math.cos(ang) * 0.6); c.rotation.set(Math.cos(ang) * 0.3, 0, -Math.sin(ang) * 0.3); aura.add(c); }
+        rich.root.traverse((o) => { o.frustumCulled = false; });
+        V.rich = rich; V.aura = aura;
+        L.tn && L.tn({ f: 120, fTo: 900, dur: 2.2, type: 'sine', vol: 0.22 }); L.tn && L.tn({ f: 240, fTo: 1800, dur: 2.2, type: 'triangle', vol: 0.08 });
+      }
+      const R2 = V.rich, back = V.back, bx = Math.sin(back), bz = Math.cos(back);
+      if (u < 1.2) {
+        // Wehen: das Walross presst, das Hinterteil glüht, Lichtstrahlen brechen heraus
+        const k = u / 1.2; w.root.position.set(B.x, 0, B.z); w.root.rotation.set(Math.sin(u * 22) * 0.02, V.yaw, 0);
+        const sq = 1 + Math.sin(u * 14) * 0.05 * k; w.root.scale.set(16 * (1 - (sq - 1) * 0.5), 16 * sq, 16 * (1 + (sq - 1)));
+        V.pl.intensity = k * 6; V.rays.children.forEach((c, i) => { c.material.opacity = 0.45 * k; c.scale.set(0.7 + k * 0.6, 3 + k * 16 + Math.sin(u * 20 + i) * 1.5, 0.7 + k * 0.6); }); V.rays.rotation.z += dt * 0.6;
+        if (Math.random() < dt * 25) L.fx(L.pick(['#fff4c0', '#ffd040', '#ffffff']), V.rear.x + L.rand(-2, 2), V.rear.y + L.rand(-2, 2), V.rear.z + L.rand(-2, 2), 4, 10, { basic: true, size: 0.5, life: 0.8 });
+        L.shake = Math.max(L.shake, 0.3 * k);
+      } else if (u < 2.5) {
+        // Richard rutscht zusammengerollt heraus …
+        const k = Math.min(1, (u - 1.2) / 1.1); R2.root.visible = true;
+        const d = -2 + k * 16, y = Math.max(0.2, V.rear.y - 1.2 - k * k * 6 + Math.sin(k * Math.PI) * 3);
+        R2.root.position.set(V.rear.x + bx * d, y, V.rear.z + bz * d); R2.root.rotation.set(0.9 * (1 - k * 0.3), back, Math.sin(u * 6) * 0.2);
+        if (R2.body) R2.body.rotation.x = 0.6; if (R2.legs) R2.legs.forEach((l) => { l.leg.rotation.x = -1.4; l.knee.rotation.x = 1.8; }); if (R2.arms) R2.arms.forEach((q) => { q.arm.rotation.set(-1.8, 0, 0); q.elbow.rotation.x = -1.5; });
+        w.root.scale.set(16, 16 * (1 - k * 0.04), 16 * (1 + Math.sin(k * Math.PI) * 0.1));
+        V.pl.intensity = 6 + Math.sin(u * 30) * 1.5; V.rays.children.forEach((c) => { c.material.opacity = 0.6; });
+        if (Math.random() < dt * 30) L.fx(L.pick(['#fff4c0', '#ffd040', '#f2e6c0']), R2.root.position.x + L.rand(-2, 2), R2.root.position.y + L.rand(0, 3), R2.root.position.z + L.rand(-2, 2), 3, 6, { size: 0.6, life: 1, g: -6 });
+        if (k >= 1 && !V.plop) { V.plop = true; L.shake = 1.4; L.tn && L.tn({ f: 600, fTo: 140, dur: 0.18, type: 'sine', vol: 0.4 }); L.snd.stomp && L.snd.stomp({ x: R2.root.position.x, y: 0, z: R2.root.position.z }); for (let n = 0; n < 40; n++) L.fx(L.pick(['#fff4c0', '#ffd040', '#ffffff']), R2.root.position.x, 1, R2.root.position.z, 10, 18, { basic: true, size: 0.8, life: 1.1 }); L.banner('✨ RICHARD', '… ist geboren. Mit purer Aura.'); }
+      } else {
+        // … richtet sich im Licht auf, das Walross fällt in sich zusammen und explodiert
+        const k = Math.min(1, (u - 2.5) / 1.2); R2.root.rotation.set(0.9 * 0.7 * (1 - k), back, 0); V.aura.visible = true;
+        R2.root.position.y = 0;
+        if (R2.body) R2.body.rotation.x = 0.6 * (1 - k); if (R2.legs) R2.legs.forEach((l) => { l.leg.rotation.x = -1.4 * (1 - k); l.knee.rotation.x = 1.8 * (1 - k); });
+        if (R2.arms) { const f2 = Math.max(0, Math.min(1, (u - 3.9) / 0.6)); R2.arms[0].arm.rotation.set(-1.8 * (1 - k), 0, -1.5 * f2); R2.arms[1].arm.rotation.set(-1.8 * (1 - k), 0, 1.5 * f2); R2.arms[0].elbow.rotation.x = R2.arms[1].elbow.rotation.x = -1.5 * (1 - k) - 1.9 * f2; }
+        V.rays.children.forEach((c) => { c.material.opacity = Math.max(0, 0.6 - (u - 2.5) * 0.4); });
+        if (!V.boom) { const def = Math.min(1, (u - 2.5) / 1.4); w.root.scale.set(16 * (1 - def * 0.2), 16 * (1 - def * 0.35), 16 * (1 - def * 0.2)); }
+        if (u > 3.9 && !V.boom) { V.boom = true; w.root.visible = false; L.scene.remove(V.rays); L.shake = 3.5; L.snd.explosion && L.snd.explosion({ x: B.x, y: 10, z: B.z }); for (let n = 0; n < 110; n++) L.fx(L.pick(['#ffb030', '#ff6020', '#ffffff', '#5e4430', '#3a281a']), B.x + L.rand(-10, 10), L.rand(5, 40), B.z + L.rand(-10, 10), 14, 60, { basic: n % 3 !== 0, size: 3, life: 2 }); L.decal && L.decal(B.x, B.z, 30, '#1a120a'); }
+        V.aura.rotation.y += dt * 2; V.aura.children.forEach((c, n) => { c.scale.y = (1.6 + (n % 3) * 0.6) * (0.8 + Math.random() * 0.5); });
+        V.pl.position.set(R2.root.position.x, 8, R2.root.position.z); V.pl.intensity = 4;
+        if (Math.random() < dt * 10) L.fx(L.pick(['#fff4c0', '#ffd040']), R2.root.position.x + L.rand(-5, 5), L.rand(1, 16), R2.root.position.z + L.rand(-5, 5), 3, 8, { basic: true, size: 0.6, life: 1 });
+      }
     }
     // Kamera
     let cx = B.x + Math.sin(B.yaw) * 10, cz = B.z + Math.cos(B.yaw) * 10, cd = 85, cy = 20, ly = 16;
     if (t >= 6.2 && t < 11.2) { cd = 110; cy = 30; }
     if (t >= 3.4 && t < 6.2) { cx = (B.x + far.x) / 2; cz = (B.z + far.z) / 2; cd = 170; cy = 34; }
-    if (V.rich) { const p = V.rich.root.position; cx = p.x; cz = p.z; cd = 46; cy = 12; ly = 9; }
     const cA = B.yaw + 1.4 + t * 0.05;
-    Object.assign(B.cam, { x: cx + Math.sin(cA) * cd, y: cy, z: cz + Math.cos(cA) * cd, lx: cx, ly, lz: cz });
+    if (V.birth && t < 13.7) { const bx2 = Math.sin(V.back), bz2 = Math.cos(V.back), sx = Math.cos(V.back), sz2 = -Math.sin(V.back), dd = 52 - (t - 11.2) * 6; Object.assign(B.cam, { x: V.rear.x + bx2 * dd + sx * 18, y: 9, z: V.rear.z + bz2 * dd + sz2 * 18, lx: V.rear.x + bx2 * 6, ly: 5, lz: V.rear.z + bz2 * 6 }); }
+    else if (V.birth) { const p = V.rich.root.position, a2 = V.back + 0.6 + (t - 13.7) * 0.12, dd = 30; Object.assign(B.cam, { x: p.x + Math.sin(a2) * dd, y: 7, z: p.z + Math.cos(a2) * dd, lx: p.x, ly: 7, lz: p.z }); }
+    else Object.assign(B.cam, { x: cx + Math.sin(cA) * cd, y: cy, z: cz + Math.cos(cA) * cd, lx: cx, ly, lz: cz });
     if (t > END || (!L.cine && t > 0.5)) {
       if (L.cine && L.endCine) L.endCine();
-      for (const o of [w.root, V.pl, V.rich && V.rich.root]) if (o) L.scene.remove(o);
+      for (const o of [w.root, V.pl, V.rays, V.rich && V.rich.root]) if (o) L.scene.remove(o);
       B.wal = null; cleanupModels(); B.state = 'pause'; B.pauseT = 600;
     }
   }

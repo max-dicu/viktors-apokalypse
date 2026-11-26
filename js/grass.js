@@ -16,13 +16,20 @@
     pilz: { d: 5, h: [0.4, 0.9], c: [[0.22, 0.12, 0.28], [0.5, 0.28, 0.6], [0.75, 0.5, 0.85]], wind: 0.7, fl: [0xff60c0, 0x80ffd0], flP: 0.03 },
     kristall: { d: 3.5, h: [0.3, 0.7], c: [[0.25, 0.4, 0.55], [0.5, 0.78, 0.95], [0.8, 0.95, 1]], wind: 0.3 },
     geist: { d: 2.5, h: [0.25, 0.6], c: [[0.18, 0.18, 0.16], [0.36, 0.36, 0.32], [0.5, 0.5, 0.46]], wind: 0.6 },
+    // Ruslans Mystery Island: dichtes, zotteliges Walrosshaar statt Gras
+    mystery: { d: 15, h: [0.2, 0.55], c: [[0.18, 0.12, 0.07], [0.36, 0.25, 0.16], [0.5, 0.38, 0.26]], wind: 0.7, tilt: 1.1, wMul: 2.2 },
+    // Dimension: leuchtendes Alien-Gras
+    dim: { d: 5, h: [0.3, 0.9], c: [[0.12, 0.05, 0.25], [0.35, 0.2, 0.8], [0.3, 0.95, 0.9]], wind: 0.5, glow: true, fl: [0x60fff0, 0xff60ff], flP: 0.04 },
+    // Titanenmond: vereinzelte rote, trockene Büschel
+    titan: { d: 0.5, h: [0.2, 0.5], c: [[0.3, 0.1, 0.05], [0.6, 0.25, 0.12], [0.78, 0.42, 0.2]], wind: 0.9, tuft: true },
     vulkan: { d: 0.35, h: [0.15, 0.35], c: [[0.12, 0.1, 0.08], [0.28, 0.22, 0.16], [0.4, 0.3, 0.2]], wind: 0.5, tuft: true }
   };
   function styleAt(x, z) {
     const w = L.worldOf ? L.worldOf(x, z) : 'home';
     if (w === 'home') return ST.home;
     if (w === 'fairy') return ST.fairy;
-    if (w === 'back' || w === 'jupiter' || w === 'titan' || w === 'moon' || w === 'dim') return null;
+    if (w === 'back' || w === 'jupiter' || w === 'moon') return null;
+    if (w === 'dim') return L.dimLand && L.dimLand(x, z) ? ST.dim : null;
     return ST[w] || null;
   }
   // Gültige Stelle? (Land, keine Straße, kein See, kein Haus/Fels, nicht zu steil) – pro 1-m-Zelle zwischengespeichert
@@ -32,7 +39,7 @@
     v = 0; const x = cx + 0.5, z = cz + 0.5;
     try {
       const st = styleAt(x, z);
-      if (st && (x > 40000 || L.seaFloor(x, z) === 0) && !(L.onRoad && L.onRoad(x, z))) {
+      if (st && (x > 40000 ? (st !== ST.dim || (L.dimLand && L.dimLand(x, z))) : L.seaFloor(x, z) === 0) && !(L.onRoad && L.onRoad(x, z))) {
         const lk = L.lake; const inLake = lk && x > lk.x1 - 1 && x < lk.x2 + 1 && z > lk.z1 - 1 && z < lk.z2 + 1;
         const mh = L.mountainH ? L.mountainH(x, z) : 0;
         if (!inLake && mh < 2.5 && !(L.queryBoxes && L.queryBoxes(x, z, 0.9).some((b) => (b.y0 || 0) < 1.5))) v = 1;
@@ -64,7 +71,7 @@
     return m;
   }
   let mesh = null, flowers = null, MAX = 0, R = 0, center = { x: 1e9, z: 1e9, s: null }, active = false;
-  const tmpM = new T.Matrix4(), tmpQ = new T.Quaternion(), tmpS = new T.Vector3(), tmpP = new T.Vector3(), tmpC = new T.Color(), UP = new T.Vector3(0, 1, 0);
+  const tmpE = new T.Euler(), tmpM = new T.Matrix4(), tmpQ = new T.Quaternion(), tmpS = new T.Vector3(), tmpP = new T.Vector3(), tmpC = new T.Color(), UP = new T.Vector3(0, 1, 0);
   function quality() { const S = L.S ? L.S() : {}; const q = S.gfx || S.quality || S.grafik || ''; if (L.isTouch) return 0.45; if (/niedrig|low/.test(q)) return 0.4; if (/ultra/.test(q)) return 1.25; return 1; }
   function build() {
     const q = quality(); MAX = Math.round(24000 * q); R = 30 * Math.sqrt(q);
@@ -86,9 +93,9 @@
       for (let k = 0; k < cnt && n < MAX; k++) {
         const px = gx + (st.tuft ? 0.5 + (rnd(gx, gz, k) - 0.5) * 0.35 : rnd(gx, gz, k)), pz = gz + (st.tuft ? 0.5 + (rnd(gz, gx, k + 7) - 0.5) * 0.35 : rnd(gz, gx, k + 11));
         const h = st.h[0] + (st.h[1] - st.h[0]) * rnd(gx, k, gz), w = 0.8 + rnd(k, gz, gx) * 0.7;
-        tmpQ.setFromAxisAngle(UP, rnd(gx, gz, k + 31) * 6.283); tmpP.set(px, 0, pz); tmpS.set(w, h, w); tmpM.compose(tmpP, tmpQ, tmpS); mesh.setMatrixAt(n, tmpM);
+        tmpQ.setFromAxisAngle(UP, rnd(gx, gz, k + 31) * 6.283); if (st.tilt) { tmpE.set((rnd(k, gx, gz + 9) - 0.5) * st.tilt * 2, rnd(gx, gz, k + 31) * 6.283, (rnd(gz, k, gx + 4) - 0.5) * st.tilt * 2); tmpQ.setFromEuler(tmpE); } tmpP.set(px, 0, pz); tmpS.set(w * (st.wMul || 1), h, w * (st.wMul || 1)); tmpM.compose(tmpP, tmpQ, tmpS); mesh.setMatrixAt(n, tmpM);
         const t = rnd(gz, k, gx + 5); const a = st.c[0], b = st.c[1], c = st.c[2]; const u = t < 0.5 ? t * 2 : (t - 0.5) * 2, from = t < 0.5 ? a : b, to = t < 0.5 ? b : c;
-        tmpC.setRGB(from[0] + (to[0] - from[0]) * u, from[1] + (to[1] - from[1]) * u, from[2] + (to[2] - from[2]) * u).multiplyScalar(1.7); mesh.setColorAt(n, tmpC); n++;
+        tmpC.setRGB(from[0] + (to[0] - from[0]) * u, from[1] + (to[1] - from[1]) * u, from[2] + (to[2] - from[2]) * u).multiplyScalar(st.glow ? 2.6 : 1.7); mesh.setColorAt(n, tmpC); n++;
         if (st.fl && fN < 1500 && rnd(gx, gz, k + 51) < st.flP) { tmpS.set(1, 1, 1); tmpP.set(px, h * 0.92, pz); tmpM.compose(tmpP, tmpQ, tmpS); flowers.setMatrixAt(fN, tmpM); tmpC.setHex(st.fl[Math.floor(rnd(gx, k, gz + 3) * st.fl.length)]); flowers.setColorAt(fN, tmpC); fN++; }
       }
     }
