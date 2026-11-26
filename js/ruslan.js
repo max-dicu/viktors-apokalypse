@@ -232,6 +232,22 @@
   }
   // Schlussfilm: BIG MAMA in goldener Super-Form – Ruslan überfährt sie
   // ---------- Kurzfilm: ein riesiges, extrem behaartes Walross springt auf Ruslan, rollt sich auf ihm, explodiert – Richard steigt aus dem Licht ----------
+  function phonk(dur) {
+    try {
+      L.initAudio && L.initAudio(); const A = L.audio && L.audio.ctx; if (!A) return; const t0 = A.currentTime + 0.05, B = 60 / 130 / 2;
+      const out = A.createGain(); out.gain.value = 0.55; out.connect(A.destination);
+      const osc = (type, f, s, d, v, f2, bp) => { const o = A.createOscillator(), g = A.createGain(); o.type = type; o.frequency.setValueAtTime(f, s); if (f2) o.frequency.exponentialRampToValueAtTime(f2, s + d); g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(v, s + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, s + d); let n = o; if (bp) { const fl = A.createBiquadFilter(); fl.type = 'bandpass'; fl.frequency.value = bp; fl.Q.value = 2; o.connect(fl); n = fl; } n.connect(g); g.connect(out); o.start(s); o.stop(s + d + 0.05); };
+      const nb = A.createBuffer(1, A.sampleRate * 0.2, A.sampleRate), nd = nb.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+      const hat = (s) => { const n = A.createBufferSource(), fl = A.createBiquadFilter(), g = A.createGain(); n.buffer = nb; fl.type = 'highpass'; fl.frequency.value = 7000; g.gain.setValueAtTime(0.12, s); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.05); n.connect(fl); fl.connect(g); g.connect(out); n.start(s); n.stop(s + 0.06); };
+      const bell = [0, 0, 3, 0, 5, 3, 0, 7, 0, 0, 3, 0, 8, 7, 5, 3];
+      for (let i = 0; i * B < dur; i++) {
+        const s = t0 + i * B, semi = bell[i % 16], f = 587 * Math.pow(2, semi / 12);
+        osc('square', f, s, 0.22, 0.08, 0, 1600); osc('square', f * 1.48, s, 0.22, 0.05, 0, 2400); // Kuhglocke
+        if (i % 2 === 0) hat(s); if (i % 8 === 0 || i % 8 === 3) osc('sine', 55, s, 0.5, 0.7, 38); // 808
+        if (i % 8 === 4) { const n = A.createBufferSource(), g = A.createGain(); n.buffer = nb; g.gain.setValueAtTime(0.3, s); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.15); n.connect(g); g.connect(out); n.start(s); n.stop(s + 0.16); }
+      }
+    } catch (e) { /* ohne Ton */ }
+  }
   function startWalrusEnd() {
     if (B.bag && B.bag.g) B.bag.g.visible = false;
     if (B.iva && B.iva.root) { L.scene.remove(B.iva.root); B.iva = null; }
@@ -299,7 +315,9 @@
         V.pl = new T.PointLight(0xffe0a0, 0, 160, 2); V.pl.position.set(V.rear.x, V.rear.y + 2, V.rear.z); L.scene.add(V.pl);
         const rich = L.buildHuman(Object.assign({}, L.DEFAULT_CHAR, { special: 'richard' }), true); rich.root.scale.setScalar(6.5); rich.root.visible = false; rich.root.rotation.set(0, back, 0); L.scene.add(rich.root);
         const aura = new T.Group(); rich.root.add(aura); aura.position.y = 1; aura.visible = false;
-        for (let k = 0; k < 22; k++) { const c = new T.Mesh(L.GEO.cone, new T.MeshBasicMaterial({ color: k % 2 ? 0xfff6c0 : 0xffd040, transparent: true, opacity: 0.35, blending: T.AdditiveBlending, depthWrite: false })); const ang = k / 22 * 6.283; c.scale.set(0.25, 1.6 + (k % 3) * 0.6, 0.25); c.position.set(Math.sin(ang) * 0.6, 0.8, Math.cos(ang) * 0.6); c.rotation.set(Math.cos(ang) * 0.3, 0, -Math.sin(ang) * 0.3); aura.add(c); }
+        const AC = [0x9a5cff, 0xffffff, 0x5a3aff, 0xd0a0ff];
+        for (let k = 0; k < 18; k++) { const c = new T.Mesh(L.GEO.cone, new T.MeshBasicMaterial({ color: AC[k % 4], transparent: true, opacity: 0.2, blending: T.AdditiveBlending, depthWrite: false })); const ang = Math.PI * 0.5 + (k / 17) * Math.PI; c.userData.h = 1.8 + (k % 3) * 0.7; c.scale.set(0.22, c.userData.h, 0.22); c.position.set(Math.sin(ang) * 0.75, 0.9, Math.cos(ang) * 0.75 - 0.15); c.rotation.set(Math.cos(ang) * 0.35, 0, -Math.sin(ang) * 0.35); aura.add(c); }
+        { const halo = new T.Mesh(new T.RingGeometry(0.55, 0.62, 40), new T.MeshBasicMaterial({ color: 0xc8a0ff, transparent: true, opacity: 0.35, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide })); halo.position.set(0, 1.35, -0.45); aura.add(halo); aura.userData.halo = halo; }
         rich.root.traverse((o) => { o.frustumCulled = false; });
         V.rich = rich; V.aura = aura;
         L.tn && L.tn({ f: 120, fTo: 900, dur: 2.2, type: 'sine', vol: 0.22 }); L.tn && L.tn({ f: 240, fTo: 1800, dur: 2.2, type: 'triangle', vol: 0.08 });
@@ -331,8 +349,8 @@
         V.rays.children.forEach((c) => { c.material.opacity = Math.max(0, 0.6 - (u - 2.5) * 0.4); });
         if (!V.boom) { const def = Math.min(1, (u - 2.5) / 1.4); w.root.scale.set(16 * (1 - def * 0.2), 16 * (1 - def * 0.35), 16 * (1 - def * 0.2)); }
         if (u > 3.9 && !V.boom) { V.boom = true; w.root.visible = false; L.scene.remove(V.rays); L.shake = 3.5; L.snd.explosion && L.snd.explosion({ x: B.x, y: 10, z: B.z }); for (let n = 0; n < 110; n++) L.fx(L.pick(['#ffb030', '#ff6020', '#ffffff', '#5e4430', '#3a281a']), B.x + L.rand(-10, 10), L.rand(5, 40), B.z + L.rand(-10, 10), 14, 60, { basic: n % 3 !== 0, size: 3, life: 2 }); L.decal && L.decal(B.x, B.z, 30, '#1a120a'); }
-        V.aura.rotation.y += dt * 2; V.aura.children.forEach((c, n) => { c.scale.y = (1.6 + (n % 3) * 0.6) * (0.8 + Math.random() * 0.5); });
-        V.pl.position.set(R2.root.position.x, 8, R2.root.position.z); V.pl.intensity = 4;
+        { const beat = Math.pow(Math.max(0, Math.sin((u - 2.5) * Math.PI * 130 / 60)), 6); V.aura.children.forEach((c, n) => { if (c.userData.h) { c.scale.y = c.userData.h * (0.85 + Math.random() * 0.25 + beat * 0.35); c.material.opacity = 0.14 + beat * 0.16; } }); const hl = V.aura.userData.halo; if (hl) { hl.rotation.z += dt; hl.scale.setScalar(1 + beat * 0.25); } if (!V.phonk && u > 2.6) { V.phonk = true; phonk(4.6); } }
+        V.pl.position.set(R2.root.position.x - Math.sin(back) * 6, 9, R2.root.position.z - Math.cos(back) * 6); V.pl.color.setHex(0xb080ff); V.pl.intensity = 1.6;
         if (Math.random() < dt * 10) L.fx(L.pick(['#fff4c0', '#ffd040']), R2.root.position.x + L.rand(-5, 5), L.rand(1, 16), R2.root.position.z + L.rand(-5, 5), 3, 8, { basic: true, size: 0.6, life: 1 });
       }
     }
