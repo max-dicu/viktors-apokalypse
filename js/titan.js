@@ -335,9 +335,11 @@
   L.ITEMS.ewigkeitshandschuh = { name: 'Ewigkeitshandschuh', slot: 'waffe', icon: '🧤', dmg: 0, rate: 0.6, noise: 60, range: 250, ammo: null, mag: 1, spread: 0, energy: true, gauntlet: true };
   const obi = L.buildItem;
   L.buildItem = function (type) { if (type === 'ewigkeitshandschuh') { const g = gauntletModel(); g.rotation.x = -0.3; return g; } return obi(type); };
-  L.hasGauntlet = () => !!(L.save && L.save.gauntlet);
+  // Normale Spieler: nur für die Runde, in der sie Thanatos besiegt haben. Admin-Skins haben ihn immer.
+  L.hasGauntlet = () => !!(L._roundGauntlet || (L.suitOn && L.suitOn()));
   // zu Rundenbeginn: in die Schnellleiste (jeder Skin)
-  L.gauntletStart = function () {
+  L.gauntletStart = function (picked) {
+    if (!picked) L._roundGauntlet = false;
     if (!L.hasGauntlet()) return;
     if ([P.hot, P.bag].some((a) => a.some((x) => x && x.type === 'ewigkeitshandschuh'))) return;
     // in den Rucksack (Inventar), nicht in die Schnellleiste – von dort kannst du ihn selbst hineinziehen
@@ -562,9 +564,9 @@
       deadInfo.g.rotation.y += dt; deadInfo.g.position.y = 3 + Math.sin(performance.now() / 400) * 0.5;
       if (P.alive && Math.hypot(P.x - deadInfo.x, P.z - deadInfo.z) < 4) {
         L.scene.remove(deadInfo.g); deadInfo = null;
-        const first = !L.hasGauntlet(); L.save.gauntlet = true; L.persist && L.persist();
-        L.gauntletStart();
-        L.banner('🧤 DER EWIGKEITSHANDSCHUH', (first ? 'Für immer freigeschaltet – mit jedem Skin! ' : '') + 'Er liegt in deinem Inventar (Tab). Zieh ihn in die Schnellleiste: Klick = Stein benutzen, N = Stein wechseln, J = einstellen.');
+        const first = !L._roundGauntlet; L._roundGauntlet = true;
+        L.gauntletStart(true);
+        L.banner('🧤 DER EWIGKEITSHANDSCHUH', (first ? 'Für diese Runde! ' : '') + 'Er liegt in deinem Inventar (Tab). Zieh ihn in die Schnellleiste: Klick = Stein benutzen, N = Stein wechseln, J = einstellen.');
         L.snd.codeOk && L.snd.codeOk();
       }
     }

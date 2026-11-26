@@ -73,12 +73,22 @@
   let mesh = null, flowers = null, MAX = 0, R = 0, center = { x: 1e9, z: 1e9, s: null }, active = false;
   const tmpE = new T.Euler(), tmpM = new T.Matrix4(), tmpQ = new T.Quaternion(), tmpS = new T.Vector3(), tmpP = new T.Vector3(), tmpC = new T.Color(), UP = new T.Vector3(0, 1, 0);
   function quality() { const S = L.S ? L.S() : {}; const q = S.gfx || S.quality || S.grafik || ''; if (L.isTouch) return 0.45; if (/niedrig|low/.test(q)) return 0.4; if (/ultra/.test(q)) return 1.25; return 1; }
+  let far = null, MAXF = 0, RF = 0; const centerF = { x: 1e9, z: 1e9, t: 0 };
   function build() {
     const q = quality(); MAX = Math.round(24000 * q); R = 30 * Math.sqrt(q);
-    mesh = new T.InstancedMesh(bladeGeo(), grassMat(), MAX); mesh.instanceMatrix.setUsage(T.DynamicDrawUsage); mesh.frustumCulled = false; mesh.count = 0; mesh.receiveShadow = true;
-    mesh.instanceColor = new T.InstancedBufferAttribute(new Float32Array(MAX * 3), 3);
-    L.scene.add(mesh);
+    // Fernbereich: bis ans Ende der Sicht (am Laptop weit, am Handy kürzer)
+    MAXF = L.isTouch ? 9000 : Math.round(60000 * Math.min(1.2, q)); RF = L.isTouch ? 110 : q >= 1.2 ? 420 : q >= 1 ? 340 : 200;
+    const mk = (n) => { const m = new T.InstancedMesh(bladeGeo(), grassMat(), n); m.instanceMatrix.setUsage(T.DynamicDrawUsage); m.frustumCulled = false; m.count = 0; m.instanceColor = new T.InstancedBufferAttribute(new Float32Array(n * 3), 3); L.scene.add(m); return m; };
+    mesh = mk(MAX); mesh.receiveShadow = true; far = mk(MAXF);
     flowers = new T.InstancedMesh(new T.SphereGeometry(0.05, 6, 4), new T.MeshLambertMaterial({ emissive: 0x111111 }), 1500); flowers.frustumCulled = false; flowers.count = 0; flowers.instanceColor = new T.InstancedBufferAttribute(new Float32Array(1500 * 3), 3); L.scene.add(flowers);
+  }
+  function setBlade(M, n, st, px, pz, k, gx, gz, hMul, wMul2) {
+    const h = (st.h[0] + (st.h[1] - st.h[0]) * rnd(gx, k, gz)) * hMul, w = (0.8 + rnd(k, gz, gx) * 0.7) * wMul2;
+    tmpQ.setFromAxisAngle(UP, rnd(gx, gz, k + 31) * 6.283); if (st.tilt) { tmpE.set((rnd(k, gx, gz + 9) - 0.5) * st.tilt * 2, rnd(gx, gz, k + 31) * 6.283, (rnd(gz, k, gx + 4) - 0.5) * st.tilt * 2); tmpQ.setFromEuler(tmpE); }
+    tmpP.set(px, 0, pz); tmpS.set(w * (st.wMul || 1), h, w * (st.wMul || 1)); tmpM.compose(tmpP, tmpQ, tmpS); M.setMatrixAt(n, tmpM);
+    const t = rnd(gz, k, gx + 5); const a = st.c[0], b = st.c[1], c = st.c[2]; const u = t < 0.5 ? t * 2 : (t - 0.5) * 2, from = t < 0.5 ? a : b, to = t < 0.5 ? b : c;
+    tmpC.setRGB(from[0] + (to[0] - from[0]) * u, from[1] + (to[1] - from[1]) * u, from[2] + (to[2] - from[2]) * u).multiplyScalar(st.glow ? 2.6 : 1.7); M.setColorAt(n, tmpC);
+    return h;
   }
   function refill(cx, cz) {
     let n = 0, fN = 0; const r2 = R * R, x0 = Math.floor(cx - R), x1 = Math.ceil(cx + R), z0 = Math.floor(cz - R), z1 = Math.ceil(cz + R);
@@ -86,39 +96,52 @@
       const dx = gx + 0.5 - cx, dz = gz + 0.5 - cz, dd = dx * dx + dz * dz; if (dd > r2) continue;
       if (!okCell(gx, gz)) continue;
       const st = styleAt(gx + 0.5, gz + 0.5); if (!st) continue;
-      // nach außen dünner, damit die Menge reicht
-      const fall = 1 - Math.min(1, Math.sqrt(dd) / R) * 0.55;
+      const fall = 1 - Math.min(1, Math.sqrt(dd) / R) * 0.4;
       let cnt = st.d * fall; const fr = cnt - Math.floor(cnt); cnt = Math.floor(cnt) + (rnd(gx, gz, 99) < fr ? 1 : 0);
       if (st.tuft && rnd(gx, gz, 7) > 0.25) cnt = 0; else if (st.tuft) cnt = Math.max(cnt, 5);
       for (let k = 0; k < cnt && n < MAX; k++) {
         const px = gx + (st.tuft ? 0.5 + (rnd(gx, gz, k) - 0.5) * 0.35 : rnd(gx, gz, k)), pz = gz + (st.tuft ? 0.5 + (rnd(gz, gx, k + 7) - 0.5) * 0.35 : rnd(gz, gx, k + 11));
-        const h = st.h[0] + (st.h[1] - st.h[0]) * rnd(gx, k, gz), w = 0.8 + rnd(k, gz, gx) * 0.7;
-        tmpQ.setFromAxisAngle(UP, rnd(gx, gz, k + 31) * 6.283); if (st.tilt) { tmpE.set((rnd(k, gx, gz + 9) - 0.5) * st.tilt * 2, rnd(gx, gz, k + 31) * 6.283, (rnd(gz, k, gx + 4) - 0.5) * st.tilt * 2); tmpQ.setFromEuler(tmpE); } tmpP.set(px, 0, pz); tmpS.set(w * (st.wMul || 1), h, w * (st.wMul || 1)); tmpM.compose(tmpP, tmpQ, tmpS); mesh.setMatrixAt(n, tmpM);
-        const t = rnd(gz, k, gx + 5); const a = st.c[0], b = st.c[1], c = st.c[2]; const u = t < 0.5 ? t * 2 : (t - 0.5) * 2, from = t < 0.5 ? a : b, to = t < 0.5 ? b : c;
-        tmpC.setRGB(from[0] + (to[0] - from[0]) * u, from[1] + (to[1] - from[1]) * u, from[2] + (to[2] - from[2]) * u).multiplyScalar(st.glow ? 2.6 : 1.7); mesh.setColorAt(n, tmpC); n++;
+        const h = setBlade(mesh, n, st, px, pz, k, gx, gz, 1, 1); n++;
         if (st.fl && fN < 1500 && rnd(gx, gz, k + 51) < st.flP) { tmpS.set(1, 1, 1); tmpP.set(px, h * 0.92, pz); tmpM.compose(tmpP, tmpQ, tmpS); flowers.setMatrixAt(fN, tmpM); tmpC.setHex(st.fl[Math.floor(rnd(gx, k, gz + 3) * st.fl.length)]); flowers.setColorAt(fN, tmpC); fN++; }
       }
     }
     mesh.count = n; mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
     flowers.count = fN; flowers.instanceMatrix.needsUpdate = true; if (flowers.instanceColor) flowers.instanceColor.needsUpdate = true;
   }
+  // Fernbereich: größere, lockerere Halme in 3-m-Zellen, damit die Wiese bis zum Horizont geht
+  function refillFar(cx, cz, rIn) {
+    let n = 0; const C = 3, ri2 = Math.max(0, rIn - 3) ** 2, ro2 = RF * RF, x0 = Math.floor((cx - RF) / C), x1 = Math.ceil((cx + RF) / C), z0 = Math.floor((cz - RF) / C), z1 = Math.ceil((cz + RF) / C);
+    for (let ix = x0; ix <= x1 && n < MAXF; ix++) for (let iz = z0; iz <= z1 && n < MAXF; iz++) {
+      const gx = ix * C, gz = iz * C, dx = gx + 1.5 - cx, dz = gz + 1.5 - cz, dd = dx * dx + dz * dz; if (dd > ro2 || dd < ri2) continue;
+      if (!okCell(gx + 1, gz + 1)) continue;
+      const st = styleAt(gx + 1.5, gz + 1.5); if (!st) continue;
+      const fall = 1 - Math.sqrt(dd) / RF * 0.6;
+      let cnt = st.d * 0.55 * fall; const fr = cnt - Math.floor(cnt); cnt = Math.floor(cnt) + (rnd(ix, iz, 97) < fr ? 1 : 0);
+      if (st.tuft) cnt = rnd(ix, iz, 7) < 0.3 ? 2 : 0;
+      for (let k = 0; k < cnt && n < MAXF; k++) setBlade(far, n++, st, gx + rnd(ix, iz, k) * C, gz + rnd(iz, ix, k + 11) * C, k, ix, iz, 1.35, 2.6);
+    }
+    far.count = n; far.instanceMatrix.needsUpdate = true; if (far.instanceColor) far.instanceColor.needsUpdate = true;
+  }
   const oue = L.updateEnv;
   L.updateEnv = function (dt, cam, focus, paused) {
     oue.apply(this, arguments);
     try {
       const on = L.state === 'game' && cam && (!L.S || L.S().grass !== false);
-      if (!on) { if (mesh) { mesh.visible = false; flowers.visible = false; } return; }
+      if (!on) { if (mesh) { mesh.visible = far.visible = flowers.visible = false; } return; }
       if (!mesh) build();
-      mesh.visible = flowers.visible = true;
       U.uTime.value += (dt || 0.016); const E = L.env || {}; U.uWind.value = (/sturm|gewitter/.test(E.weather || '') ? 2.4 : /regen|schauer/.test(E.weather || '') ? 1.5 : 1) * ((styleAt(cam.position.x, cam.position.z) || ST.home).wind || 1);
       U.uPlayer.value.set(P.x || 0, P.y || 0, P.z || 0);
-      const cx = cam.position.x, cz = cam.position.z, high = cam.position.y - (P.y || 0) > 60;
-      if (high) { mesh.visible = flowers.visible = false; return; }
-      if (Math.hypot(cx - center.x, cz - center.z) > R * 0.22) { center.x = cx; center.z = cz; refill(cx, cz); }
+      const cx = cam.position.x, cz = cam.position.z, alt = cam.position.y;
+      // beim Fliegen: nahe Halme ab 35 m Höhe weglassen (zu klein), die Wiese aus der Ferne bleibt bis 260 m Höhe
+      const nearOn = alt < 35, farOn = alt < 260;
+      mesh.visible = flowers.visible = nearOn; far.visible = farOn;
+      if (nearOn && Math.hypot(cx - center.x, cz - center.z) > R * 0.22) { center.x = cx; center.z = cz; refill(cx, cz); }
+      const now = performance.now();
+      if (farOn && ((Math.hypot(cx - centerF.x, cz - centerF.z) > (alt > 35 ? 45 : 24) && now - centerF.t > 280) || centerF.near !== nearOn)) { centerF.x = cx; centerF.z = cz; centerF.t = now; centerF.near = nearOn; refillFar(cx, cz, nearOn ? R : 0); }
     } catch (e) { /* Gras ist nur Deko */ }
   };
   // bei neuer Runde Zwischenspeicher leeren (Häuser/Kisten können sich geändert haben)
   const osr = L.startRound;
-  if (osr) L.startRound = function () { cache.clear(); center.x = 1e9; return osr.apply(this, arguments); };
-  L.grassRefresh = () => { cache.clear(); center.x = 1e9; };
+  if (osr) L.startRound = function () { cache.clear(); center.x = 1e9; centerF.x = 1e9; return osr.apply(this, arguments); };
+  L.grassRefresh = () => { cache.clear(); center.x = 1e9; centerF.x = 1e9; };
 })();
