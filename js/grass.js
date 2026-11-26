@@ -33,7 +33,7 @@
     return ST[w] || null;
   }
   // Gültige Stelle? (Land, keine Straße, kein See, kein Haus/Fels, nicht zu steil) – pro 1-m-Zelle zwischengespeichert
-  const cache = new Map();
+  const cache = new Map(), zc = {};
   function okCell(cx, cz) {
     const k = cx * 100003 + cz; let v = cache.get(k); if (v !== undefined) return v;
     v = 0; const x = cx + 0.5, z = cz + 0.5;
@@ -42,7 +42,13 @@
       if (st && (x > 40000 ? (st !== ST.dim || (L.dimLand && L.dimLand(x, z))) : L.seaFloor(x, z) === 0) && !(L.onRoad && L.onRoad(x, z))) {
         const lk = L.lake; const inLake = lk && x > lk.x1 - 1 && x < lk.x2 + 1 && z > lk.z1 - 1 && z < lk.z2 + 1;
         const mh = L.mountainH ? L.mountainH(x, z) : 0;
-        if (!inLake && mh < 2.5 && !(L.queryBoxes && L.queryBoxes(x, z, 0.9).some((b) => (b.y0 || 0) < 1.5))) v = 1;
+        if (!inLake && mh < 2.5 && !(L.queryBoxes && L.queryBoxes(x, z, 0.9).some((b) => (b.y0 || 0) < 1.5))) {
+          v = 1;
+          // Heimat: nur wo der Boden wirklich grün ist (keine Stadt-Pflaster, kein Sand, keine Feldwege, kein Militärgelände)
+          if (st === ST.home && L.zoneColor) { L.zoneColor(x, z, zc); const green = zc.g - Math.max(zc.r, zc.b); v = green < 0.035 ? 0 : Math.min(1, (green - 0.035) / 0.06); }
+          // Inseln: kein Gras am Strand
+          else if (st !== ST.fairy && st !== ST.dim && L.islandAt) { const I = L.islandAt(x, z); if (I && I.r && Math.hypot(x - I.x, z - I.z) > I.r - 28) v = 0; }
+        }
       }
     } catch (e) { v = 0; }
     if (cache.size > 250000) cache.clear(); cache.set(k, v); return v;
@@ -73,7 +79,7 @@
   let mesh = null, flowers = null, MAX = 0, R = 0, center = { x: 1e9, z: 1e9, s: null }, active = false;
   const tmpE = new T.Euler(), tmpM = new T.Matrix4(), tmpQ = new T.Quaternion(), tmpS = new T.Vector3(), tmpP = new T.Vector3(), tmpC = new T.Color(), UP = new T.Vector3(0, 1, 0);
   function quality() { const S = L.S ? L.S() : {}; const q = S.gfx || S.quality || S.grafik || ''; if (L.isTouch) return 0.45; if (/niedrig|low/.test(q)) return 0.4; if (/ultra/.test(q)) return 1.25; return 1; }
-  let far = null, MAXF = 0, RF = 0; const centerF = { x: 1e9, z: 1e9, t: 0 };
+  let tint = null, gy = 0; let far = null, MAXF = 0, RF = 0; const centerF = { x: 1e9, z: 1e9, t: 0 };
   function build() {
     const q = quality(); MAX = Math.round(24000 * q); R = 30 * Math.sqrt(q);
     // Fernbereich: bis ans Ende der Sicht (am Laptop weit, am Handy kürzer)
@@ -85,24 +91,28 @@
   function setBlade(M, n, st, px, pz, k, gx, gz, hMul, wMul2) {
     const h = (st.h[0] + (st.h[1] - st.h[0]) * rnd(gx, k, gz)) * hMul, w = (0.8 + rnd(k, gz, gx) * 0.7) * wMul2;
     tmpQ.setFromAxisAngle(UP, rnd(gx, gz, k + 31) * 6.283); if (st.tilt) { tmpE.set((rnd(k, gx, gz + 9) - 0.5) * st.tilt * 2, rnd(gx, gz, k + 31) * 6.283, (rnd(gz, k, gx + 4) - 0.5) * st.tilt * 2); tmpQ.setFromEuler(tmpE); }
-    tmpP.set(px, 0, pz); tmpS.set(w * (st.wMul || 1), h, w * (st.wMul || 1)); tmpM.compose(tmpP, tmpQ, tmpS); M.setMatrixAt(n, tmpM);
+    tmpP.set(px, gy, pz); tmpS.set(w * (st.wMul || 1), h, w * (st.wMul || 1)); tmpM.compose(tmpP, tmpQ, tmpS); M.setMatrixAt(n, tmpM);
     const t = rnd(gz, k, gx + 5); const a = st.c[0], b = st.c[1], c = st.c[2]; const u = t < 0.5 ? t * 2 : (t - 0.5) * 2, from = t < 0.5 ? a : b, to = t < 0.5 ? b : c;
-    tmpC.setRGB(from[0] + (to[0] - from[0]) * u, from[1] + (to[1] - from[1]) * u, from[2] + (to[2] - from[2]) * u).multiplyScalar(st.glow ? 2.6 : 1.7); M.setColorAt(n, tmpC);
+    tmpC.setRGB(from[0] + (to[0] - from[0]) * u, from[1] + (to[1] - from[1]) * u, from[2] + (to[2] - from[2]) * u);
+    if (tint) { const k2 = 0.55; tmpC.r += (tint.r * 1.15 - tmpC.r) * k2; tmpC.g += (tint.g * 1.15 - tmpC.g) * k2; tmpC.b += (tint.b * 1.15 - tmpC.b) * k2; }
+    tmpC.multiplyScalar(st.glow ? 2.6 : 1.7); M.setColorAt(n, tmpC);
     return h;
   }
   function refill(cx, cz) {
     let n = 0, fN = 0; const r2 = R * R, x0 = Math.floor(cx - R), x1 = Math.ceil(cx + R), z0 = Math.floor(cz - R), z1 = Math.ceil(cz + R);
     for (let gx = x0; gx <= x1 && n < MAX; gx++) for (let gz = z0; gz <= z1 && n < MAX; gz++) {
       const dx = gx + 0.5 - cx, dz = gz + 0.5 - cz, dd = dx * dx + dz * dz; if (dd > r2) continue;
-      if (!okCell(gx, gz)) continue;
+      const ok = okCell(gx, gz); if (!ok) continue;
       const st = styleAt(gx + 0.5, gz + 0.5); if (!st) continue;
-      const fall = 1 - Math.min(1, Math.sqrt(dd) / R) * 0.4;
-      let cnt = st.d * fall; const fr = cnt - Math.floor(cnt); cnt = Math.floor(cnt) + (rnd(gx, gz, 99) < fr ? 1 : 0);
+      const fall = 1 - Math.min(1, Math.sqrt(dd) / R) * 0.55;
+      let cnt = st.d * fall * ok;
+      tint = null; if (st === ST.home && L.zoneColor) { L.zoneColor(gx + 0.5, gz + 0.5, zc); tint = zc; }
+      gy = L.mountainH ? L.mountainH(gx + 0.5, gz + 0.5) : 0; const fr = cnt - Math.floor(cnt); cnt = Math.floor(cnt) + (rnd(gx, gz, 99) < fr ? 1 : 0);
       if (st.tuft && rnd(gx, gz, 7) > 0.25) cnt = 0; else if (st.tuft) cnt = Math.max(cnt, 5);
       for (let k = 0; k < cnt && n < MAX; k++) {
         const px = gx + (st.tuft ? 0.5 + (rnd(gx, gz, k) - 0.5) * 0.35 : rnd(gx, gz, k)), pz = gz + (st.tuft ? 0.5 + (rnd(gz, gx, k + 7) - 0.5) * 0.35 : rnd(gz, gx, k + 11));
         const h = setBlade(mesh, n, st, px, pz, k, gx, gz, 1, 1); n++;
-        if (st.fl && fN < 1500 && rnd(gx, gz, k + 51) < st.flP) { tmpS.set(1, 1, 1); tmpP.set(px, h * 0.92, pz); tmpM.compose(tmpP, tmpQ, tmpS); flowers.setMatrixAt(fN, tmpM); tmpC.setHex(st.fl[Math.floor(rnd(gx, k, gz + 3) * st.fl.length)]); flowers.setColorAt(fN, tmpC); fN++; }
+        if (st.fl && fN < 1500 && rnd(gx, gz, k + 51) < st.flP) { tmpS.set(1, 1, 1); tmpP.set(px, gy + h * 0.92, pz); tmpM.compose(tmpP, tmpQ, tmpS); flowers.setMatrixAt(fN, tmpM); tmpC.setHex(st.fl[Math.floor(rnd(gx, k, gz + 3) * st.fl.length)]); flowers.setColorAt(fN, tmpC); fN++; }
       }
     }
     mesh.count = n; mesh.instanceMatrix.needsUpdate = true; if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
@@ -113,10 +123,12 @@
     let n = 0; const C = 3, ri2 = Math.max(0, rIn - 3) ** 2, ro2 = RF * RF, x0 = Math.floor((cx - RF) / C), x1 = Math.ceil((cx + RF) / C), z0 = Math.floor((cz - RF) / C), z1 = Math.ceil((cz + RF) / C);
     for (let ix = x0; ix <= x1 && n < MAXF; ix++) for (let iz = z0; iz <= z1 && n < MAXF; iz++) {
       const gx = ix * C, gz = iz * C, dx = gx + 1.5 - cx, dz = gz + 1.5 - cz, dd = dx * dx + dz * dz; if (dd > ro2 || dd < ri2) continue;
-      if (!okCell(gx + 1, gz + 1)) continue;
+      const ok = okCell(gx + 1, gz + 1); if (!ok) continue;
       const st = styleAt(gx + 1.5, gz + 1.5); if (!st) continue;
       const fall = 1 - Math.sqrt(dd) / RF * 0.6;
-      let cnt = st.d * 0.55 * fall; const fr = cnt - Math.floor(cnt); cnt = Math.floor(cnt) + (rnd(ix, iz, 97) < fr ? 1 : 0);
+      let cnt = st.d * 0.55 * fall * ok;
+      tint = null; if (st === ST.home && L.zoneColor) { L.zoneColor(gx + 1.5, gz + 1.5, zc); tint = zc; }
+      gy = L.mountainH ? L.mountainH(gx + 1.5, gz + 1.5) : 0; const fr = cnt - Math.floor(cnt); cnt = Math.floor(cnt) + (rnd(ix, iz, 97) < fr ? 1 : 0);
       if (st.tuft) cnt = rnd(ix, iz, 7) < 0.3 ? 2 : 0;
       for (let k = 0; k < cnt && n < MAXF; k++) setBlade(far, n++, st, gx + rnd(ix, iz, k) * C, gz + rnd(iz, ix, k + 11) * C, k, ix, iz, 1.35, 2.6);
     }
