@@ -394,6 +394,21 @@
       L.msg(txt, 6000); if (L.mp && L.mp.send) L.mp.send({ t: 'msg', text: txt });
     }
   }
+  // Schutzzone um den Spieler nach einem Weltwechsel: Monster in der Nähe werden weggeschoben (in derselben Welt)
+  let arrW = null, arrT = 0;
+  function updateArrival(dt) {
+    if (isClient() || !P.alive || L.cine) return;
+    const w = worldOf(P.x, P.z); if (w !== arrW) { arrW = w; arrT = 8; P.spawnProt = Math.max(P.spawnProt || 0, 3); }
+    if (arrT <= 0) return; arrT -= dt;
+    for (const m of (L.ents.monsters || [])) {
+      if (m.dead || m.boss || worldOf(m.x, m.z) !== w) continue;
+      const d = L.dist(m.x, m.z, P.x, P.z); if (d > 75) continue;
+      const a0 = Math.atan2(m.x - P.x, m.z - P.z);
+      for (let k = 0; k < 12; k++) { const a = a0 + (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 0.5, r = 95 + k * 5, x = P.x + Math.sin(a) * r, z = P.z + Math.cos(a) * r;
+        if (worldOf(x, z) !== w || (m.isl && m.isl.r && Math.hypot(x - m.isl.x, z - m.isl.z) > m.isl.r - 30) || L.queryBoxes(x, z, 1.5).length) continue;
+        m.x = x; m.z = z; m.tx = x; m.tz = z; if (m.rig && m.rig.root) m.rig.root.position.set(x, m.rig.root.position.y, z); break; }
+    }
+  }
   function respawnSpot(I) {
     const pl = players();
     for (let k = 0; k < 40; k++) {
@@ -707,7 +722,7 @@
       P.drownT = (P.drownT || 0) - dt;
     }
     // weit draußen zieht eine starke Strömung zurück zur Küste
-    if (!L.inDim(P.x) && Math.max(Math.abs(P.x), Math.abs(P.z)) > L.FAR - 150) { // nicht auf dem Mond / in der Dimension
+    if (!L.noSea(P.x) && Math.max(Math.abs(P.x), Math.abs(P.z)) > L.FAR - 150) { // nicht auf dem Mond / in der Dimension
       const a = Math.atan2(-P.x, -P.z); P.x += Math.sin(a) * 4 * dt; P.z += Math.cos(a) * 4 * dt;
       if (!(P.curT > 0)) { P.curT = 6; L.msg('🌊 Die Strömung ist zu stark – sie drückt dich zurück zur Küste.', 3000); }
     }
@@ -720,10 +735,10 @@
     { const mh = L.mountainH(P.x, P.z); if (mh > sf) sf = mh; } // auf Bergen stehen statt hineinfallen
     if (bf === null && (P.y || 0) > 1) { const rt = L.roofAt(P.x, P.z, P.y || 0); if (rt > sf) sf = rt; } // auf Dächern landen statt hineinzurutschen
     const depth = L.WATER_Y - sf;
-    P.swim = depth > 1.35 && !L.inDim(P.x);
-    const wt = performance.now() / 1000, wv = P.swim && !L.inDim(P.x) ? L.waveH(P.x, P.z, wt) : 0;
+    P.swim = depth > 1.35 && !L.noSea(P.x);
+    const wt = performance.now() / 1000, wv = P.swim && !L.noSea(P.x) ? L.waveH(P.x, P.z, wt) : 0;
     const gY = P.swim ? L.WATER_Y - 1.25 + wv : sf;
-    if (P.swim && !L.inDim(P.x) && !(L.underwaterDive)) {
+    if (P.swim && !L.noSea(P.x) && !(L.underwaterDive)) {
       const gx = L.waveH(P.x + 1.5, P.z, wt) - L.waveH(P.x - 1.5, P.z, wt), gz = L.waveH(P.x, P.z + 1.5, wt) - L.waveH(P.x, P.z - 1.5, wt);
       P.x -= gx * 2.2 * dt; P.z -= gz * 2.2 * dt; // die Welle schiebt dich ihren Hang hinunter – hin und her
     }
@@ -827,7 +842,7 @@
     let gY = L.seaFloor(P.x, P.z); const bf = L.floorAt ? L.floorAt(P.x, P.z, P.y || 0) : null; if (bf !== null) gY = bf;
     gY = Math.max(gY, L.mountainH(P.x, P.z));
     if (bf === null) gY = Math.max(gY, L.roofAt(P.x, P.z, P.y || 0));
-    if (!L.inDim(P.x)) gY = Math.max(gY, L.WATER_Y);
+    if (!L.noSea(P.x)) gY = Math.max(gY, L.WATER_Y);
     P.y = Math.min(450, P.y + P.vy * dt);
     if (P.y <= gY) { P.y = gY; P.vy = Math.max(0, P.vy); if (P.flying === 2) { P.flying = 0; P.air = false; L.snd.land({ x: P.x, y: 0, z: P.z }); L.msg('🦸 Gelandet', 1200); } }
     { const n = Math.min(60, Math.max(1, Math.ceil(Math.hypot(P.vx, P.vz) * dt / 0.5))); for (let i = 0; i < n; i++) { const nx = P.x + P.vx * dt / n, nz = P.z + P.vz * dt / n, mh = L.mountainH(nx, nz); if (P.y < mh) { P.y = mh; P.vy = Math.max(0, P.vy); } L.collide(nx, nz, 0.38, P.y, RES); P.x = RES.x; P.z = RES.z; } }
@@ -1270,7 +1285,7 @@
   // Wer im versunkenen Fahrzeug sitzen bleibt, ertrinkt – F zum Aussteigen und Hochschwimmen
   function drownInVehicle(v, dt) {
     if (v.t.boat || v.t.sub || !P.alive) return;
-    const under = v.rig.root.position.y + 1.2 < L.WATER_Y && !L.inDim(v.x);
+    const under = v.rig.root.position.y + 1.2 < L.WATER_Y && !L.noSea(v.x);
     if (!under) { P.vehDrownT = 0; return; }
     P.vehDrownT = (P.vehDrownT || 0) + dt;
     if (P.vehDrownT > 2) { P.hp -= 16 * dt; P.hurtFlash = Math.min(1, P.hurtFlash + dt); }
@@ -1421,10 +1436,10 @@
     L.clampWorld(v, true);
     const wd = L.waterDepth(v.x, v.z);
     if (t.boat) {
-      if (wd < 0.7 && !L.inDim(v.x)) { v.x = ox; v.z = oz; v.speed *= -0.2; v.lat = 0; if (isPlayer && !(v.waterMsgT > 0)) { v.waterMsgT = 4; L.msg('🚤 Hier ist es zu flach für das Boot.', 2000); } }
+      if (wd < 0.7 && !L.noSea(v.x)) { v.x = ox; v.z = oz; v.speed *= -0.2; v.lat = 0; if (isPlayer && !(v.waterMsgT > 0)) { v.waterMsgT = 4; L.msg('🚤 Hier ist es zu flach für das Boot.', 2000); } }
     } else if (t.sub) {
-      if (wd < 1.8 && !L.inDim(v.x)) { v.x = ox; v.z = oz; v.speed *= -0.2; v.lat = 0; if (isPlayer && !(v.waterMsgT > 0)) { v.waterMsgT = 4; L.msg('⚓ Das U-Boot fährt nur im Wasser.', 2000); } }
-    } else if (!t.fly && !t.waterOk && !(t.plane && alt > 0.5) && wd > 0.9 && !L.inDim(v.x)) {
+      if (wd < 1.8 && !L.noSea(v.x)) { v.x = ox; v.z = oz; v.speed *= -0.2; v.lat = 0; if (isPlayer && !(v.waterMsgT > 0)) { v.waterMsgT = 4; L.msg('⚓ Das U-Boot fährt nur im Wasser.', 2000); } }
+    } else if (!t.fly && !t.waterOk && !(t.plane && alt > 0.5) && wd > 0.9 && !L.noSea(v.x)) {
       // ins Wasser gefahren: Motor säuft ab, das Fahrzeug wird langsam und geht kaputt
       v.speed = L.clamp(v.speed, -2.5, 2.5); v.hp -= dt * 6;
       if (wd > 2.6) { v.speed = 0; v.hp = Math.min(v.hp, 0); }
@@ -1433,13 +1448,13 @@
       if (isPlayer && !(v.waterMsgT > 0)) { v.waterMsgT = 4; L.msg(wd > 2.6 ? '🌊 Das Fahrzeug ist abgesoffen – steig aus und schwimm!' : '🌊 Der Motor säuft ab!', 3000); L.nz({ dur: 0.6, f: 700, type: 'bandpass', vol: 0.3 }); }
     }
     v.waterMsgT = (v.waterMsgT || 0) - dt;
-    if (!(wd > 1.2) || t.boat || t.sub || t.fly || t.waterOk || (alt || 0) > 0.5 || L.inDim(v.x)) v.sink = Math.max(0, (v.sink || 0) - dt * 2);
+    if (!(wd > 1.2) || t.boat || t.sub || t.fly || t.waterOk || (alt || 0) > 0.5 || L.noSea(v.x)) v.sink = Math.max(0, (v.sink || 0) - dt * 2);
     // Optik
     v.wheel += v.speed * dt / 0.35;
     for (const w of v.rig.wheels) w.rotation.x = v.wheel;
     for (const s of v.rig.steer) s.rotation.y = v.steer * 0.45;
     v.lean = t.kind === 'bike' && !t.quad ? L.clamp(v.steer * v.speed / 40, -0.5, 0.5) : 0;
-    v.rig.root.position.set(v.x, t.sub || t.boat ? (alt || 0) : alt > 0 ? alt : v.sink > 0 ? Math.max(L.seaFloor(v.x, v.z), L.WATER_Y + 0.3 - v.sink) : Math.max(L.WATER_Y + 0.5, Math.max(L.seaFloor(v.x, v.z), L.inDim(v.x) ? 0 : -2.2)), v.z);
+    v.rig.root.position.set(v.x, t.sub || t.boat ? (alt || 0) : alt > 0 ? alt : v.sink > 0 ? Math.max(L.seaFloor(v.x, v.z), L.WATER_Y + 0.3 - v.sink) : Math.max(L.WATER_Y + 0.5, Math.max(L.seaFloor(v.x, v.z), L.noSea(v.x) ? 0 : -2.2)), v.z);
     v.rig.root.rotation.set(0, v.yaw, 0);
     if (t.kind === 'bike') v.rig.root.rotateZ(-v.lean);
     // Wheelie: Shift halten (Motorrad, Crossmaschine, Schattenrad, Quads) – Vorderrad hoch, hinteres Rad bleibt am Boden
@@ -3247,6 +3262,7 @@
     if (L.updateHeroes) L.updateHeroes(dt);
     if (L.updateMasik) L.updateMasik(dt);
     if (L.updateShadowRealm) L.updateShadowRealm(dt);
+    updateArrival(dt);
     if (L.updateTitan) L.updateTitan(dt);
     if (L.updateTitanArmor) L.updateTitanArmor(dt);
     if (L.updateRuslan) L.updateRuslan(dt);

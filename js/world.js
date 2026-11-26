@@ -124,6 +124,7 @@
   L.PORTAL = { x: 2600, z: 3600, y: -150 };
   L.DIM = { x: 60000, z: 0 };
   L.inDim = (x) => x > 40000;
+  L.noSea = (x) => x > 40000 || x < -40000; // kein Meer: Dimension, Mond, Schattenreich …
   L.seaFloor = function (x, z) {
     // Dimension: nur die schwebenden Inseln tragen – daneben ist die unendliche Leere
     if (x > 40000) return L.dimLand && L.dimLand(x, z) ? 0 : -5000;
@@ -888,7 +889,7 @@
   L.updateOcean = function (cam, t) {
     updateSeabed(cam);
     const O = L.ocean; if (!O) return;
-    if (L.inDim(cam.position.x)) { O.mesh.visible = false; return; }
+    if (L.noSea(cam.position.x)) { O.mesh.visible = false; return; }
     const near = Math.max(Math.abs(cam.position.x), Math.abs(cam.position.z)) > HALF - 1000 || !!L.curIsland;
     O.mesh.visible = near;
     if (!near) return;
@@ -1204,7 +1205,7 @@
       }
     }
     const uw = L.WATER_Y - cam.position.y;
-    L.underwater = uw > 0.15 && !L.inDim(cam.position.x);
+    L.underwater = uw > 0.15 && !L.noSea(cam.position.x);
     if (L.underwater) {
       const k = L.clamp(uw / 140, 0, 1);
       cSky.setRGB(0.08, 0.32, 0.45).lerp(cTmp.setRGB(0.005, 0.02, 0.05), k);

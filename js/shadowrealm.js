@@ -286,12 +286,14 @@
     SH.backPortal.userData.update(dt, t); SH.floats.forEach((m, i) => { m.position.y += Math.sin(t * 0.4 + i) * 0.02; m.rotation.y += dt * 0.03; });
     // zurück durch das Portal im Schattenreich
     if (cool <= 0 && Math.hypot(P.x - RX, P.z - (RZ - 25)) < 5) { const o = SH.chamberOut(); go(o.x, o.z, '🏔️ ZURÜCK IM DUNKELBERG', 'Das Portal hat dich zurückgebracht.'); return; }
+    // unsichtbare Grenze am Rand: nicht ins Nichts laufen/fahren
+    { const o = P.vehicle || P, dr = Math.hypot(o.x - RX, o.z - RZ); if (dr > RR - 12) { const a = Math.atan2(o.x - RX, o.z - RZ); o.x = RX + Math.sin(a) * (RR - 12); o.z = RZ + Math.cos(a) * (RR - 12); if (o !== P) { P.x = o.x; P.z = o.z; } if (!(SH.edgeT > 0)) { SH.edgeT = 4; L.msg('🌑 Dahinter ist nur Leere.', 2000); } } SH.edgeT = (SH.edgeT || 0) - dt; }
     // vom Rand ins Nichts gefallen
     if (P.alive && (P.y || 0) < -50) { P.x = RX; P.z = RZ + 10; P.y = 0; P.vy = 0; L.hurtPlayer && L.hurtPlayer(20, 'In die Leere des Schattenreichs gestürzt'); }
     // Kristall-Bestien
     SH.beastT -= dt;
     for (let i = beasts.length - 1; i >= 0; i--) if (!beasts[i] || beasts[i].dead) beasts.splice(i, 1);
-    if (SH.beastT <= 0 && beasts.length < 7 && L._spawnMonster && L.MK && L.MK.kristallbestie) { SH.beastT = 6; const a = Math.random() * 6.283, d = 60 + Math.random() * 140; const x = L.clamp(P.x + Math.sin(a) * d, RX - RR + 30, RX + RR - 30), z = L.clamp(P.z + Math.cos(a) * d, RZ - RR + 30, RZ + RR - 30); if (Math.hypot(x - RX, z - RZ) < RR - 30) { const m = L._spawnMonster('kristallbestie', x, z); if (m) { m.isl = REALM; beasts.push(m); } } }
+    if (SH.beastT <= 0 && beasts.length < 7 && L._spawnMonster && L.MK && L.MK.kristallbestie) { SH.beastT = 6; const a = Math.random() * 6.283, d = 110 + Math.random() * 120; const x = L.clamp(P.x + Math.sin(a) * d, RX - RR + 30, RX + RR - 30), z = L.clamp(P.z + Math.cos(a) * d, RZ - RR + 30, RZ + RR - 30); if (Math.hypot(x - RX, z - RZ) < RR - 30 && Math.hypot(x - P.x, z - P.z) > 90 && Math.hypot(x - RX, z - (RZ + 10)) > 70) { const m = L._spawnMonster('kristallbestie', x, z); if (m) { m.isl = REALM; beasts.push(m); } } }
     for (const m of beasts) { if (Math.hypot(m.tx - RX, m.tz - RZ) > RR - 40) { const q = L.islandWander ? L.islandWander(m) : { x: RX, z: RZ }; m.tx = q.x; m.tz = q.z; } if (Math.hypot(m.x - RX, m.z - RZ) > RR - 20) { const a = Math.atan2(m.x - RX, m.z - RZ); m.x = RX + Math.sin(a) * (RR - 25); m.z = RZ + Math.cos(a) * (RR - 25); } }
     if (L.respawnQueue) for (let i = L.respawnQueue.length - 1; i >= 0; i--) if (L.respawnQueue[i].kind === 'kristallbestie') L.respawnQueue.splice(i, 1);
   };
