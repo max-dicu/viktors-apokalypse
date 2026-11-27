@@ -136,6 +136,7 @@
     r.traverse((o) => { if (o.isMesh) o.frustumCulled = false; });
     return { root: r, body, front, head, tail, legs, wings };
   }
+  L.buildDragon = buildDragon; L.dragonFlap = (D, t, amp, fold) => flap(D, t, amp, fold);
   function flap(D, t, amp, fold) {
     for (const w of D.wings) { w.pv.rotation.z = w.sd * (fold !== undefined ? fold : Math.sin(t) * amp); w.pv.rotation.y = fold !== undefined ? w.sd * 0.9 : 0; }
     D.tail.forEach((q, k) => { q.rotation.y = Math.sin(t * 0.5 - k * 0.6) * 0.12; });

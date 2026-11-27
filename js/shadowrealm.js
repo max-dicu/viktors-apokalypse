@@ -230,6 +230,9 @@
     const back = buildPortal(1.0); back.position.set(0, 0, -25); g.add(back); SH.backPortal = back; solidPortal(back, 1);
     g.traverse((o) => { if (o.isMesh) o.frustumCulled = false; });
     SH.floats = floats;
+    // dunkle Drachen kreisen über dem Reich (eigene Modelle aus der Märchenwelt, dunkel eingefärbt)
+    SH.dragons = [];
+    if (L.buildDragon) { const COLS = [["#1a1424", "#5a2a7a", "#8a30ff"], ["#2a0a14", "#a02040", "#ff3060"], ["#0a1a24", "#2a6a8a", "#30d0ff"], ["#141414", "#4a4a50", "#a040ff"]]; for (let k = 0; k < 9; k++) { const c = COLS[k % COLS.length], D = L.buildDragon(2.2 + rnd() * 2.2, c[0], c[1], c[2]); g.add(D.root); SH.dragons.push({ D, r: 120 + rnd() * (RR - 200), ang: rnd() * 6.283, spd: (rnd() < 0.5 ? -1 : 1) * (0.06 + rnd() * 0.06), h: 45 + rnd() * 130, ph: rnd() * 6.283, fireT: 2 + rnd() * 8 }); } }
   }
   // ---------- Kristall-Bestie (Monster im Schattenreich) ----------
   function buildBeast() {
@@ -300,6 +303,8 @@
     SH.backPortal.userData.update(dt, t); SH.floats.forEach((m, i) => { m.position.y += Math.sin(t * 0.4 + i) * 0.02; m.rotation.y += dt * 0.03; });
     // zurück durch das Portal im Schattenreich
     if (cool <= 0 && Math.hypot(P.x - RX, P.z - (RZ - 25)) < 5) { const o = SH.chamberOut(); go(o.x, o.z, '🏔️ ZURÜCK IM DUNKELBERG', 'Das Portal hat dich zurückgebracht.'); return; }
+    // Drachen fliegen, schlagen mit den Flügeln und speien ab und zu lila Feuer in die Tiefe (harmlos)
+    if (SH.dragons) for (const d of SH.dragons) { d.ang += d.spd * dt; const x = Math.cos(d.ang) * d.r, z = Math.sin(d.ang) * d.r, y = d.h + Math.sin(t * 0.5 + d.ph) * 6; d.D.root.position.set(x, y, z); d.D.root.rotation.set(0, Math.atan2(-Math.sin(d.ang) * Math.sign(d.spd), Math.cos(d.ang) * Math.sign(d.spd)), -Math.sign(d.spd) * 0.25); if (L.dragonFlap) L.dragonFlap(d.D, t * 2.2 + d.ph, 0.6); d.fireT -= dt; if (d.fireT <= 0) { d.fireT = 5 + Math.random() * 9; const wx = RX + x, wz = RZ + z, fx = Math.sin(d.D.root.rotation.y), fz = Math.cos(d.D.root.rotation.y); for (let k = 0; k < 26; k++) setTimeout(() => { L.fx && L.fx(k % 3 ? '#a040ff' : '#ff60c0', wx + fx * (8 + k * 1.6), y - 2 - k * 1.2, wz + fz * (8 + k * 1.6), 3, 6, { basic: true, size: 0.9, life: 0.8 }); }, k * 25); if (Math.hypot(wx - P.x, wz - P.z) < 220) { L.nz && L.nz({ dur: 1.4, f: 180, fTo: 60, type: 'lowpass', vol: 0.3 }); L.tn && L.tn({ f: 90, fTo: 45, dur: 1.2, type: 'sawtooth', vol: 0.12 }); } } }
     // unsichtbare Grenze am Rand: nicht ins Nichts laufen/fahren
     { const o = P.vehicle || P, dr = Math.hypot(o.x - RX, o.z - RZ); if (dr > RR - 12) { const a = Math.atan2(o.x - RX, o.z - RZ); o.x = RX + Math.sin(a) * (RR - 12); o.z = RZ + Math.cos(a) * (RR - 12); if (o !== P) { P.x = o.x; P.z = o.z; } if (!(SH.edgeT > 0)) { SH.edgeT = 4; L.msg('🌑 Dahinter ist nur Leere.', 2000); } } SH.edgeT = (SH.edgeT || 0) - dt; }
     // vom Rand ins Nichts gefallen
