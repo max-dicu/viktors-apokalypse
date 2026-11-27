@@ -149,7 +149,7 @@ body.cinema #hud,body.cinema #touch,body.cinema #banner{visibility:hidden}`;
       L.shake = Math.max(0, L.shake - dt * 1.8);
     }
     camera.lookAt(s.lx, s.ly, s.lz);
-    camera.far = L.inDim(camera.position.x) ? (L.inSpecialWorld && L.inSpecialWorld(camera.position.x, camera.position.z) ? 9000 : 60000) : L.S().view + 1200; camera.near = L.inDim(camera.position.x) ? 0.3 : 0.1;
+    camera.far = L.inDim(camera.position.x) ? (L.inSpecialWorld && L.inSpecialWorld(camera.position.x, camera.position.z) ? 9000 : 60000) : (L.inShadow && L.inShadow(camera.position.x)) ? 9000 : L.S().view + 1200; camera.near = L.inDim(camera.position.x) ? 0.3 : 0.1;
     { const zf = L.weaponZoom ? L.weaponZoom() : 1, fov = 70 / zf + (L.fovKick || 0); camera.fov += (fov - camera.fov) * Math.min(1, dt * 10); }
     camera.updateProjectionMatrix();
     if (P.rig) P.rig.root.visible = true;
@@ -215,7 +215,7 @@ body.cinema #hud,body.cinema #touch,body.cinema #banner{visibility:hidden}`;
     }
     camera.lookAt(look);
     // hoch oben: weiter sehen und genauere Tiefe (sonst flimmert der Boden)
-    { const alt = Math.max(0, camera.position.y - 25), far = L.inDim(camera.position.x); camera.far = far ? (L.inSpecialWorld && L.inSpecialWorld(camera.position.x, camera.position.z) ? 9000 : 60000) : L.S().view + 1200 + alt * 3; camera.near = fp ? 0.1 : L.clamp(Math.min((far ? 0.3 : 0.1) + alt * 0.004, (P.camDist || 4) * 0.25), 0.1, 1.5); }
+    { const alt = Math.max(0, camera.position.y - 25), far = L.inDim(camera.position.x); camera.far = far ? (L.inSpecialWorld && L.inSpecialWorld(camera.position.x, camera.position.z) ? 9000 : 60000) : (L.inShadow && L.inShadow(camera.position.x)) ? 9000 : L.S().view + 1200 + alt * 3; camera.near = fp ? 0.1 : L.clamp(Math.min((far ? 0.3 : 0.1) + alt * 0.004, (P.camDist || 4) * 0.25), 0.1, 1.5); }
     { const zf = L.weaponZoom ? L.weaponZoom() : 1, fov = 70 / zf + (L.fovKick || 0); camera.fov += (fov - camera.fov) * Math.min(1, dt * 10); }
     camera.updateProjectionMatrix();
   }

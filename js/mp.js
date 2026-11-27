@@ -582,7 +582,7 @@
   function applyRound(m) {
     if (N.role !== 'client' || !L.round || L.round.over || L.state !== 'game') return;
     const R = L.round, I = L.interact;
-    if (R.bossT > 30 && m.bossT <= 30 && !L.boss) L.banner('DER BODEN BEBT ...', 'In 30 Sekunden kommt BIG MAMA.');
+    if (R.bossT > 30 && m.bossT <= 30 && !L.boss && (!L.atHome || L.atHome())) L.banner('DER BODEN BEBT ...', 'In 30 Sekunden kommt BIG MAMA.');
     L.applyNature(m.tor); L.applyWboss(m.wb); R.nextBoss = m.nb;
     R.bossT = m.bossT;
     if (m.radio === 'calling' && R.radio === 'idle') L.banner('HUBSCHRAUBER GERUFEN', 'Überlebt 90 Sekunden!');

@@ -203,7 +203,7 @@
   function openSea(x, z) { let o = Math.max(Math.abs(x) - 1500, z - 1500, -z - 1650); for (const I of ISL) if (!I.dim) o = Math.min(o, Math.hypot(x - I.x, z - I.z) - I.r); return o; }
   L.openSea = openSea;
   function updateSea(dt) {
-    if (L.inDim(P.x) || L.voyageOn) return;
+    if (L.noSea(P.x) || L.voyageOn) return; // keine Haie/Meeresriesen im Schattenreich, auf dem Mond usw.
     const ref = P.vehicle || P, alt = P.vehicle ? (P.vehicle.alt || 0) : (P.y || 0), os = openSea(P.x, P.z);
     // Riesenhaie springen vor dir aus dem Wasser
     L.sharkT = (L.sharkT === undefined ? 6 : L.sharkT) - dt;

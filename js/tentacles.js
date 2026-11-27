@@ -55,7 +55,7 @@
     if (L.state !== 'game') return;
     if (!built) populate();
     for (let i = beams.length - 1; i >= 0; i--) { const b = beams[i]; b.t += dt; b.m.material.opacity = 0.85 * (1 - b.t / 0.35); if (b.t > 0.35) { L.scene.remove(b.m); beams.splice(i, 1); } }
-    const home = !L.inDim(P.x) && !(L.onIsl && L.onIsl(P.x, P.z));
+    const home = !L.noSea(P.x) && !(L.onIsl && L.onIsl(P.x, P.z));
     for (const e of list) {
       const r = e.rig, d = Math.hypot(P.x - e.x, P.z - e.z), vis = d < 900 && home;
       r.root.visible = vis;

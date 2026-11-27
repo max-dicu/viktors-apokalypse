@@ -113,7 +113,7 @@
   }
 
   // ---------- Partikel: Blätter, Blüten, Pollen, Atemwölkchen ----------
-  const onHome = (x) => !L.curIsland && !L.inDim(x) && !(L.inMoon && L.inMoon(x));
+  const onHome = (x) => !L.curIsland && !L.noSea(x) && !(L.inMoon && L.inMoon(x));
   const oue = L.updateEnv;
   L.updateEnv = function (dt, cam, focus, paused) {
     oue(dt, cam, focus, paused);

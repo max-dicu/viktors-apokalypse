@@ -871,7 +871,7 @@
   const cB = new T.Color(), cS = new T.Color('#c8b888'), cD = new T.Color('#0e1a22');
   function updateSeabed(cam) {
     const B = L.seabed; if (!B) return;
-    const dim = L.inDim(cam.position.x);
+    const dim = L.noSea(cam.position.x);
     B.mesh.visible = !dim;
     if (dim) return;
     const cx = Math.round(cam.position.x / 75) * 75, cz = Math.round(cam.position.z / 75) * 75;

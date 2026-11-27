@@ -76,7 +76,7 @@
   let D = null, sign = null, beam = null, spot = null;
   function place() {
     const Tw = L.TOWER || { x: 38, z: 38 };
-    for (let r = 40; r < 160 && !spot; r += 6) for (let k = 0; k < 16; k++) {
+    for (let r = 120; r < 260 && !spot; r += 6) for (let k = 0; k < 16; k++) {
       const a = k / 16 * 6.283, x = Tw.x + Math.sin(a) * r, z = Tw.z + Math.cos(a) * r;
       if (L.queryBoxes(x, z, 6).length || (L.mountainH && L.mountainH(x, z) > 0) || (L.waterDepth && L.waterDepth(x, z) > 0) || (L.inTower && L.inTower(x, z, 8)) || (L.onRoad && L.onRoad(x, z))) continue;
       spot = { x, z, yaw: Math.atan2(Tw.x - x, Tw.z - z) + Math.PI }; break;
@@ -171,8 +171,8 @@
     if (ome) ome(g, toM, big);
     if (!spot || !(L.suitOn && L.suitOn()) || (L.worldOf && L.worldOf(P.x, P.z) !== 'home')) return;
     const [x, y] = toM(spot.x, spot.z);
-    g.font = (big ? 22 : 15) + 'px sans-serif'; g.textAlign = 'center'; g.fillStyle = '#fff'; g.fillText('🐕', x, y + 6);
-    if (big) { g.font = 'bold 12px sans-serif'; g.fillStyle = '#000'; g.fillText('Pusha', x + 1, y + 21); g.fillStyle = '#ffd24a'; g.fillText('Pusha', x, y + 20); }
+    const rr = big ? 15 : 10; g.fillStyle = 'rgba(20,30,80,.85)'; g.beginPath(); g.arc(x, y, rr, 0, 6.283); g.fill(); g.strokeStyle = '#ffd24a'; g.lineWidth = 2.5; g.stroke(); g.font = (big ? 18 : 12) + 'px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#fff'; g.fillText('🐕', x, y + 1);
+    if (big) { g.font = 'bold 13px sans-serif'; g.fillStyle = '#000'; g.fillText('Pusha', x + 1, y + 25); g.fillStyle = '#ffd24a'; g.fillText('Pusha', x, y + 24); }
     g.textAlign = 'left';
   };
 })();

@@ -30,7 +30,7 @@
     return out;
   }
   L.festToday = () => fest(now());
-  const onHome = () => !L.curIsland && !L.inDim(P.x) && !(L.inMoon && L.inMoon(P.x));
+  const onHome = () => !L.curIsland && !L.noSea(P.x) && !(L.inMoon && L.inMoon(P.x));
   const R = L.rand;
   // vor dir am Himmel (für jeden Spieler selbst)
   function skySpot(dist, h) { const a = P.camYaw + R(-0.5, 0.5); return { x: P.x + Math.sin(a) * dist, z: P.z + Math.cos(a) * dist, y: (P.y || 0) + h }; }

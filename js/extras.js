@@ -207,10 +207,10 @@
     if (!guard && L.TOWER && L.state === 'game') buildGuard();
     if (!guard) return;
     const up = L.towerSafe ? L.towerSafe() : true;
-    guard.rig.root.visible = up && !L.inDim(P.x);
+    guard.rig.root.visible = up && !L.noSea(P.x);
     // Signal: nur nachts UND nur wenn ein Boss da ist (tagsüber leuchtet der Turm nur rot)
     const bossNow = !!((L.boss && !L.boss.dead) || L.wboss), night = !!(L.env && L.env.day < 0.4);
-    signal.visible = up && bossNow && night && !L.inDim(P.x) && !(L.onIsl && L.onIsl(P.x, P.z));
+    signal.visible = up && bossNow && night && !L.noSea(P.x) && !(L.onIsl && L.onIsl(P.x, P.z));
     if (signal.visible) signal.rotation.y = 0.6 + Math.sin(performance.now() / 4000) * 0.15;
     guard.ph += dt;
     const near = Math.hypot(P.x - guard.rig.root.position.x, P.z - guard.rig.root.position.z) < 25 && Math.abs((P.y || 0) - L.TOWER.h) < 3;
