@@ -3264,6 +3264,7 @@
     if (L.updateMasik) L.updateMasik(dt);
     if (L.updateShadowRealm) L.updateShadowRealm(dt);
     if (L.updatePusha) L.updatePusha(dt);
+    if (L.updateFlyers) L.updateFlyers(dt);
     updateArrival(dt);
     if (L.updateTitan) L.updateTitan(dt);
     if (L.updateTitanArmor) L.updateTitanArmor(dt);
