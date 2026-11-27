@@ -56,6 +56,9 @@
   function go(keep, U) {
     document.body.classList.add('trl5');
     try { L.renderer.setPixelRatio(1); } catch (e) { /* egal */ }
+    // Handy: weniger Grafiklast, damit nichts abstürzt oder ruckelt
+    const phone = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 || innerWidth < 900;
+    if (phone) { try { L.renderer.setPixelRatio(Math.min(1, 0.85)); L.renderer.shadowMap.enabled = false; L.scene.traverse((o) => { if (o.material) { const ms = Array.isArray(o.material) ? o.material : [o.material]; ms.forEach((m) => { m.needsUpdate = true; }); } }); } catch (e) { /* egal */ } }
     L.mGodOn = true; L.mGodNoTag = true; P.spawnProt = 9999; L.save.gauntlet = true;
     const tp = (x, z, y) => { if (P.vehicle && L._leaveVehicle) L._leaveVehicle(true); P.vehicle = null; P.x = x; P.z = z; P.y = y || 0; P.vx = P.vz = P.vy = 0; P.flying = 0; P.air = false; };
     const sky = (time, w) => { L.env.time = time; if (L.setWeather) L.setWeather(w); L.env.wT = 999; L.env.rain = /regen|gewitter/.test(w) ? 1 : 0; };
@@ -187,7 +190,7 @@
     };
     setTimeout(step, 300);
   }
-  const OPEN_UNTIL = 1795803568096; // 20 Minuten lang für ALLE im Menü (danach wieder nur wie vorher)
+  const OPEN_UNTIL = 1795804200000; // 20 Minuten lang für ALLE im Menü (danach wieder nur wie vorher)
   function addBtn() {
     const c = document.getElementById('btnPlay'); if (!c || document.getElementById('btnTrailer5')) return;
     const open = Date.now() < OPEN_UNTIL;
