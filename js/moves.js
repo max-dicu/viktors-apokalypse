@@ -29,7 +29,7 @@
     for (const e of (L._targets ? L._targets() : [])) {
       if (e.dead) continue; const dx = e.x - P.x, dz = e.z - P.z, d = Math.hypot(dx, dz), br = e.bigR || 0;
       if (d > mv.r + br || (dx * fx + dz * fz) / (d || 1) < 0.35) continue;
-      L.damageEnt(e, mv.dmg, P.x, P.z, P); n++;
+      if (L.battleHit) L.battleHit(e, mv.dmg, mv.n === 'uppercut' || mv.n === 'drehkick' ? 0xffe8a0 : 0xffffff); else L.damageEnt(e, mv.dmg, P.x, P.z, P); n++;
       if ((mv.n === 'uppercut' || mv.n === 'drehkick') && L.MK && L.MK[e.kind]) { e.launchT = mv.n === 'uppercut' ? 0.9 : 0.5; const a = Math.atan2(dx, dz); e.x += Math.sin(a) * (mv.n === 'drehkick' ? 5 : 2); e.z += Math.cos(a) * (mv.n === 'drehkick' ? 5 : 2); }
     }
     if (n) {
@@ -37,6 +37,7 @@
       shock(hx, hy, hz, big ? 0xffe8a0 : 0xffffff, big ? 3.2 : 1.6, big ? 0.35 : 0.2);
       L.fx('#ffffff', hx, hy, hz, big ? 22 : 10, big ? 10 : 6, { basic: true, size: 0.12, life: 0.25 });
       M.freeze = big ? 0.11 : 0.05; L.fovKick = big ? 8 : 3; L.shake = Math.max(L.shake, big ? 0.9 : 0.35);
+      if (big && L.impactFrame) L.impactFrame(50);
       if (big) { L.speedLines(0.4); for (const e of (L._targets ? L._targets() : [])) if (!e.dead && Math.hypot(e.x - hx, e.z - hz) < mv.r + (e.bigR || 0)) e.stunT = Math.max(e.stunT || 0, 0.3); }
       M.ult = Math.min(100, M.ult + 6 * n); L.snd.hammerHit && L.snd.hammerHit({ x: P.x, y: 1, z: P.z }); L.makeNoise && L.makeNoise(P.x, P.z, 14, P); }
     else L.nz && L.nz({ dur: 0.12, f: 900, type: 'bandpass', vol: 0.12 });
@@ -78,7 +79,7 @@
   L.updateMoves = function (dt) {
     const ok = free(), K = L.keys || {};
     const kb = !!K.KeyB && !L.chatOpen; if (kb && !M.block) M.blockT = performance.now(); M.block = kb;
-    const ku = !!K.KeyU; if (ku && !M.uPrev && ok && M.ult >= 100 && M.ultT < 0) { M.ult = 0; M.ultT = 0; L.banner('⚡ ULTIMATE: METEOR-SCHLAG', ''); L.fovKick = 8; } M.uPrev = ku;
+    const ku = !!K.KeyU; if (ku && !M.uPrev && ok && M.ult >= 100 && M.ultT < 0) { M.ult = 0; if (!(L.skillUlt && L.skillUlt())) { M.ultT = 0; L.banner('⚡ ULTIMATE: METEOR-SCHLAG', ''); L.fovKick = 8; } } M.uPrev = ku;
     bar.style.display = ok || M.ult > 0 ? 'block' : 'none';
     fill.style.width = M.ult + '%'; lab.textContent = M.ult >= 100 ? '⚡ ULTIMATE BEREIT – U' : 'Ultimate ' + Math.floor(M.ult) + '%';
     if (M.ultT >= 0) {

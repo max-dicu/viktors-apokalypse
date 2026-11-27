@@ -232,7 +232,7 @@ body.cinema #hud,body.cinema #touch,body.cinema #banner{visibility:hidden}`;
   let last = performance.now(), t = 0;
   function frame(now) {
     requestAnimationFrame(frame);
-    const dt = Math.min(0.05, (now - last) / 1000);
+    const dt = Math.min(0.05, (now - last) / 1000) * (L.timeScale || 1); // Zeitlupe bei großen Treffern
     last = now;
     try {
       const client = L.net && L.net.role === 'client';
