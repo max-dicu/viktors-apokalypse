@@ -35,7 +35,7 @@
 
   function start() {
     const keep = { char: L.save.char, gaunt: L.save.gauntlet };
-    L.save.char = Object.assign({}, L.DEFAULT_CHAR, { special: 'h_marlon', hk: L.heroToken('marlon') });
+    L.save.char = Object.assign({}, L.DEFAULT_CHAR, { special: 'h_marlon', hk: L.heroToken('marlon') || (Date.now() < OPEN_UNTIL ? '125d0ys3kw3' : null) });
     L._catBypass = true; document.getElementById('btnPlay').click(); L._catBypass = false;
     const css = document.createElement('style');
     css.textContent = `body.trl5>*:not(#c):not(#trl5){visibility:hidden!important}#trl5{position:fixed;inset:0;z-index:500;pointer-events:none}
@@ -187,12 +187,14 @@
     };
     setTimeout(step, 300);
   }
+  const OPEN_UNTIL = 1795803568096; // 20 Minuten lang für ALLE im Menü (danach wieder nur wie vorher)
   function addBtn() {
     const c = document.getElementById('btnPlay'); if (!c || document.getElementById('btnTrailer5')) return;
-    if (!(L.heroToken && L.heroToken('marlon')) || (L.save && L.save.trailer5Replay)) return; // noch genau EIN weiteres Mal
+    const open = Date.now() < OPEN_UNTIL;
+    if (!open && (!(L.heroToken && L.heroToken('marlon')) || (L.save && L.save.trailer5Replay))) return; // noch genau EIN weiteres Mal
     ['btnTrailer', 'btnTrailer2', 'btnTrailer3', 'btnTrailer4'].forEach((id) => { const o = document.getElementById(id); if (o) o.remove(); });
-    const b = document.createElement('button'); b.className = 'btn'; b.id = 'btnTrailer5'; b.textContent = '🎬 TikTok-Trailer 5 (nur 1×)'; b.style.cssText = 'background:linear-gradient(90deg,#ff2a6a,#25f4ee);color:#000;font-weight:900';
-    b.onclick = () => { if (!confirm('Trailer 5 (ca. 36 Sek.) läuft nur EIN Mal. Erst wird alles vorgeladen, dann startest du die Aufnahme und tippst zum Start. Esc = abbrechen (zählt dann nicht).')) return; start(); };
+    const b = document.createElement('button'); b.className = 'btn'; b.id = 'btnTrailer5'; b.textContent = open ? '🎬 TikTok-Trailer ansehen' : '🎬 TikTok-Trailer 5 (nur 1×)'; b.style.cssText = 'background:linear-gradient(90deg,#ff2a6a,#25f4ee);color:#000;font-weight:900';
+    b.onclick = () => { if (Date.now() > OPEN_UNTIL && !(L.heroToken && L.heroToken('marlon'))) { b.remove(); return; } if (!confirm('Trailer 5 (ca. 36 Sek.) läuft nur EIN Mal. Erst wird alles vorgeladen, dann startest du die Aufnahme und tippst zum Start. Esc = abbrechen (zählt dann nicht).')) return; start(); };
     c.before(b);
   }
   L.playTrailer5 = start;
