@@ -234,7 +234,7 @@
   // ---------- Kristall-Bestie (Monster im Schattenreich) ----------
   function buildBeast() {
     const root = new T.Group(), body = new T.Group(); root.add(body);
-    const hide = new T.MeshStandardMaterial({ color: 0x14101c, roughness: 0.6, metalness: 0.3, flatShading: true });
+    const hide = new T.MeshStandardMaterial({ color: 0x3a2a50, emissive: 0x1a0c2c, roughness: 0.6, metalness: 0.3, flatShading: true });
     const crys = new T.MeshStandardMaterial({ color: 0x7a30d0, emissive: 0x5a18b0, emissiveIntensity: 0.9, roughness: 0.2, metalness: 0.5, flatShading: true });
     const gem = new T.MeshBasicMaterial({ color: 0x40b8ff }), chainM = new T.MeshStandardMaterial({ color: 0x5a5a64, metalness: 0.9, roughness: 0.3 });
     const P3 = (geo, m, sx, sy, sz, x, y, z, par) => { const o = new T.Mesh(geo, m); o.scale.set(sx, sy, sz); o.position.set(x, y, z); o.castShadow = true; (par || body).add(o); return o; };
@@ -307,7 +307,7 @@
     // Kristall-Bestien
     SH.beastT -= dt;
     for (let i = beasts.length - 1; i >= 0; i--) if (!beasts[i] || beasts[i].dead) beasts.splice(i, 1);
-    if (SH.beastT <= 0 && beasts.length < 7 && L._spawnMonster && L.MK && L.MK.kristallbestie) { SH.beastT = 6; const a = Math.random() * 6.283, d = 110 + Math.random() * 120; const x = L.clamp(P.x + Math.sin(a) * d, RX - RR + 30, RX + RR - 30), z = L.clamp(P.z + Math.cos(a) * d, RZ - RR + 30, RZ + RR - 30); if (Math.hypot(x - RX, z - RZ) < RR - 30 && Math.hypot(x - P.x, z - P.z) > 90 && Math.hypot(x - RX, z - (RZ + 10)) > 70) { const m = L._spawnMonster('kristallbestie', x, z); if (m) { m.isl = REALM; beasts.push(m); } } }
+    if (SH.beastT <= 0 && beasts.length < 30 && L._spawnMonster && L.MK && L.MK.kristallbestie) { SH.beastT = beasts.length < 12 ? 0.6 : 2.2; const a = Math.random() * 6.283, d = 110 + Math.random() * 120; const x = L.clamp(P.x + Math.sin(a) * d, RX - RR + 30, RX + RR - 30), z = L.clamp(P.z + Math.cos(a) * d, RZ - RR + 30, RZ + RR - 30); if (Math.hypot(x - RX, z - RZ) < RR - 30 && Math.hypot(x - P.x, z - P.z) > 90 && Math.hypot(x - RX, z - (RZ + 10)) > 70) { const m = L._spawnMonster('kristallbestie', x, z); if (m) { m.isl = REALM; beasts.push(m); } } }
     for (const m of beasts) { if (Math.hypot(m.tx - RX, m.tz - RZ) > RR - 40) { const q = L.islandWander ? L.islandWander(m) : { x: RX, z: RZ }; m.tx = q.x; m.tz = q.z; } if (Math.hypot(m.x - RX, m.z - RZ) > RR - 20) { const a = Math.atan2(m.x - RX, m.z - RZ); m.x = RX + Math.sin(a) * (RR - 25); m.z = RZ + Math.cos(a) * (RR - 25); } }
     if (L.respawnQueue) for (let i = L.respawnQueue.length - 1; i >= 0; i--) if (L.respawnQueue[i].kind === 'kristallbestie') L.respawnQueue.splice(i, 1);
   };
@@ -317,7 +317,7 @@
     oue.apply(this, arguments);
     try {
       if (!cam) return; const E = L.env;
-      if (L.inShadow(cam.position.x)) { L.scene.background.set('#030208'); L.scene.fog.color.set('#0c0818'); L.scene.fog.near = 90; L.scene.fog.far = 1500; E.hemi.intensity = 0.42; E.hemi.color.set('#8a70c0'); E.hemi.groundColor.set('#1a0a20'); E.sun.intensity = 0.35; E.sun.color.set('#b0a0ff'); if (E.stars) E.stars.material.opacity = 0; if (E.sunDisc) E.sunDisc.material.opacity = 0; if (E.moon) E.moon.material.opacity = 0; if (E.rainMesh) E.rainMesh.visible = false; return; }
+      if (L.inShadow(cam.position.x)) { L.scene.background.set('#030208'); L.scene.fog.color.set('#0c0818'); L.scene.fog.near = 90; L.scene.fog.far = 1500; E.hemi.intensity = 1.05; E.hemi.color.set('#b8a8f0'); E.hemi.groundColor.set('#4a3460'); E.sun.intensity = 1.0; E.sun.color.set('#d8ccff'); if (E.stars) E.stars.material.opacity = 0; if (E.sunDisc) E.sunDisc.material.opacity = 0; if (E.moon) E.moon.material.opacity = 0; if (E.rainMesh) E.rainMesh.visible = false; return; }
       if (SH.inCave && SH.insideCave && SH.insideCave(cam.position.x, cam.position.z)) { L.scene.fog.color.set('#0a0810'); L.scene.fog.near = 8; L.scene.fog.far = 120; E.hemi.intensity = Math.min(E.hemi.intensity, 0.3); E.hemi.color.set("#b8a8e0"); E.sun.intensity = Math.min(E.sun.intensity, 0.08); if (E.rainMesh) E.rainMesh.visible = false; }
     } catch (e) { /* egal */ }
   };
