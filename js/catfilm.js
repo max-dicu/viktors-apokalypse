@@ -46,11 +46,33 @@
     noise(5.6, 1.2, 0.25, 'highpass', 4000, 9000); // Funkeln
     [146.8, 220, 293.7, 349.2].forEach((f) => osc('sawtooth', f, 9.5, 4.5, 0.025)); osc('sine', 55, 9.5, 4.5, 0.25); // Zeitlinien-Brummen
     noise(14.9, 1.5, 0.5, 'bandpass', 200, 6000); osc('sine', 60, 15.2, 2, 0.6, 30); // Dimensionssprung
-    [110, 164.8, 220, 261.6].forEach((f) => osc('triangle', f, 16.5, 8.5, 0.04)); for (let k = 0; k < 10; k++) osc('sine', 70, 16.5 + k * 0.5, 0.4, 0.25, 45); // Schritte zum Thron
-    [146.8, 185, 220, 293.7, 370].forEach((f, i) => osc('triangle', f, 21.5 + i * 0.3, 9, 0.05)); osc('sine', 55, 21.5, 9, 0.3); // Baum des Wissens
     osc('sine', 48, 22.7, 2.2, 0.9, 25); noise(22.7, 1.6, 0.6, 'lowpass', 4000, 150); noise(22.6, 2.5, 0.25, 'highpass', 3000, 9000); // Lichtausbruch
     for (let k = 0; k < 10; k++) noise(16.5 + k * 0.5, 0.25, 0.18, 'lowpass', 600, 120); // schwere Schritte
+    winterTheme(A, t0, out, 16.2, 26.2);
     return out;
+  }
+  // Eigene Komposition (kein fremder Song): ruhig, verträumt, „slowed“ – nur während Masik zum Thron geht
+  function winterTheme(A, t0, dest, from, to) {
+    const bus = A.createGain(), lp = A.createBiquadFilter(), dry = A.createGain(), wet = A.createGain(), rv = A.createConvolver();
+    lp.type = 'lowpass'; lp.frequency.value = 3200; lp.Q.value = 0.4;
+    const ir = A.createBuffer(2, A.sampleRate * 3.5, A.sampleRate); for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2.2); } rv.buffer = ir;
+    dry.gain.value = 0.65; wet.gain.value = 0.55; bus.connect(lp); lp.connect(dry); lp.connect(rv); rv.connect(wet); dry.connect(dest); wet.connect(dest);
+    // sauber ein- und ausblenden
+    const T0 = t0 + from, T1 = t0 + to; bus.gain.setValueAtTime(0.0001, T0); bus.gain.exponentialRampToValueAtTime(0.9, T0 + 1.8); bus.gain.setValueAtTime(0.9, T1 - 2.6); bus.gain.exponentialRampToValueAtTime(0.0001, T1);
+    const det = -55; // leicht tiefer gestimmt = „slowed“-Gefühl
+    const tone = (f, s, d, v, type, attack) => { const o = A.createOscillator(), g = A.createGain(); o.type = type || 'sine'; o.frequency.value = f; o.detune.value = det; g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(v, s + (attack || 0.01)); g.gain.exponentialRampToValueAtTime(0.0001, s + d); o.connect(g); g.connect(bus); o.start(s); o.stop(s + d + 0.1); };
+    // Spieluhr-Glocke: Grundton + leiser Oberton, schnelles Anschlagen, langes Ausklingen
+    const bell = (f, s, v) => { tone(f, s, 2.6, v, 'sine', 0.005); tone(f * 2, s, 1.2, v * 0.35, 'sine', 0.005); tone(f * 3.01, s, 0.6, v * 0.12, 'sine', 0.005); };
+    // warme Fläche (zwei leicht verstimmte Dreiecke pro Ton)
+    const pad = (fs, s, d, v) => fs.forEach((f) => { tone(f, s, d, v, 'triangle', 1.2); tone(f * 1.004, s, d, v * 0.7, 'triangle', 1.4); });
+    const B = 60 / 66; // langsames Tempo
+    const chords = [[130.8, 196, 246.9, 329.6], [110, 164.8, 261.6, 329.6], [87.3, 174.6, 220, 329.6], [98, 146.8, 246.9, 293.7]]; // C(maj7) – Am(add9) – F(maj7) – G(6)
+    const mel = [[659.3, 0], [587.3, 1], [523.3, 1.5], [587.3, 2.5], [392, 4], [440, 5], [523.3, 5.5], [493.9, 6.5], [440, 8], [523.3, 9], [659.3, 9.5], [587.3, 10.5], [493.9, 12], [440, 13], [392, 13.5], [440, 14.5]]; // eigene Melodie
+    for (let bar = 0; bar * 4 * B < to - from; bar++) {
+      const s = T0 + bar * 4 * B, ch = chords[bar % 4]; pad(ch, s, 4 * B + 1.5, 0.035); tone(ch[0] / 2, s, 4 * B, 0.09, 'sine', 0.3);
+      for (const [f, beat] of mel) if (beat >= (bar % 4) * 4 && beat < (bar % 4) * 4 + 4) { const at = s + (beat - (bar % 4) * 4) * B; if (at < T1 - 1) bell(f, at, 0.07); }
+      for (let k = 0; k < 4; k++) { const at = s + k * B; if (at < T1 - 1) bell(ch[(k + 1) % 4] * 2, at + B * 0.5, 0.018); } // leise Arpeggio-Glöckchen
+    }
   }
   function play(done) {
     const D = 30.5;
@@ -170,9 +192,9 @@
       } else if (t < 25) {
         // dreht sich um, setzt sich, hebt beide Pfoten – Lichtausbruch, die Zeitlinien wachsen zum Baum des Wissens
         const sit = ease((t - 21.5) / 1.1), burst = t - 22.7;
-        cat.g.position.set(0, lerp(1.05, 3.9, sit), lerp(-37, -43.2, sit)); cat.g.rotation.set(lerp(1.12, -1.0, sit), lerp(Math.PI, Math.PI * 2, sit), 0); cat.g.scale.setScalar(4);
-        cat.legs[2].rotation.x = cat.legs[3].rotation.x = lerp(-1.12, -1.4, sit);
-        const raise = ease((t - 22.2) / 0.5); cat.legs[0].rotation.x = cat.legs[1].rotation.x = lerp(-1.75, -2.9, raise); cat.legs[0].rotation.z = -0.25 - raise * 0.35; cat.legs[1].rotation.z = 0.25 + raise * 0.35;
+        cat.g.position.set(0, lerp(1.05, 3.6, sit), lerp(-37, -42.3, sit)); cat.g.rotation.set(lerp(1.12, -1.0, sit), lerp(Math.PI, Math.PI * 2, sit), 0); cat.g.scale.setScalar(4);
+        cat.legs[2].rotation.x = cat.legs[3].rotation.x = lerp(-1.12, -0.15, sit);
+        const raise = ease((t - 22.2) / 0.5) - ease((t - 23.9) / 0.8); cat.legs[0].rotation.x = cat.legs[1].rotation.x = t < 23.9 ? lerp(-1.75, -2.9, raise) : lerp(-0.75, -2.9, raise); cat.legs[0].rotation.z = -0.25 - raise * 0.35; cat.legs[1].rotation.z = 0.25 + raise * 0.35;
         cat.head.rotation.x = lerp(0.95, 0.9, sit); cat.cape.rotation.x = 0.4 + Math.sin(t * 3) * 0.1; waveCape(t, 0.1 + (burst > 0 && burst < 1.5 ? 0.15 : 0));
         if (burst > 0 && !treeSaid) { treeSaid = true; sky2.set(0x0a0418); flashOn(); shake = 1.2; for (let k = 0; k < rings.length; k++) setTimeout(() => stepRing(0, -43), k * 90); }
         tl.position.set(0, 4.8 + Math.max(0, burst) * 6, -43); tl.scale.setScalar(2.2 * (burst > 0 ? Math.max(0, 1 - burst * 0.8) : 1)); tl.rotation.z += 0.03;
@@ -183,8 +205,9 @@
         else { const k = ease((t - 22.7) / 2.3); cam.position.set(lerp(14, 26, k), lerp(8, 30, k), lerp(-22, -8, k)); cam.lookAt(0, lerp(7, 26, k), -46); }
       } else {
         // Nahaufnahme – das Versprechen
+        cat.legs[2].rotation.x = cat.legs[3].rotation.x = -0.15; cat.legs[0].rotation.x = cat.legs[1].rotation.x = -0.75 + Math.sin(t * 1.5) * 0.06; cat.legs[0].rotation.z = -0.3; cat.legs[1].rotation.z = 0.3; cat.g.position.z = -42.3; cat.g.position.y = 3.6;
         const u = t - 25; tl.visible = false; tree.scale.setScalar(1); tree.rotation.y += 0.002;
-        const hy = 3.1 + 0.45 * 4 + 0.5; cam.position.set(0.9, hy + 0.9, -44 + 6.5 - Math.min(1, u * 0.4) * 1.5); cam.lookAt(0, hy + 0.3, -44);
+        const hy = 3.1 + 0.45 * 4 + 0.5; cam.position.set(0.9, hy + 0.5, -44 + 7.2 - Math.min(1, u * 0.4) * 1.5); cam.lookAt(0, hy - 0.4, -44);
         say.style.bottom = 'auto'; say.style.top = '8%';
         if (!sp1) { sp1 = true; talk('🐈‍⬛ „Ich beschütze dich für immer.“', 'Ich beschütze dich für immer.'); }
         if (u > 2.4 && !sp2) { sp2 = true; talk('„Geh zu Pusha beim Turm und beantworte seine 6 Fragen – dann bekommst du MASIKS SCHUTZ:<br>kein Schaden mehr und von Pusha den Zeitstein – das Auge des Agamotto.“', 'Geh zu Pusha beim Turm und beantworte seine sechs Fragen. Dann bekommst du meinen Schutz. Du nimmst keinen Schaden mehr, und Pusha gibt dir den Zeitstein, das Auge des Agamotto.'); }
