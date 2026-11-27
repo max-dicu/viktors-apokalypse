@@ -232,7 +232,7 @@
     SH.floats = floats;
     // dunkle Drachen kreisen über dem Reich (eigene Modelle aus der Märchenwelt, dunkel eingefärbt)
     SH.dragons = [];
-    if (L.buildDragon) { const COLS = [["#1a1424", "#5a2a7a", "#8a30ff"], ["#2a0a14", "#a02040", "#ff3060"], ["#0a1a24", "#2a6a8a", "#30d0ff"], ["#141414", "#4a4a50", "#a040ff"]]; for (let k = 0; k < 9; k++) { const c = COLS[k % COLS.length], D = L.buildDragon(2.2 + rnd() * 2.2, c[0], c[1], c[2]); g.add(D.root); SH.dragons.push({ D, r: 120 + rnd() * (RR - 200), ang: rnd() * 6.283, spd: (rnd() < 0.5 ? -1 : 1) * (0.06 + rnd() * 0.06), h: 45 + rnd() * 130, ph: rnd() * 6.283, fireT: 2 + rnd() * 8 }); } }
+    if (L.buildDragon) { const COLS = [["#1a1424", "#5a2a7a", "#8a30ff"], ["#2a0a14", "#a02040", "#ff3060"], ["#0a1a24", "#2a6a8a", "#30d0ff"], ["#141414", "#4a4a50", "#a040ff"]]; for (let k = 0; k < 32; k++) { const c = COLS[k % COLS.length], D = L.buildDragon(1.8 + rnd() * 2.6, c[0], c[1], c[2]); D.root.traverse((o) => { if (o.isMesh) o.castShadow = false; }); g.add(D.root); SH.dragons.push({ D, r: 80 + rnd() * (RR + 400), ang: rnd() * 6.283, spd: (rnd() < 0.5 ? -1 : 1) * (0.06 + rnd() * 0.06), h: 35 + rnd() * 220, ph: rnd() * 6.283, fireT: 2 + rnd() * 12 }); } }
   }
   // ---------- Kristall-Bestie (Monster im Schattenreich) ----------
   function buildBeast() {
