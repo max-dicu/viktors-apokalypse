@@ -48,6 +48,8 @@
     noise(14.9, 1.5, 0.5, 'bandpass', 200, 6000); osc('sine', 60, 15.2, 2, 0.6, 30); // Dimensionssprung
     [110, 164.8, 220, 261.6].forEach((f) => osc('triangle', f, 16.5, 8.5, 0.04)); for (let k = 0; k < 10; k++) osc('sine', 70, 16.5 + k * 0.5, 0.4, 0.25, 45); // Schritte zum Thron
     [146.8, 185, 220, 293.7, 370].forEach((f, i) => osc('triangle', f, 21.5 + i * 0.3, 9, 0.05)); osc('sine', 55, 21.5, 9, 0.3); // Baum des Wissens
+    osc('sine', 48, 22.7, 2.2, 0.9, 25); noise(22.7, 1.6, 0.6, 'lowpass', 4000, 150); noise(22.6, 2.5, 0.25, 'highpass', 3000, 9000); // Lichtausbruch
+    for (let k = 0; k < 10; k++) noise(16.5 + k * 0.5, 0.25, 0.18, 'lowpass', 600, 120); // schwere Schritte
     return out;
   }
   function play(done) {
@@ -89,6 +91,21 @@
     for (let k = 0; k < 46; k++) { const a = k / 46 * 6.283 * 3.1, h0 = 12 + (k / 46) * 44, pts = [new T.Vector3(0, h0, 0)]; let x = 0, y = h0, z = 0; for (let i = 0; i < 9; i++) { x += Math.cos(a) * (2.4 + i * 0.3) + (Math.random() - 0.5); z += Math.sin(a) * (2.4 + i * 0.3) + (Math.random() - 0.5); y += 1.4 - i * 0.12 + (Math.random() - 0.5) * 0.6; pts.push(new T.Vector3(x, y, z)); } tree.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 30, 0.15 + Math.random() * 0.12, 5, false), treeM)); }
     for (let k = 0; k < 20; k++) { const a = k / 20 * 6.283, pts = [new T.Vector3(0, 0, 0)]; let x = 0, z = 0; for (let i = 0; i < 6; i++) { x += Math.cos(a) * 3; z += Math.sin(a) * 3; pts.push(new T.Vector3(x, -0.2 - i * 0.1, z)); } tree.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(pts), 20, 0.3, 5, false), treeM)); }
     const glowL = new T.PointLight(0x80ffb0, 0, 200, 1.5); glowL.position.set(0, 30, -50); dim.add(glowL);
+    // Energie-Funken, die um Masik wirbeln
+    const NE = 500, eGeo = new T.BufferGeometry(), eP = new Float32Array(NE * 3), eD = Array.from({ length: NE }, () => ({ a: Math.random() * 6.283, r: 2.2 + Math.random() * 6, h: Math.random() * 9, s: 0.4 + Math.random() * 1.4 }));
+    eGeo.setAttribute('position', new T.BufferAttribute(eP, 3));
+    const energy = new T.Points(eGeo, new T.PointsMaterial({ color: 0x9affc0, size: 0.09, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false })); dim.add(energy);
+    // leuchtende Ringe bei jedem Schritt
+    const rings = Array.from({ length: 10 }, () => { const m = new T.Mesh(new T.RingGeometry(0.8, 1, 48), new T.MeshBasicMaterial({ color: 0x80ffb0, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide })); m.rotation.x = -Math.PI / 2; m.userData.t = 99; dim.add(m); return m; });
+    let ringI = 0, lastStep = -1;
+    const stepRing = (x, z) => { const r = rings[ringI++ % rings.length]; r.position.set(x, 0.05, z); r.userData.t = 0; };
+    // Lichtstrahlen hinter dem Thron
+    const rays = new T.Group(); rays.position.set(0, 8, -47); dim.add(rays);
+    for (let k = 0; k < 9; k++) { const c = new T.Mesh(new T.ConeGeometry(2.2, 70, 12, 1, true), new T.MeshBasicMaterial({ color: 0x7affa8, transparent: true, opacity: 0, blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide })); c.position.y = 35; c.rotation.z = (k - 4) * 0.22; const p = new T.Group(); p.add(c); rays.add(p); }
+    // Umhang weht (Wellen in der Fläche)
+    const capeBase = cat.cape.geometry.attributes.position.array.slice();
+    const waveCape = (t, amp) => { const p = cat.cape.geometry.attributes.position; for (let i = 0; i < p.count; i++) { const x = capeBase[i * 3], y = capeBase[i * 3 + 1], k = (0.35 - y) / 0.7; p.setZ(i, Math.sin(t * 7 + y * 9 + x * 6) * amp * k + Math.sin(t * 3.1 + x * 4) * amp * 0.5 * k); } p.needsUpdate = true; cat.cape.geometry.computeVertexNormals(); };
+    let shake = 0;
     let A = null, out = null; try { L.initAudio && L.initAudio(); A = L.audio && L.audio.ctx; if (A) out = sound(A, A.currentTime + 0.05); } catch (e) { /* ohne Ton */ }
     const say = wrap.querySelector('#cfSay'), fade = wrap.querySelector('#cfFade'); requestAnimationFrame(() => { fade.style.opacity = '0'; });
     const t0 = performance.now() / 1000; let ended = false, spoke = false, fly = null, treeSaid = false, sp1 = false, sp2 = false;
@@ -134,17 +151,36 @@
         tl.position.set(cat.g.position.x, cat.g.position.y + 0.45 * cat.g.scale.x, cat.g.position.z + (dim.visible ? 0.8 : 0.35)); tl.scale.setScalar(cat.g.scale.x * 0.6);
         cam.position.set(cat.g.position.x + 3 + u * 6, cat.g.position.y + 2 + u * 3, cat.g.position.z + 6 + u * 6); cam.lookAt(cat.g.position.x, cat.g.position.y + 1.2 * cat.g.scale.x, cat.g.position.z);
       } else if (t < 21.5) {
-        // läuft auf den Thron zu und trägt die Zeitlinien mit
-        const u = (t - 16.5) / 5; S.background = new T.Color(0x0a0418); cat.g.scale.setScalar(4); cat.g.rotation.set(0, Math.PI, 0); cat.g.position.set(0, 0, lerp(0, -38, u));
-        cat.legs.forEach((l, i) => { l.rotation.x = Math.sin(t * 7 + (i % 2 ? Math.PI : 0) + (i > 1 ? Math.PI : 0)) * 0.5; }); cat.cape.rotation.x = 1.3 + Math.sin(t * 3) * 0.1;
-        tl.position.set(0, 1.6, cat.g.position.z + 3.5); tl.rotation.set(0, 0, t * 0.2); tl.scale.setScalar(2.2); tlM.opacity = 0.85; dimP.rotation.y += 0.001;
-        cam.position.set(7, 4.5, cat.g.position.z + 9); cam.lookAt(0, 2.5, cat.g.position.z - 4);
+        // steht auf und läuft aufrecht zum Thron – trägt die Zeitlinien mit beiden Pfoten vor sich
+        const u = (t - 16.5) / 5, up = ease((t - 16.5) / 0.9); S.background = new T.Color(0x0a0418);
+        cat.g.scale.setScalar(4); const z = lerp(0, -37, ease(u) * 0.35 + u * 0.65);
+        cat.g.rotation.set(up * 1.12, Math.PI, Math.sin(t * 3.5) * 0.05 * up); cat.g.position.set(Math.sin(t * 3.5) * 0.15, up * 1.05 + Math.abs(Math.sin(t * 3.5)) * 0.12, z);
+        const st = Math.sin(t * 3.5);
+        cat.legs[2].rotation.x = -up * 1.12 + st * 0.55; cat.legs[3].rotation.x = -up * 1.12 - st * 0.55;
+        cat.legs[0].rotation.x = cat.legs[1].rotation.x = lerp(0, -1.75, up) + Math.sin(t * 2) * 0.05; cat.legs[0].rotation.z = -0.25 * up; cat.legs[1].rotation.z = 0.25 * up;
+        cat.head.rotation.x = 0.95 * up; cat.tail.rotation.x = 0.6 * up + Math.sin(t * 2.5) * 0.2;
+        cat.cape.rotation.x = lerp(1.25, 0.25, up) + Math.sin(t * 3) * 0.08; waveCape(t, 0.08);
+        const stepN = Math.floor((t - 16.5) * 3.5 / Math.PI); if (stepN !== lastStep && up > 0.5) { lastStep = stepN; stepRing(cat.g.position.x, z); shake = 0.25; }
+        tl.position.set(cat.g.position.x, 3.3 + Math.sin(t * 2) * 0.1, z - 1.3); tl.rotation.set(0, t * 0.6, t * 0.25); tl.scale.setScalar(0.28 + Math.sin(t * 4) * 0.02); tlM.opacity = 0.95; dimP.rotation.y += 0.0015;
+        energy.material.opacity = Math.min(0.9, (t - 16.5) * 0.8); rays.children.forEach((r, k) => { r.children[0].material.opacity = 0.05 + 0.05 * Math.sin(t * 2 + k) + u * 0.08; r.rotation.y = t * 0.1 + k * 0.7; });
+        goldT.emissiveIntensity = 1 + Math.sin(t * 4) * 0.5 + u * 2;
+        if (t < 18) { const k = (t - 16.5) / 1.5; cam.position.set(1.2 - k * 0.6, 0.9 + k * 0.4, z - 7.5 + k * 1.2); cam.lookAt(cat.g.position.x, 3.4, z); }
+        else if (t < 19.5) { const k = (t - 18) / 1.5; cam.position.set(6.5 - k * 1.5, 3.6, z - 3.2); cam.lookAt(cat.g.position.x, 3.2, z - 0.8); }
+        else { const k = ease((t - 19.5) / 2); cam.position.set(lerp(3, 0, k), lerp(4, 16, k), z + lerp(7, 16, k)); cam.lookAt(0, lerp(4, 7, k), -42); }
       } else if (t < 25) {
-        // setzt sich auf den Thron – die Zeitlinien wachsen zum Baum des Wissens
-        const u = (t - 21.5) / 3.5; cat.g.position.set(0, 3.1, -44 + 0.4); cat.g.rotation.set(0, 0, 0); cat.g.scale.setScalar(4); cat.legs.forEach((l) => { l.rotation.x = -0.6; });
-        tl.position.set(0, 4.8, -43); tl.scale.setScalar(2.2 * (1 - ease(u))); tree.scale.setScalar(Math.max(0.01, ease(u))); glowL.intensity = ease(u) * 3; tree.rotation.y += 0.002;
-        cam.position.set(lerp(30, 22, u), lerp(10, 30, u), -10); cam.lookAt(0, lerp(6, 26, u), -46);
-        if (u > 0.2 && !treeSaid) { treeSaid = true; sky2.set(0x0a0418); }
+        // dreht sich um, setzt sich, hebt beide Pfoten – Lichtausbruch, die Zeitlinien wachsen zum Baum des Wissens
+        const sit = ease((t - 21.5) / 1.1), burst = t - 22.7;
+        cat.g.position.set(0, lerp(1.05, 3.9, sit), lerp(-37, -43.2, sit)); cat.g.rotation.set(lerp(1.12, -1.0, sit), lerp(Math.PI, Math.PI * 2, sit), 0); cat.g.scale.setScalar(4);
+        cat.legs[2].rotation.x = cat.legs[3].rotation.x = lerp(-1.12, -1.4, sit);
+        const raise = ease((t - 22.2) / 0.5); cat.legs[0].rotation.x = cat.legs[1].rotation.x = lerp(-1.75, -2.9, raise); cat.legs[0].rotation.z = -0.25 - raise * 0.35; cat.legs[1].rotation.z = 0.25 + raise * 0.35;
+        cat.head.rotation.x = lerp(0.95, 0.9, sit); cat.cape.rotation.x = 0.4 + Math.sin(t * 3) * 0.1; waveCape(t, 0.1 + (burst > 0 && burst < 1.5 ? 0.15 : 0));
+        if (burst > 0 && !treeSaid) { treeSaid = true; sky2.set(0x0a0418); flashOn(); shake = 1.2; for (let k = 0; k < rings.length; k++) setTimeout(() => stepRing(0, -43), k * 90); }
+        tl.position.set(0, 4.8 + Math.max(0, burst) * 6, -43); tl.scale.setScalar(2.2 * (burst > 0 ? Math.max(0, 1 - burst * 0.8) : 1)); tl.rotation.z += 0.03;
+        const g2 = ease(burst / 2); tree.scale.setScalar(Math.max(0.01, g2)); glowL.intensity = g2 * 4; tree.rotation.y += 0.003;
+        rays.children.forEach((r, k) => { r.children[0].material.opacity = (burst > 0 ? 0.25 : 0.1) + 0.06 * Math.sin(t * 3 + k); r.rotation.y = t * 0.15 + k * 0.7; }); goldT.emissiveIntensity = 3 + Math.sin(t * 6);
+        energy.material.opacity = 0.9;
+        if (t < 22.7) { const k = (t - 21.5) / 1.2; cam.position.set(lerp(6, 3, k), lerp(6, 5, k), -32 + k * 2); cam.lookAt(0, 4.5, -43); }
+        else { const k = ease((t - 22.7) / 2.3); cam.position.set(lerp(14, 26, k), lerp(8, 30, k), lerp(-22, -8, k)); cam.lookAt(0, lerp(7, 26, k), -46); }
       } else {
         // Nahaufnahme – das Versprechen
         const u = t - 25; tl.visible = false; tree.scale.setScalar(1); tree.rotation.y += 0.002;
@@ -153,8 +189,15 @@
         if (!sp1) { sp1 = true; talk('🐈‍⬛ „Ich beschütze dich für immer.“', 'Ich beschütze dich für immer.'); }
         if (u > 2.4 && !sp2) { sp2 = true; talk('„Geh zu Pusha beim Turm und beantworte seine 6 Fragen – dann bekommst du MASIKS SCHUTZ:<br>kein Schaden mehr und von Pusha den Zeitstein – das Auge des Agamotto.“', 'Geh zu Pusha beim Turm und beantworte seine sechs Fragen. Dann bekommst du meinen Schutz. Du nimmst keinen Schaden mehr, und Pusha gibt dir den Zeitstein, das Auge des Agamotto.'); }
       }
+      if (dim.visible) {
+        const cx = cat.g.position.x, cz = cat.g.position.z, burst = t - 22.7;
+        for (let i = 0; i < NE; i++) { const d = eD[i]; d.a += 0.016 * d.s * (burst > 0 && burst < 3 ? 3 : 1); const rr = d.r * (burst > 0 ? 1 + Math.min(2, burst) * 0.8 : 1), hh = (d.h + t * d.s * 1.2) % 10; eP[i * 3] = cx + Math.cos(d.a) * rr; eP[i * 3 + 1] = hh + (burst > 0 ? Math.min(3, burst) * d.s * 3 : 0); eP[i * 3 + 2] = cz + Math.sin(d.a) * rr; }
+        eGeo.attributes.position.needsUpdate = true;
+        rings.forEach((r) => { r.userData.t += 0.016; const k = r.userData.t; r.material.opacity = k < 1 ? 0.8 * (1 - k) : 0; r.scale.setScalar(1 + k * 9); });
+      }
+      if (shake > 0) { shake = Math.max(0, shake - 0.03); cam.position.x += (Math.random() - 0.5) * shake * 0.6; cam.position.y += (Math.random() - 0.5) * shake * 0.6; }
       R.render(S, cam); if (L._cfSnap) L._cfSnap(t, R.domElement);
-      if (t > D) { end(); return; }
+      if (t > D && (!sp2 || !window.speechSynthesis || !speechSynthesis.speaking || t > D + 25)) { end(); return; }
       requestAnimationFrame(frame);
     }
     frame();
