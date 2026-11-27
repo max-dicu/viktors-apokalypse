@@ -69,4 +69,20 @@
     spd: [2.6, 7.5, 11.5], hp: 70, r: 0.5, reach: 2.2, grab: 2, atk: 0.6, wind: 0.3, dmg: 22, veh: 20, knock: 8, up: 4, view: 240,
     cause: 'Bau hat dich angegrinst … und dann gebissen', voice: (p) => giggle(p, 0.14), idle: (p) => giggle(p, 0.06), hit: [[0.6, 0.6, 1], [0.95, 0.4, 2]],
   };
+  // Karte: mit dem Admin-Skin siehst du alle Baus als lila Punkte
+  const ome = L.mapExtra;
+  L.mapExtra = function (g, toM, big) {
+    if (ome) ome(g, toM, big);
+    if (!(L.suitOn && L.suitOn()) || !L.ents) return;
+    const P = L.player, w = L.worldOf ? L.worldOf(P.x, P.z) : 'home';
+    for (const m of L.ents.monsters) {
+      if (m.dead || m.kind !== 'bau') continue;
+      if (L.worldOf && L.worldOf(m.x, m.z) !== w) continue;
+      if (!big && (Math.abs(m.x - P.x) > 200 || Math.abs(m.z - P.z) > 200)) continue;
+      const [x, y] = toM(m.x, m.z), r = big ? 5 : 3.5;
+      g.fillStyle = '#1a0a2a'; g.beginPath(); g.arc(x, y, r + 1.5, 0, 6.283); g.fill();
+      g.fillStyle = '#b48cff'; g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill();
+      if (big) { g.fillStyle = '#fff'; g.fillRect(x - 2, y - 1.5, 1.5, 1.5); g.fillRect(x + 0.5, y - 1.5, 1.5, 1.5); }
+    }
+  };
 })();

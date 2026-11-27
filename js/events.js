@@ -121,7 +121,9 @@
     return true;
   };
   // Karte: Eier nur für den Admin
+  const omeEgg = L.mapExtra;
   L.mapExtra = function (g, toM, big) {
+    if (omeEgg) omeEgg(g, toM, big);
     if (!eggs || !(L.suitOn && L.suitOn())) return;
     const f = found(); g.font = (big ? 18 : 14) + 'px sans-serif';
     for (const e of eggs) { if (f.includes(e.id)) continue; if (!big && (Math.abs(e.x - P.x) > 200 || Math.abs(e.z - P.z) > 200)) continue; const [x, y] = toM(e.x, e.z); g.fillText('🥚', x - 7, y + 6); }
