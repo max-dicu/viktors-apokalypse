@@ -1,20 +1,14 @@
 'use strict';
-// Masiks Schutz: nach 100 getöteten Monstern (über alle Runden) nimmst du keinen Schaden mehr und bekommst
+// Masiks Schutz: wer Pushas 6 Fragen richtig beantwortet, nimmt in DIESER Runde keinen Schaden mehr und bekommt
 // das „Auge des Agamotto“ – einen mächtigeren Zeitstein: Zeit anhalten, zurückspulen (heilen), grüne Zauberkreise.
 (function () {
   const L = window.L, T = THREE, P = L.player, GOAL = 100;
-  const has = () => !!(L.save && L.save.massig);
+  const has = () => !!L._massigRound; // gilt nur für die aktuelle Runde
   L.massigProgress = () => Math.min(GOAL, (L.save && L.save.massigKills) || 0);
-  L.onMonsterKill = function () {
-    if (!L.save || has()) return;
-    L.save.massigKills = (L.save.massigKills || 0) + 1; const n = L.save.massigKills;
-    if (n % 10 === 0 && n < GOAL) L.msg('🐈‍⬛ Masik: ' + n + ' / ' + GOAL + ' Monster – sein Schutz kommt näher …', 2500);
-    if (n >= GOAL) unlock();
-    L.persist && L.persist();
-  };
+  L.onMonsterKill = function () { /* Schutz gibt es jetzt nur noch über Pushas Fragen */ };
   function unlock() {
-    L.save.massig = 1; L.persist && L.persist();
-    L.banner('🐈‍⬛ MASIKS SCHUTZ', 'Du nimmst keinen Schaden mehr – und du hast das Auge des Agamotto!');
+    L._massigRound = true;
+    L.banner('🐈‍⬛ MASIKS SCHUTZ', 'Für diese Runde: kein Schaden – und das Auge des Agamotto!');
     L.tn && L.tn({ f: 300, fTo: 1200, dur: 1.2, type: 'triangle', vol: 0.25 });
     giveEye(); ring(P.x, (P.y || 0) + 1.2, P.z, 6, 1.2, true);
   }
@@ -25,7 +19,8 @@
     let i = P.hot.findIndex((h) => !h); if (i < 0) i = P.hot.length - 1; P.hot[i] = { type: 'agamotto', count: 1, mag: 1 };
     setTimeout(() => L.msg('🟢 Auge des Agamotto auf Taste ' + (i + 1) + ' – Schuss: Zeit anhalten · alle Gegner frieren ein, du wirst geheilt', 6000), 1500);
   }
-  const ohs = L.heroStart; L.heroStart = function () { if (ohs) ohs(); if (has()) setTimeout(giveEye, 200); };
+  L.grantMassig = unlock;
+  const ohs = L.heroStart; L.heroStart = function () { L._massigRound = false; if (ohs) ohs(); }; // jede Runde neu bei Pusha beantworten
   // Zauberkreis-Textur (grüne Runen wie Doctor Strange)
   let rTex = null;
   function runeTex() {
