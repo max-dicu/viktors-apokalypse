@@ -3117,6 +3117,7 @@
     place('flieger', NK);
     place('walross', NK * 3);
     place('marsianer', Math.round(NK / 2));
+    place('bau', NK);
     L.frenzy = false; smokes.length = 0; L.towerRestore(); clearCyls(); L.clearNature(); L.round.cylT = L.rand(60, 90);
     for (let i = 0; i < Math.max(6, Math.round(20 * L.md.count)); i++) {
       const [x, z] = farSpot(400); spawnWalker(x, z);

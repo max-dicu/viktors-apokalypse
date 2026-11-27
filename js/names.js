@@ -5,7 +5,7 @@
   const MON = [
     ['viktor', 'Viktor', '🧟'], ['daniel', 'Daniel', '👮'], ['rollerviktor', 'Roller-Viktor', '🛴'], ['capydaniel', 'Capybara-Daniel', '🦫'], ['langer', 'Gesichtslose', '👤'],
     ['rufer', 'Rufer', '📣'], ['blockling', 'Blockling', '🧱'], ['schwelle', 'Schwellengänger', '🚪'], ['greifer', 'Greifer', '🦾'], ['marsianer', 'Marsianer', '👽'],
-    ['starrende', 'Starrende', '👁️'], ['walross', 'Walross', '🦭'], ['flieger', 'Flugmaschine', '🛸']
+    ['starrende', 'Starrende', '👁️'], ['walross', 'Walross', '🦭'], ['flieger', 'Flugmaschine', '🛸'], ['bau', 'Bau', '🟣']
   ].map(([k, n, e]) => ({ k, n, e, cat: 'Monster', price: Math.round((200 + ((L.MK && L.MK[k] && L.MK[k].hp) || 150)) / 50) * 50, build: () => L.MK[k].build() }));
   const BOS = [
     ['BIG MAMA', '👹', 3000], ['GIANT WALRUS', '🦭', 2000, () => L.buildWalross()], ['GIANT VIKTOR', '🧟', 2000, () => L.buildViktor()], ['GIGA-CAPY', '🦫', 2200, () => L.buildGigaCapy()],

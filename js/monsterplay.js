@@ -5,7 +5,7 @@
 (function () {
   const L = window.L, T = THREE, P = L.player;
   const KINDS = [['viktor', '🧟 Viktor'], ['daniel', '👮 Daniel'], ['langer', '🦒 Langer Viktor'], ['rollerviktor', '🛴 Roller-Viktor'], ['capydaniel', '🦫 Capybara-Daniel'], ['walross', '🦭 Walross'],
-    ['rufer', '📢 Der Rufer'], ['starrende', '👁️ Der Gesichtslose'], ['blockling', '🧊 Blockling'], ['schwelle', '🚪 Schwellengänger'], ['greifer', '🦾 Greifer'], ['marsianer', '👽 Marsianer']];
+    ['rufer', '📢 Der Rufer'], ['starrende', '👁️ Der Gesichtslose'], ['blockling', '🧊 Blockling'], ['schwelle', '🚪 Schwellengänger'], ['greifer', '🦾 Greifer'], ['marsianer', '👽 Marsianer'], ['bau', '🟣 Bau']];
   L.MONSTER_KINDS = KINDS;
   const MK = () => L.MK || {};
   const kindOf = () => { const k = L.save && L.save.char && L.save.char.monsterKind; return k && MK()[k] ? k : null; };
