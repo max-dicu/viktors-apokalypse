@@ -151,7 +151,7 @@
         const hy = 3.1 + 0.45 * 4 + 0.5; cam.position.set(0.9, hy + 0.9, -44 + 6.5 - Math.min(1, u * 0.4) * 1.5); cam.lookAt(0, hy + 0.3, -44);
         say.style.bottom = 'auto'; say.style.top = '8%';
         if (!sp1) { sp1 = true; talk('🐈‍⬛ „Ich beschütze dich für immer.“', 'Ich beschütze dich für immer.'); }
-        if (u > 2.4 && !sp2) { sp2 = true; talk('„Töte 100 Monster – dann bekommst du MASIKS SCHUTZ:<br>kein Schaden mehr und den Zeitstein – das Auge des Agamotto.“', 'Töte hundert Monster. Dann bekommst du meinen Schutz. Du nimmst keinen Schaden mehr, und du bekommst den Zeitstein.'); }
+        if (u > 2.4 && !sp2) { sp2 = true; talk('„Geh zu Pusha beim Turm und beantworte seine 6 Fragen – dann bekommst du MASIKS SCHUTZ:<br>kein Schaden mehr und von Pusha den Zeitstein – das Auge des Agamotto.“', 'Geh zu Pusha beim Turm und beantworte seine sechs Fragen. Dann bekommst du meinen Schutz. Du nimmst keinen Schaden mehr, und Pusha gibt dir den Zeitstein, das Auge des Agamotto.'); }
       }
       R.render(S, cam); if (L._cfSnap) L._cfSnap(t, R.domElement);
       if (t > D) { end(); return; }

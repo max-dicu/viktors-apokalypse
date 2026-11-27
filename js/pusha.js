@@ -121,8 +121,8 @@
         if (order[+a] === QS[qi][1]) {
           L.tn && L.tn({ f: 520, fTo: 880, dur: 0.18, type: 'triangle', vol: 0.18 });
           qi++; if (qi < QS.length) { ask(); return; }
-          frame('<div style="font-size:18px;margin:8px 0 12px">„Du kennst die Geschichten. Masik wird dich in dieser Runde beschützen.“</div><div style="color:#7dffa0;font-weight:bold">🐈‍⬛ MASIKS SCHUTZ – kein Schaden + Auge des Agamotto (nur diese Runde)</div>');
-          speak('Du kennst die Geschichten. Masik wird dich in dieser Runde beschützen.');
+          frame('<div style="font-size:18px;margin:8px 0 12px">„Du kennst die Geschichten. Masik wird dich in dieser Runde beschützen – und von mir bekommst du das Auge des Agamotto.“</div><div style="color:#7dffa0;font-weight:bold">🐈‍⬛ MASIKS SCHUTZ – kein Schaden<br>🟢 Von Pusha: Auge des Agamotto (nur diese Runde)</div>');
+          speak('Du kennst die Geschichten. Masik wird dich in dieser Runde beschützen. Und von mir bekommst du das Auge des Agamotto.');
           if (L.grantMassig) L.grantMassig();
         } else {
           L.tn && L.tn({ f: 300, fTo: 120, dur: 0.35, type: 'sawtooth', vol: 0.15 });
@@ -142,12 +142,15 @@
   L.crateInteract = function () { if (!near()) return oci ? oci() : false; open(); return true; };
 
   // Hinweis zu Rundenbeginn
-  const ohs = L.heroStart; L.heroStart = function () { if (ohs) ohs(); setTimeout(() => { if (L.state === 'game') L.msg('🐕 Pusha wartet beim Turm (blaues Licht) – beantworte seine 6 Fragen für Masiks Schutz in dieser Runde.', 7000); }, 9000); };
+  const remind = () => { if (L.state === 'game' && !passed()) L.msg('🐈‍⬛ Masik: „Geh zu Pusha beim Turm (blaues Licht)! Beantworte seine 6 Fragen – dann beschütze ich dich, und Pusha gibt dir das Auge des Agamotto.“', 8000); };
+  let remindT = 0;
+  const ohs = L.heroStart; L.heroStart = function () { if (ohs) ohs(); remindT = 170; setTimeout(remind, 9000); };
 
   // ---------- jedes Bild ----------
   let shakeT = 0;
   L.updatePusha = function (dt) {
     if (L.state !== 'game') return;
+    if (!passed()) { remindT -= dt; if (remindT <= 0) { remindT = 180; remind(); } }
     if (!D) { try { place(); } catch (e) { console.error(e); return; } }
     const t = performance.now() / 1000, d = Math.hypot(P.x - spot.x, P.z - spot.z), show = d < 900;
     D.root.visible = show; beam.visible = show && !passed() && d > 25; sign.visible = show && !passed();
@@ -161,5 +164,15 @@
     D.head.rotation.z = Math.sin(t * 0.7) * 0.06; D.head.rotation.x = Math.sin(t * 1.1) * 0.03;
     sign.position.set(spot.x, 4.9 + Math.sin(t * 2) * 0.15, spot.z);
     beam.material.opacity = 0.16 + Math.sin(t * 2) * 0.06;
+  };
+  // Karte: mit dem Admin-Skin wird Pusha angezeigt
+  const ome = L.mapExtra;
+  L.mapExtra = function (g, toM, big) {
+    if (ome) ome(g, toM, big);
+    if (!spot || !(L.suitOn && L.suitOn()) || (L.worldOf && L.worldOf(P.x, P.z) !== 'home')) return;
+    const [x, y] = toM(spot.x, spot.z);
+    g.font = (big ? 22 : 15) + 'px sans-serif'; g.textAlign = 'center'; g.fillStyle = '#fff'; g.fillText('🐕', x, y + 6);
+    if (big) { g.font = 'bold 12px sans-serif'; g.fillStyle = '#000'; g.fillText('Pusha', x + 1, y + 21); g.fillStyle = '#ffd24a'; g.fillText('Pusha', x, y + 20); }
+    g.textAlign = 'left';
   };
 })();
