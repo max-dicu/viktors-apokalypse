@@ -42,15 +42,15 @@
   function newCenter(f, far) { const p = P(), a = Math.random() * 6.283, d = far ? 260 + Math.random() * 120 : 40 + Math.random() * 220; f.cx = p.x + Math.sin(a) * d; f.cz = p.z + Math.cos(a) * d; }
   function build() {
     built = true;
-    for (let i = 0; i < 4; i++) {
-      const cols = BIRD_COLS[i % BIRD_COLS.length], n = 6 + Math.floor(Math.random() * 5), f = { members: [], r: 25 + Math.random() * 35, ang: Math.random() * 6.283, spd: (Math.random() < 0.5 ? -1 : 1) * (0.18 + Math.random() * 0.12), h: 28 + Math.random() * 40 };
+    for (let i = 0; i < 14; i++) {
+      const cols = BIRD_COLS[i % BIRD_COLS.length], n = 6 + Math.floor(Math.random() * 5), f = { members: [], r: 25 + Math.random() * 35, ang: Math.random() * 6.283, spd: (Math.random() < 0.5 ? -1 : 1) * (0.18 + Math.random() * 0.12), h: 22 + Math.random() * 55 };
       newCenter(f);
       for (let k = 0; k < n; k++) { const b = buildBird(cols); L.scene.add(b.root); f.members.push({ b, ox: (k % 2 ? 1 : -1) * Math.ceil(k / 2) * 2.2, oz: -Math.ceil(k / 2) * 2.4, oy: (Math.random() - 0.5) * 1.5, ph: Math.random() * 6.283, fs: 9 + Math.random() * 4 }); }
       flocks.push(f);
     }
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 18; i++) {
       const w = buildFlyWalrus(); L.scene.add(w.root);
-      const f = { w, r: 45 + Math.random() * 60, ang: Math.random() * 6.283, spd: (Math.random() < 0.5 ? -1 : 1) * (0.07 + Math.random() * 0.05), h: 45 + Math.random() * 45, ph: Math.random() * 6.283 };
+      const f = { w, r: 45 + Math.random() * 60, ang: Math.random() * 6.283, spd: (Math.random() < 0.5 ? -1 : 1) * (0.07 + Math.random() * 0.05), h: 35 + Math.random() * 70, ph: Math.random() * 6.283 };
       newCenter(f); walrusses.push(f);
     }
   }
