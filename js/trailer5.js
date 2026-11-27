@@ -180,7 +180,10 @@
       try { L.renderer.compile(L.scene, L.camera); } catch (e) { /* egal */ }
       if (P.rig && P.rig.head) P.rig.head.visible = true; tp(SP.m[0], SP.m[1]); pcam = { x: SP.m[0], y: 300, z: SP.m[1], lx: SP.m[0], ly: 0, lz: SP.m[1] + 1 };
       U.prep.innerHTML = '<div style="font-size:30px">✅ Bereit!</div><div>Starte jetzt die Bildschirmaufnahme (Windows + Alt + R)</div><div style="font-size:18px;opacity:.75">… und dann hier klicken / tippen</div>';
+      const tapGo = (e) => { if (e && e.cancelable) e.preventDefault(); U.prep.onclick && U.prep.onclick(); };
+      U.prep.addEventListener('touchend', tapGo, { once: true, passive: false }); U.prep.addEventListener('pointerup', tapGo, { once: true });
       U.prep.onclick = () => {
+        if (U.prepStarted) return; U.prepStarted = true;
         U.prep.remove(); U.dip.style.opacity = '1';
         U.intro.innerHTML = '<div id="t5a" style="font:600 clamp(14px,2.6vw,26px) Georgia,serif;letter-spacing:8px;color:#d8d0b8;opacity:0;transition:opacity .6s">MAXI D. STUDIO PRESENTS</div><div id="t5b" style="font:900 clamp(40px,9vw,110px) Impact,Arial Black;letter-spacing:4px;color:#e8e2cc;text-shadow:0 0 30px rgba(200,40,40,.6);opacity:0;transform:scale(1.25);transition:opacity .7s,transform 1.6s ease-out;margin-top:16px">VIKTORS APOKALYPSE</div>';
         setTimeout(() => { const a = U.intro.querySelector('#t5a'); if (a) a.style.opacity = 1; }, 50); setTimeout(() => { const a = U.intro.querySelector('#t5a'); if (a) a.style.opacity = 0; }, 1000); setTimeout(() => { const b = U.intro.querySelector('#t5b'); if (b) { b.style.opacity = 1; b.style.transform = 'scale(1)'; } }, 1100);
@@ -197,7 +200,7 @@
     if (!open && (!(L.heroToken && L.heroToken('marlon')) || (L.save && L.save.trailer5Replay))) return; // noch genau EIN weiteres Mal
     ['btnTrailer', 'btnTrailer2', 'btnTrailer3', 'btnTrailer4'].forEach((id) => { const o = document.getElementById(id); if (o) o.remove(); });
     const b = document.createElement('button'); b.className = 'btn'; b.id = 'btnTrailer5'; b.textContent = open ? '🎬 TikTok-Trailer ansehen' : '🎬 TikTok-Trailer 5 (nur 1×)'; b.style.cssText = 'background:linear-gradient(90deg,#ff2a6a,#25f4ee);color:#000;font-weight:900';
-    b.onclick = () => { if (Date.now() > OPEN_UNTIL && !(L.heroToken && L.heroToken('marlon'))) { b.remove(); return; } if (!confirm('Trailer 5 (ca. 36 Sek.) läuft nur EIN Mal. Erst wird alles vorgeladen, dann startest du die Aufnahme und tippst zum Start. Esc = abbrechen (zählt dann nicht).')) return; start(); };
+    b.onclick = () => { if (Date.now() > OPEN_UNTIL && !(L.heroToken && L.heroToken('marlon'))) { b.remove(); return; } if (Date.now() < OPEN_UNTIL) { start(); return; } if (!confirm('Trailer 5 (ca. 36 Sek.) läuft nur EIN Mal. Erst wird alles vorgeladen, dann startest du die Aufnahme und tippst zum Start. Esc = abbrechen (zählt dann nicht).')) return; start(); };
     c.before(b);
   }
   L.playTrailer5 = start;
