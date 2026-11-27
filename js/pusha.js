@@ -8,8 +8,8 @@
     ['Wofür ist Pusha bekannt?', 'Pusha Blue', ['Ein Hund zu sein', 'Nicht mächtig zu sein']],
     ['Wie viele Walrosse gibt es?', '1000 – fast unmöglich zu zählen in einem See', ['2', 'Eine Million']],
     ['Wer zähmt die Walrosse – und wie?', 'Nina mit ihrem Besen', ['Nina mit ihrem Stock', 'Ruslan']],
-    ['Wer war der erste Charakter des Nasna-Universums?', 'Der Verschlucker', ['Das Walross', 'Die wahre Carolina']],
-    ['Welche Sinasina-Theorie wurde Hamaya erzählt?', 'Die der wahren Carolina', ['Die des Walrosses', 'Die von Pusha']],
+    ['Wer war der erste Charakter des Nina-Sina-Sina-Universums?', 'Der Verschlucker', ['Das Walross', 'Die wahre Carolina']],
+    ['Welche Nina-Sina-Sina-Theorie wurde Herrn Meier erzählt?', 'Die der wahren Carolina', ['Die des Walrosses', 'Die von Pusha']],
   ];
   const DARK = new T.Color('#2b2c30'), MID = new T.Color('#404147'), LIGHT = new T.Color('#5d5e66'), PALE = new T.Color('#8a8b93');
   const mat = (c, r) => new T.MeshStandardMaterial({ color: c, roughness: r == null ? 1 : r, metalness: 0 });
