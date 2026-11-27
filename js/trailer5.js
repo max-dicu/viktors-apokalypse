@@ -195,6 +195,7 @@
   }
   const OPEN_UNTIL = 1795804200000; // 20 Minuten lang für ALLE im Menü (danach wieder nur wie vorher)
   function addBtn() {
+    return; // TikTok-Trailer-Buttons sind dauerhaft aus
     const c = document.getElementById('btnPlay'); if (!c || document.getElementById('btnTrailer5')) return;
     const open = Date.now() < OPEN_UNTIL;
     if (!open && (!(L.heroToken && L.heroToken('marlon')) || (L.save && L.save.trailer5Replay))) return; // noch genau EIN weiteres Mal

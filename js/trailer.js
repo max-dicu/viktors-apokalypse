@@ -158,6 +158,7 @@
   L.playTrailer = play;
   // Knopf im Menü – nur auf diesem Gerät (Krücken-Code), nur einmal
   function addBtn() {
+    return; // TikTok-Trailer-Buttons sind dauerhaft aus
     const c = document.getElementById('btnPlay'); if (!c || document.getElementById('btnTrailer')) return;
     if (!(L.heroToken && L.heroToken('marlon')) || (L.save && L.save.trailerSeen)) return;
     const b = document.createElement('button'); b.className = 'btn'; b.id = 'btnTrailer'; b.textContent = '🎬 TikTok-Trailer (nur 1×)'; b.style.cssText = 'background:linear-gradient(90deg,#ff2a6a,#25f4ee);color:#000;font-weight:900';

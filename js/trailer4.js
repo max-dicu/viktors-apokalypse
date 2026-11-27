@@ -160,6 +160,7 @@
   }
   // Knopf im Menü – nur auf diesem Gerät, einmalig
   function addBtn() {
+    return; // TikTok-Trailer-Buttons sind dauerhaft aus
     const c = document.getElementById('btnPlay'); if (!c || document.getElementById('btnTrailer4')) return;
     if (!(L.heroToken && L.heroToken('marlon')) || (L.save && L.save.trailer4Seen)) return;
     ['btnTrailer', 'btnTrailer2', 'btnTrailer3'].forEach((id) => { const o = document.getElementById(id); if (o) o.remove(); });
