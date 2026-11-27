@@ -51,28 +51,32 @@
     winterTheme(A, t0, out, 16.2, 26.2);
     return out;
   }
-  // Eigene Komposition (kein fremder Song): ruhig, verträumt, „slowed“ – nur während Masik zum Thron geht
+  // Mystische Klangwelt (eigene Klänge): tiefes Dröhnen, Geister-Chor, Wind, Funkeln, Wusch-Geräusche, Anschwellen vor dem Lichtausbruch
   function winterTheme(A, t0, dest, from, to) {
-    const bus = A.createGain(), lp = A.createBiquadFilter(), dry = A.createGain(), wet = A.createGain(), rv = A.createConvolver();
-    lp.type = 'lowpass'; lp.frequency.value = 3200; lp.Q.value = 0.4;
-    const ir = A.createBuffer(2, A.sampleRate * 3.5, A.sampleRate); for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2.2); } rv.buffer = ir;
-    dry.gain.value = 0.65; wet.gain.value = 0.55; bus.connect(lp); lp.connect(dry); lp.connect(rv); rv.connect(wet); dry.connect(dest); wet.connect(dest);
-    // sauber ein- und ausblenden
-    const T0 = t0 + from, T1 = t0 + to; bus.gain.setValueAtTime(0.0001, T0); bus.gain.exponentialRampToValueAtTime(0.9, T0 + 1.8); bus.gain.setValueAtTime(0.9, T1 - 2.6); bus.gain.exponentialRampToValueAtTime(0.0001, T1);
-    const det = -55; // leicht tiefer gestimmt = „slowed“-Gefühl
-    const tone = (f, s, d, v, type, attack) => { const o = A.createOscillator(), g = A.createGain(); o.type = type || 'sine'; o.frequency.value = f; o.detune.value = det; g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(v, s + (attack || 0.01)); g.gain.exponentialRampToValueAtTime(0.0001, s + d); o.connect(g); g.connect(bus); o.start(s); o.stop(s + d + 0.1); };
-    // Spieluhr-Glocke: Grundton + leiser Oberton, schnelles Anschlagen, langes Ausklingen
-    const bell = (f, s, v) => { tone(f, s, 2.6, v, 'sine', 0.005); tone(f * 2, s, 1.2, v * 0.35, 'sine', 0.005); tone(f * 3.01, s, 0.6, v * 0.12, 'sine', 0.005); };
-    // warme Fläche (zwei leicht verstimmte Dreiecke pro Ton)
-    const pad = (fs, s, d, v) => fs.forEach((f) => { tone(f, s, d, v, 'triangle', 1.2); tone(f * 1.004, s, d, v * 0.7, 'triangle', 1.4); });
-    const B = 60 / 66; // langsames Tempo
-    const chords = [[130.8, 196, 246.9, 329.6], [110, 164.8, 261.6, 329.6], [87.3, 174.6, 220, 329.6], [98, 146.8, 246.9, 293.7]]; // C(maj7) – Am(add9) – F(maj7) – G(6)
-    const mel = [[659.3, 0], [587.3, 1], [523.3, 1.5], [587.3, 2.5], [392, 4], [440, 5], [523.3, 5.5], [493.9, 6.5], [440, 8], [523.3, 9], [659.3, 9.5], [587.3, 10.5], [493.9, 12], [440, 13], [392, 13.5], [440, 14.5]]; // eigene Melodie
-    for (let bar = 0; bar * 4 * B < to - from; bar++) {
-      const s = T0 + bar * 4 * B, ch = chords[bar % 4]; pad(ch, s, 4 * B + 1.5, 0.035); tone(ch[0] / 2, s, 4 * B, 0.09, 'sine', 0.3);
-      for (const [f, beat] of mel) if (beat >= (bar % 4) * 4 && beat < (bar % 4) * 4 + 4) { const at = s + (beat - (bar % 4) * 4) * B; if (at < T1 - 1) bell(f, at, 0.07); }
-      for (let k = 0; k < 4; k++) { const at = s + k * B; if (at < T1 - 1) bell(ch[(k + 1) % 4] * 2, at + B * 0.5, 0.018); } // leise Arpeggio-Glöckchen
-    }
+    const bus = A.createGain(), dry = A.createGain(), wet = A.createGain(), rv = A.createConvolver();
+    const ir = A.createBuffer(2, A.sampleRate * 5, A.sampleRate); for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 1.8); } rv.buffer = ir;
+    dry.gain.value = 0.5; wet.gain.value = 0.8; bus.connect(dry); bus.connect(rv); rv.connect(wet); dry.connect(dest); wet.connect(dest);
+    const T0 = t0 + from, T1 = t0 + to, D = to - from;
+    bus.gain.setValueAtTime(0.0001, T0); bus.gain.exponentialRampToValueAtTime(0.9, T0 + 2.2); bus.gain.setValueAtTime(0.9, T1 - 2.8); bus.gain.exponentialRampToValueAtTime(0.0001, T1);
+    const nb = A.createBuffer(1, A.sampleRate * 4, A.sampleRate), nd = nb.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    const lfo = (target, rate, depth, s, d) => { const o = A.createOscillator(), g = A.createGain(); o.frequency.value = rate; g.gain.value = depth; o.connect(g); g.connect(target); o.start(s); o.stop(s + d); };
+    // 1) tiefes Dröhnen mit langsam wanderndem Filter
+    for (const [f, v] of [[55, 0.16], [55.6, 0.12], [82.4, 0.07]]) { const o = A.createOscillator(), fl = A.createBiquadFilter(), g = A.createGain(); o.type = 'sawtooth'; o.frequency.value = f; fl.type = 'lowpass'; fl.frequency.value = 240; fl.Q.value = 3; lfo(fl.frequency, 0.12, 140, T0, D); g.gain.value = v; o.connect(fl); fl.connect(g); g.connect(bus); o.start(T0); o.stop(T1 + 0.2); }
+    // 2) Geister-Chor: „Aah“-Stimmen (Dreiecke durch Vokal-Filter, mit Vibrato), wechselnde mystische Akkorde
+    const chords = [[146.8, 220, 293.7, 349.2], [130.8, 196, 261.6, 311.1], [116.5, 174.6, 233.1, 293.7], [138.6, 207.7, 277.2, 329.6]];
+    const len = D / chords.length;
+    chords.forEach((ch, i) => { const s = T0 + i * len; ch.forEach((f, k) => { for (const det of [-6, 7]) { const o = A.createOscillator(), f1 = A.createBiquadFilter(), f2 = A.createBiquadFilter(), g = A.createGain(); o.type = 'triangle'; o.frequency.value = f; o.detune.value = det; lfo(o.frequency, 4.5 + k * 0.3, f * 0.006, s, len + 1.5);
+      f1.type = 'bandpass'; f1.frequency.value = 750; f1.Q.value = 4; f2.type = 'bandpass'; f2.frequency.value = 1150; f2.Q.value = 5; const m = A.createGain(); m.gain.value = 1; o.connect(f1); o.connect(f2); f1.connect(m); f2.connect(m); m.connect(g);
+      g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.05 / (k + 1) + 0.02, s + 1.3); g.gain.setValueAtTime(0.05 / (k + 1) + 0.02, s + len - 0.2); g.gain.exponentialRampToValueAtTime(0.0001, s + len + 1.4); g.connect(bus); o.start(s); o.stop(s + len + 1.5); } }); });
+    // 3) Wind: rauschendes Band, das langsam auf und ab weht
+    { const n = A.createBufferSource(), fl = A.createBiquadFilter(), g = A.createGain(); n.buffer = nb; n.loop = true; fl.type = 'bandpass'; fl.frequency.value = 500; fl.Q.value = 1.2; lfo(fl.frequency, 0.17, 380, T0, D); g.gain.value = 0.07; lfo(g.gain, 0.23, 0.04, T0, D); n.connect(fl); fl.connect(g); g.connect(bus); n.start(T0); n.stop(T1 + 0.2); }
+    // 4) Funkeln: hohe, gläserne Töne mit langem Nachhall
+    for (let k = 0; k < Math.floor(D * 2.2); k++) { const s = T0 + 0.6 + Math.random() * (D - 2.5), f = [1174.7, 1396.9, 1760, 2093, 2349.3, 2793.8][Math.floor(Math.random() * 6)], o = A.createOscillator(), g = A.createGain(); o.type = 'sine'; o.frequency.value = f; g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.025, s + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, s + 1.8); o.connect(g); g.connect(bus); o.start(s); o.stop(s + 1.9); }
+    // 5) Wusch-Geräusche (Energie zieht vorbei)
+    for (let k = 0; k < 6; k++) { const s = T0 + 1 + k * (D / 6), n = A.createBufferSource(), fl = A.createBiquadFilter(), g = A.createGain(); n.buffer = nb; fl.type = 'bandpass'; fl.Q.value = 2; fl.frequency.setValueAtTime(300, s); fl.frequency.exponentialRampToValueAtTime(2600, s + 1.1); g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.09, s + 0.55); g.gain.exponentialRampToValueAtTime(0.0001, s + 1.2); n.connect(fl); fl.connect(g); g.connect(bus); n.start(s); n.stop(s + 1.3); }
+    // 6) Anschwellen kurz vor dem Lichtausbruch (22,7 s)
+    { const s = t0 + 20.8, n = A.createBufferSource(), fl = A.createBiquadFilter(), g = A.createGain(), o = A.createOscillator(), og = A.createGain(); n.buffer = nb; fl.type = 'highpass'; fl.frequency.setValueAtTime(200, s); fl.frequency.exponentialRampToValueAtTime(6000, s + 1.9); g.gain.setValueAtTime(0.0001, s); g.gain.exponentialRampToValueAtTime(0.22, s + 1.85); g.gain.exponentialRampToValueAtTime(0.0001, s + 1.95); n.connect(fl); fl.connect(g); g.connect(bus); n.start(s); n.stop(s + 2);
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(110, s); o.frequency.exponentialRampToValueAtTime(440, s + 1.9); og.gain.setValueAtTime(0.0001, s); og.gain.exponentialRampToValueAtTime(0.05, s + 1.85); og.gain.exponentialRampToValueAtTime(0.0001, s + 1.95); o.connect(og); og.connect(bus); o.start(s); o.stop(s + 2); }
   }
   function play(done) {
     const D = 30.5;
