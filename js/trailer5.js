@@ -47,7 +47,8 @@
     document.body.appendChild(wrap);
     const q = (id) => wrap.querySelector(id);
     const U = { wrap, css, dip: q('#t5Dip'), fl: q('#t5Fl'), intro: q('#t5In'), joy: q('#t5Joy'), prep: q('#t5Prep'), bar: q('#t5Bar') };
-    U.dipIt = () => { U.dip.style.transition = 'none'; U.dip.style.opacity = '1'; requestAnimationFrame(() => { U.dip.style.transition = 'opacity .25s'; U.dip.style.opacity = '0'; }); };
+    let firstCut = true;
+    U.dipIt = () => { if (!firstCut) return; firstCut = false; U.dip.style.transition = 'opacity .3s'; U.dip.style.opacity = '0'; }; // keine Schwarzblenden zwischen den Szenen
     U.flash = (o) => { U.fl.style.transition = 'none'; U.fl.style.opacity = String(o || 1); requestAnimationFrame(() => { U.fl.style.transition = 'opacity .45s'; U.fl.style.opacity = '0'; }); };
     setTimeout(() => go(keep, U), 1500);
   }
@@ -158,11 +159,12 @@
     function finish(done) {
       if (ended) return; ended = true;
       try { if (out) out.gain.setTargetAtTime(0, AC.currentTime, 0.3); } catch (e) { /* egal */ }
-      L.save.char = keep.char; L.save.gauntlet = keep.gaunt; L.mGodOn = false; L.mGodNoTag = false; if (done) L.save.trailer5Seen = 1; L.persist && L.persist();
+      L.save.char = keep.char; L.save.gauntlet = keep.gaunt; L.mGodOn = false; L.mGodNoTag = false; if (done) { L.save.trailer5Seen = 1; L.save.trailer5Replay = 1; } L.persist && L.persist();
       setTimeout(() => location.reload(), 900);
     }
     const keepCine = () => { if (ended) return; if (!L.cine || L.cine.tr5 !== true) L.cine = { t: 0, dur: 1e9, checked: true, tr5: true, shot }; L.cine.t = 0.5; requestAnimationFrame(keepCine); };
     keepCine();
+    try { L.renderer.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); U.intro.innerHTML = '<div style="font:700 22px Arial;color:#fff">Grafik wurde zurückgesetzt – lade neu, der Trailer bleibt verfügbar …</div>'; U.dip.style.opacity = '1'; finish(false); }, { once: true }); } catch (e) { /* egal */ }
     addEventListener('keydown', (e) => { if (e.code === 'Escape') finish(false); });
     // Vorladen: jede Szene einmal besuchen und rendern (Welten bauen, Shader kompilieren)
     const step = () => {
@@ -187,7 +189,7 @@
   }
   function addBtn() {
     const c = document.getElementById('btnPlay'); if (!c || document.getElementById('btnTrailer5')) return;
-    if (!(L.heroToken && L.heroToken('marlon')) || (L.save && L.save.trailer5Seen)) return;
+    if (!(L.heroToken && L.heroToken('marlon')) || (L.save && L.save.trailer5Replay)) return; // noch genau EIN weiteres Mal
     ['btnTrailer', 'btnTrailer2', 'btnTrailer3', 'btnTrailer4'].forEach((id) => { const o = document.getElementById(id); if (o) o.remove(); });
     const b = document.createElement('button'); b.className = 'btn'; b.id = 'btnTrailer5'; b.textContent = '🎬 TikTok-Trailer 5 (nur 1×)'; b.style.cssText = 'background:linear-gradient(90deg,#ff2a6a,#25f4ee);color:#000;font-weight:900';
     b.onclick = () => { if (!confirm('Trailer 5 (ca. 36 Sek.) läuft nur EIN Mal. Erst wird alles vorgeladen, dann startest du die Aufnahme und tippst zum Start. Esc = abbrechen (zählt dann nicht).')) return; start(); };
