@@ -9,8 +9,11 @@
   const ok = (app) => !!(app && typeof app.hk === 'string' && L.hash53(app.hk) === PK);
   const oTok = L.heroToken, oChk = L.heroCheck;
   L.heroToken = (id) => { if (id !== ID) return oTok ? oTok(id) : null; const k = L.save && L.save.heroKeys && L.save.heroKeys[ID]; return k && L.hash53(L.hash53(k)) === PK ? L.hash53(k) : null; };
-  L.heroCheck = (code) => (L.hash53(L.hash53(code)) === PK ? ID : oChk ? oChk(code) : null);
-  L.SKINS.push(['h_' + ID, '🌀 Gummi-Kapitän']);
+  // exklusiv: kein Code – nur auf dem Gerät, auf dem der Krücken-Skin freigeschaltet ist (dein Gerät)
+  const mine = () => !!(oTok && oTok('marlon'));
+  const autoUnlock = () => { if (!L.save || !mine()) return; L.save.heroKeys = L.save.heroKeys || {}; if (L.save.heroKeys[ID] !== 'GK7R2-AAD6') { L.save.heroKeys[ID] = 'GK7R2-AAD6'; L.persist && L.persist(); } };
+  setTimeout(autoUnlock, 500); setInterval(autoUnlock, 5000);
+  L.SKINS.push(['h_' + ID, '🌀 Gummi-Kapitän (exklusiv)']);
   const LOOK = { name: 'Gummi-Kapitän', koerper: 'mann', skin: '#d9a57c', hair: 'wuschel', hairColor: '#1a1410', eyes: '#2a1a10', brows: 'dick', mouth: 'grinsen', nose: 'normal', beard: 'kein',
     hat: 'bandana', hatColor: '#1f8a8a', top: 'weste', topColor: '#2f5a3a', pants: 'cargoshorts', pantsColor: '#c8b07a', shoeType: 'sandale', shoes: '#6a4a2a', build: 'schmal', height: 'mittel', scar: 'wange' };
   const obh = L.buildHuman;
