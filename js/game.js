@@ -3257,7 +3257,6 @@
     if (L.updateCombat) L.updateCombat(dt);
     if (L.updateMoves) L.updateMoves(dt);
     if (L.updateBattle) L.updateBattle(dt);
-    if (L.updateGummi) L.updateGummi(dt);
     if (L.updateMarlon2) L.updateMarlon2(dt);
     if (L.updateJupiter) L.updateJupiter(dt);
     if (L.updateAim) L.updateAim(dt);
