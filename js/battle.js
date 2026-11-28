@@ -108,7 +108,7 @@
     daniel: K('Knüppel-Hagel', 'flurry', 'Polizei-Rammbock', 'charge', 'Großeinsatz', 'sky', 0x6090ff, 'punch', 'charge', 'raise'),
     richard: K('Schrot-Salve', 'cone', 'Muskel-Ansturm', 'charge', 'Richards Zorn', 'slam', 0xffa040, 'cast', 'charge', 'slam'),
   };
-  const skin = () => { const s = (P.rig && P.rig.app && P.rig.app.special) || (L.save && L.save.char && L.save.char.special) || ''; return KITS[s] ? s : ''; };
+  const skin = () => { let s = (P.rig && P.rig.app && P.rig.app.special) || (L.save && L.save.char && L.save.char.special) || ''; if (s === 'h_gummi2') s = 'h_gummi'; return KITS[s] ? s : ''; };
   const DMG = { s1: 70, s2: 90, u: 420 }, CD = { s1: 5, s2: 8 };
   const S = { cd: { s1: 0, s2: 0 }, pose: null, poseT: 0, poseD: 0 };
 

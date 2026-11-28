@@ -8,20 +8,24 @@
   const ID = 'gummi', PK = 'ddmbpz6anm';
   const ok = (app) => !!(app && typeof app.hk === 'string' && L.hash53(app.hk) === PK);
   const oTok = L.heroToken, oChk = L.heroCheck;
-  L.heroToken = (id) => { if (id !== ID) return oTok ? oTok(id) : null; const k = L.save && L.save.heroKeys && L.save.heroKeys[ID]; return k && L.hash53(L.hash53(k)) === PK ? L.hash53(k) : null; };
+  L.heroToken = (id) => { if (id !== ID && id !== ID + '2') return oTok ? oTok(id) : null; const k = L.save && L.save.heroKeys && L.save.heroKeys[ID]; return k && L.hash53(L.hash53(k)) === PK ? L.hash53(k) : null; };
   // exklusiv: kein Code – nur auf dem Gerät, auf dem der Krücken-Skin freigeschaltet ist (dein Gerät)
   const mine = () => !!(oTok && oTok('marlon'));
   const autoUnlock = () => { if (!L.save || !mine()) return; L.save.heroKeys = L.save.heroKeys || {}; if (L.save.heroKeys[ID] !== 'GK7R2-AAD6') { L.save.heroKeys[ID] = 'GK7R2-AAD6'; L.persist && L.persist(); } };
   setTimeout(autoUnlock, 500); setInterval(autoUnlock, 5000);
-  L.SKINS.push(['h_' + ID, '🌀 Gummi-Kapitän (exklusiv)']);
+  L.SKINS.push(['h_' + ID, '🌀 Gummi-Kapitän · Rot (exklusiv)']); L.SKINS.push(['h_' + ID + '2', '👒 Gummi-Kapitän · Strohhut (exklusiv)']);
   const LOOK = { name: 'Gummi-Kapitän', koerper: 'mann', skin: '#d9a57c', hair: 'wuschel', hairColor: '#1a1410', eyes: '#2a1a10', brows: 'dick', mouth: 'grinsen', nose: 'normal', beard: 'kein',
-    hat: 'bandana', hatColor: '#1f8a8a', top: 'weste', topColor: '#2f5a3a', pants: 'cargoshorts', pantsColor: '#c8b07a', shoeType: 'sandale', shoes: '#6a4a2a', build: 'schmal', height: 'mittel', scar: 'wange' };
+    hat: 'bandana', hatColor: '#1a1a1e', top: 'trainingsjacke', topColor: '#c8242c', pants: 'cargoshorts', pantsColor: '#c8b07a', shoeType: 'sandale', shoes: '#6a4a2a', build: 'schmal', height: 'mittel', scar: 'wange' };
+  // Variante 2: Strohhut, weißes Hemd, dunkle Shorts
+  const LOOK2 = Object.assign({}, LOOK, { hat: 'sonnenhut', hatColor: '#e2c46e', top: 'hemd', topColor: '#f2f0ea', pants: 'kurz', pantsColor: '#2a2c34' });
   const obh = L.buildHuman;
   L.buildHuman = function (app, force) {
-    if (!app || app.special !== 'h_' + ID) return obh(app, force);
+    const v2 = app && app.special === 'h_' + ID + '2';
+    if (!app || (app.special !== 'h_' + ID && !v2)) return obh(app, force);
     if (!force && !ok(app)) return obh(Object.assign({}, app, { special: '' }), force);
-    const r = obh(Object.assign({}, app, LOOK, { special: '' }), force);
+    const r = obh(Object.assign({}, app, v2 ? LOOK2 : LOOK, { special: '' }), force);
     r.app = Object.assign({}, r.app, app); r.gummi = true;
+    if (v2) return r;
     // Kapitäns-Mantel über den Schultern
     const coat = new T.Mesh(new T.PlaneGeometry(0.62, 0.78, 4, 6), new T.MeshStandardMaterial({ color: 0x14161c, roughness: 0.8, side: T.DoubleSide }));
     coat.position.set(0, 0.36, -0.17); coat.rotation.x = 0.08; if (r.torso) r.torso.add(coat); r.coat = coat;
