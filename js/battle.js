@@ -185,5 +185,6 @@
     if (show) drawHud();
   };
   L.battleHit = (e, dmg, col) => hit(e, dmg, col || 0xffffff);
+  L.battleKits = KITS; L.battleA = A; L.battleFx = { ring, flashBall, sparks, camPunch, impactFrame, slowmo, ghost, ghostMesh, near, inCone, nearestFront, targets, fwd, handPos, hit, addFx, label };
   L.impactFrame = impactFrame;
 })();
