@@ -117,6 +117,8 @@
     root.position.set(x + dx * c + dz * s, f.h + bob + dy, z - dx * s + dz * c); root.rotation.set(0, yaw, -Math.sign(f.spd) * 0.18);
   }
   const tmp = new T.Vector3();
+  // alle Flieger kurz zu einem Punkt holen (für den Trailer)
+  L.flyersHere = function (x, z) { if (!built) { try { build(); } catch (e) { return; } } for (const f of [...flocks, ...walrusses, ...rolls]) { f.cx = x + (Math.random() - 0.5) * 120; f.cz = z + 60 + Math.random() * 80; } };
   L.updateFlyers = function (dt) {
     if (L.state !== 'game' || !L.scene || !L.GEO) return;
     if (!built) { try { build(); } catch (e) { console.error(e); return; } }

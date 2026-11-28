@@ -38,7 +38,7 @@
     m.scale.setScalar(size); m.position.set(x, y, z); if (flat) m.rotation.x = -Math.PI / 2; L.scene.add(m); rings.push({ m, t: 0, life, spin: (Math.random() < 0.5 ? -1 : 1) * 1.5, follow, size });
   }
   const owf = L.weaponFire;
-  let cdUntil = 0, freezeT = 0, frozen = [];
+  let cdUntil = 0, freezeT = 0, frozen = [], tickT = 0; const hist = [];
   L.weaponFire = function (w, d) {
     if (!d || !d.agamotto) return owf(w, d);
     const now = performance.now() / 1000; P.fireCd = 0.6;
@@ -50,7 +50,13 @@
     ring(P.x, (P.y || 0) + 0.05, P.z, 14, 8, true); ring(P.x, (P.y || 0) + 30, P.z, 60, 8, true);
     // Zeit anhalten: alle Gegner in der Nähe frieren ein
     frozen = []; for (const e of (L._targets ? L._targets() : [])) { if (e.dead || Math.hypot(e.x - P.x, e.z - P.z) > 80 + (e.bigR || 0)) continue; e.stunT = Math.max(e.stunT || 0, 8); frozen.push({ e, x: e.x, z: e.z }); try { L.damageEnt(e, 150, P.x, P.z, P); } catch (x) { /* egal */ } }
-    freezeT = 8;
+    freezeT = 8; tickT = 0;
+    // Zeitschild: drei senkrechte Runenringe kreisen 8 s um dich
+    for (let k = 0; k < 3; k++) ring(P.x, (P.y || 0) + 1.2, P.z, 3.4, 8, false, { orbit: k });
+    // Zeitwelle: stößt alle Gegner im Umkreis weg
+    for (const e of (L._targets ? L._targets() : [])) { if (e.dead) continue; const dx = e.x - P.x, dz = e.z - P.z, d = Math.hypot(dx, dz); if (d < 1 || d > 25 + (e.bigR || 0) || !(L.MK && L.MK[e.kind])) continue; e.x += dx / d * 10; e.z += dz / d * 10; }
+    // Zeit zurückspulen: du springst dorthin, wo du vor 3 Sekunden warst (grüne Spur)
+    if (hist.length > 30) { const h0 = hist[0]; for (let k = 0; k < 10; k++) { const q = hist[Math.floor(k / 10 * hist.length)]; L.fx && L.fx('#60ff90', q.x, (q.y || 0) + 1, q.z, 4, 1.5, { basic: true, size: 0.3, life: 0.8 }); } if (!P.vehicle) { P.x = h0.x; P.z = h0.z; } }
     // Zeit zurückspulen: du wirst geheilt
     P.hp = 100; P.food = Math.max(P.food || 0, 80); P.water = Math.max(P.water || 0, 80);
     L.banner('🟢 ZEIT ANGEHALTEN', frozen.length + ' Gegner eingefroren – du bist geheilt.');
@@ -70,9 +76,11 @@
   // Geist-Masik schwebt über dir
   let spirit = null;
   L.updateMasik = function (dt) {
-    for (let i = rings.length - 1; i >= 0; i--) { const r = rings[i]; r.t += dt; r.m.rotation.z += dt * r.spin; if (r.follow) { const fx = Math.sin(P.camYaw), fz = Math.cos(P.camYaw); r.m.position.set(P.x + fx * 0.8 + fz * r.follow.side * 0.4, (P.y || 0) + 1.3, P.z + fz * 0.8 - fx * r.follow.side * 0.4); r.m.lookAt(P.x + fx * 10, (P.y || 0) + 1.3, P.z + fz * 10); }
+    hist.push({ x: P.x, y: P.y || 0, z: P.z }); if (hist.length > 180) hist.shift();
+    for (let i = rings.length - 1; i >= 0; i--) { const r = rings[i]; r.t += dt; r.m.rotation.z += dt * r.spin; if (r.follow && r.follow.orbit !== undefined) { const a = r.t * 2.2 + r.follow.orbit * 2.094; r.m.position.set(P.x, (P.y || 0) + 1.2 + Math.sin(r.t * 3 + r.follow.orbit) * 0.3, P.z); r.m.rotation.set(0, a, 0); r.m.rotateX(0.35 * Math.sin(r.t + r.follow.orbit)); const k2 = r.t / r.life; r.m.material.opacity = 0.8 * (k2 < 0.85 ? 1 : (1 - k2) / 0.15); if (k2 >= 1) { L.scene.remove(r.m); r.m.geometry.dispose(); rings.splice(i, 1); } continue; } if (r.follow) { const fx = Math.sin(P.camYaw), fz = Math.cos(P.camYaw); r.m.position.set(P.x + fx * 0.8 + fz * r.follow.side * 0.4, (P.y || 0) + 1.3, P.z + fz * 0.8 - fx * r.follow.side * 0.4); r.m.lookAt(P.x + fx * 10, (P.y || 0) + 1.3, P.z + fz * 10); }
       const k = r.t / r.life; r.m.material.opacity = 0.95 * (k < 0.85 ? 1 : (1 - k) / 0.15); if (k >= 1) { L.scene.remove(r.m); r.m.geometry.dispose(); rings.splice(i, 1); } }
-    if (freezeT > 0) { freezeT -= dt; for (const f of frozen) { if (f.e.dead) continue; f.e.x = f.x; f.e.z = f.z; f.e.stunT = Math.max(f.e.stunT || 0, 0.3); } if (freezeT <= 0) frozen = []; }
+    if (freezeT > 0) { tickT -= dt; if (tickT <= 0) { tickT = 0.5; for (const f of frozen) { if (f.e.dead) continue; try { L.damageEnt(f.e, 30, P.x, P.z, P); } catch (x) { /* egal */ } L.fx && L.fx('#80ffa8', f.e.x, (f.e.y || 0) + 1.3, f.e.z, 6, 3, { basic: true, size: 0.18, life: 0.5 }); } }
+      freezeT -= dt; for (const f of frozen) { if (f.e.dead) continue; f.e.x = f.x; f.e.z = f.z; f.e.stunT = Math.max(f.e.stunT || 0, 0.3); } if (freezeT <= 0) frozen = []; }
     if (!has() || L.state !== 'game') { if (spirit) spirit.g.visible = false; return; }
     if (!spirit && L.buildMasik) { spirit = L.buildMasik(); spirit.cape.visible = true; spirit.horns.visible = true; spirit.g.scale.setScalar(0.7); spirit.g.traverse((o) => { if (o.isMesh) { o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = 0.85; } }); L.scene.add(spirit.g); }
     if (spirit) { const t = performance.now() / 1000; spirit.g.visible = !P.vehicle; spirit.g.position.set(P.x + Math.cos(P.camYaw) * 0.9, (P.y || 0) + 2.6 + Math.sin(t * 2) * 0.12, P.z - Math.sin(P.camYaw) * 0.9); spirit.g.rotation.y = P.camYaw; spirit.cape.rotation.x = 1.3 + Math.sin(t * 4) * 0.1; spirit.tail.rotation.x = Math.sin(t * 2) * 0.3; }

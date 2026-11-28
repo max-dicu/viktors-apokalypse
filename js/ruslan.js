@@ -147,7 +147,7 @@
     if (B.hp <= 0) { B.state = 'defeat'; B.t = 0; if (src === P && L.gotBossCoins) L.gotBossCoins(1500, 'Ruslan'); L.banner('🛡️ RUSLAN IST BESIEGT', 'Der Riesenbagger bleibt stehen … +1500 Münzen'); }
   };
   function cleanupModels() { if (B.rig) L.scene.remove(B.rig.root); if (B.bag) L.scene.remove(B.bag.g); B.rig = null; B.bag = null; ent.rig.root = null; if (B.shield) { L.scene.remove(B.shield); B.shield = null; } if (B.iva) { L.scene.remove(B.iva.root); B.iva = null; } for (const f of B.fx) L.scene.remove(f.m); B.fx.length = 0; }
-  L._buildRuslan = () => buildRuslan();
+  L._buildRuslan = () => buildRuslan(); L._buildBagger = () => buildBagger();
   function startIntro() {
     cleanupModels();
     B.rig = buildRuslan(); B.rig.root.scale.setScalar(12); L.scene.add(B.rig.root);
